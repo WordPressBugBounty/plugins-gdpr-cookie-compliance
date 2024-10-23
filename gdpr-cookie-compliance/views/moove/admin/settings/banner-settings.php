@@ -556,7 +556,7 @@ $initalization_delay 	= isset( $gdpr_options['gdpr_initialization_delay'] ) && i
 				<td>
 					<span style="white-space: nowrap;">
 						<input type="number" value="<?php echo $initalization_delay; ?>" min="0" step="1" name="gdpr_initialization_delay" id="gdpr_initialization_delay" style="width: 100px;">
-						milliseconds
+						<?php esc_html_e( 'milliseconds', 'gdpr-cookie-compliance' ); ?>
 					</span>
 
 					<p class="description">

@@ -145,7 +145,7 @@ $wpml_lang     = $gdpr_default_content->moove_gdpr_get_wpml_lang('label');
 
 			<a href="<?php echo esc_attr( admin_url( 'admin.php?page=moove-gdpr_licence' ) ); ?>" class="nav-tab nav-tab-white <?php echo 'licence' === $active_tab ? 'nav-tab-active' : ''; ?>">
 				<span class="dashicons dashicons-admin-network"></span>
-				<?php esc_html_e( 'Licence Manager', 'gdpr-cookie-compliance-addon' ); ?>
+				<?php esc_html_e( 'Licence Manager', 'gdpr-cookie-compliance' ); ?>
 			</a>
 			
 			<?php do_action( 'gdpr_settings_tab_nav_extensions', $active_tab ); ?>

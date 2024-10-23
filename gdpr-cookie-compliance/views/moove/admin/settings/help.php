@@ -71,7 +71,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<li>
 						<?php 
 						  echo sprintf(
-						    esc_html__( 'More info here: %s in private browsing - if it’s restricted, you need to whitelist the admin-ajax.php in your .htaccess file, or to apply the HTTP protection for the wp-login.php only.', 'gdpr-cookie-compliance' ),
+						    esc_html__( 'More info here: %s', 'gdpr-cookie-compliance' ),
 						    '<a href="https://www.wpwhitesecurity.com/wordpress-security-hacks/securing-wordpress-wp-admin-htaccess/" class="gdpr_admin_link" target="_blank">https://www.wpwhitesecurity.com/wordpress-security-hacks/securing-wordpress-wp-admin-htaccess/</a>'
 						  );
 						?>
@@ -92,7 +92,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</div>
 			<div class="gdpr-faq-accordion-content" >
 				<p><?php esc_html_e( 'Can you please check in your CMS > Plugins that both the free version and the premium add-on plugin are activated?', 'gdpr-cookie-compliance' ); ?></p>
-				<p><?php esc_html_e( 'If not, please ensure that <b>both are activated</b>, not just installed.', 'gdpr-cookie-compliance' ); ?></p>
+				<p>	<?php printf( esc_html__( 'If not, please ensure that %s both are activated %s, not just installed.', 'gdpr-cookie-compliance' ), '<b>', '</b>' ) ?></p>
 				<p><?php esc_html_e( 'If they are both activated and you still don’t see the premium features, you can try the following:', 'gdpr-cookie-compliance' ); ?></p>
 				<ol>
 					<li><b><?php esc_html_e( 'Delete the premium', 'gdpr-cookie-compliance' ); ?></b> <?php esc_html_e( 'add-on plugin from your CMS completely', 'gdpr-cookie-compliance' ); ?></li>
@@ -220,9 +220,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</div>
 			<div class="gdpr-faq-accordion-content" >
 				<p><?php esc_html_e( 'Yes, the plugin supports subdomains on the same WordPress Multisite Network as part of our Premium Add-on', 'gdpr-cookie-compliance' ); ?></p>
-				<p><?php esc_html_e( 'We can sync users consent across your multisite network as long as your subsites are using the same domain and either folder or subdomain structure.' ); ?></p>
-				<p><?php esc_html_e( 'For example, if user agrees to cookies on one subsite (example.com/one/ or one.example.com), then we can automatically sync their consent and cookies will be accepted on the other subsites too (example.com/two/ or two.example.com).' ); ?></p>
-				<p><?php esc_html_e( 'There is only one exception where we cannot sync users consent between subsites and that’s when you’re using different domains (subdomains are fine). Browsers will treat each domain as separate entity and our plugin will be unable to alter cookies stored by the other domain. This is a security feature in browsers to prevent hacking.' ); ?></p>  
+				<p><?php esc_html_e( 'We can sync users consent across your multisite network as long as your subsites are using the same domain and either folder or subdomain structure.', 'gdpr-cookie-compliance' ); ?></p>
+				<p><?php esc_html_e( 'For example, if user agrees to cookies on one subsite (example.com/one/ or one.example.com), then we can automatically sync their consent and cookies will be accepted on the other subsites too (example.com/two/ or two.example.com).', 'gdpr-cookie-compliance' ); ?></p>
+				<p><?php esc_html_e( 'There is only one exception where we cannot sync users consent between subsites and that’s when you’re using different domains (subdomains are fine). Browsers will treat each domain as separate entity and our plugin will be unable to alter cookies stored by the other domain. This is a security feature in browsers to prevent hacking.', 'gdpr-cookie-compliance' ); ?></p>  
       </div>
 			<!--  .gdpr-faq-accordion-content -->
 		</div>
@@ -493,10 +493,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<h3><?php esc_html_e( 'GTM / GA consent settings', 'gdpr-cookie-compliance' ); ?></h3>
 			</div>
 			<div class="gdpr-faq-accordion-content" >
-				<h4>Here is a quick guide for Google Tag Manager or Google Analytics consent settings implementation.</h4>
+				<h4><?php esc_html_e( 'Here is a quick guide for Google Tag Manager or Google Analytics consent settings implementation.', 'gdpr-cookie-compliance' ); ?></h4>
 				<p><?php esc_html_e( 'More details on this implementation in the ', 'gdpr-cookie-compliance' ); ?> <a href="https://developers.google.com/tag-platform/devguides/consent" class="gdpr_admin_link" target="_blank"><?php esc_html_e( 'official Google Dev Guides.', 'gdpr-cookie-compliance' ); ?></a></p>        
 				<hr>
-				<p><strong>Step 1:</strong><br /> Add the following code snippet to functions.php and replace the generic Google ID with yours (AW-YYYYYY)</p>
+				<p><strong><?php esc_html_e( 'Step 1', 'gdpr-cookie-compliance' ); ?>:</strong><br /> <?php esc_html_e( 'Add the following code snippet to functions.php and replace the generic Google ID with yours (AW-YYYYYY)', 'gdpr-cookie-compliance' ); ?></p>
 				<?php ob_start(); ?>
 					add_action( 'wp_head', 'gdpr_consent_denied_script', 1000 );
 					function gdpr_consent_denied_script() { 
@@ -528,7 +528,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</div>
 			<!--  .gdpr-faq-accordion-content -->
 			<div class="gdpr-faq-accordion-content" >
-				<p><strong>Step 2:</strong><br /> Use the following code snippet in our plugin (either in the 3rd party or Additional Cookies category). We recommend placing it in the 'Head' section.</p>
+				<p><strong><?php esc_html_e( 'Step 2', 'gdpr-cookie-compliance' ); ?>:</strong><br /> <?php esc_html_e( 'Use the following code snippet in our plugin (either in the 3rd party or Additional Cookies category). We recommend placing it in the "Head" section.', 'gdpr-cookie-compliance' ); ?></p>
 				<?php ob_start(); ?>
 				<script>
 				  gtag('consent', 'update', { 
@@ -549,15 +549,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<h3><?php esc_html_e( 'GTM / Javascript consent variables', 'gdpr-cookie-compliance' ); ?></h3>
 			</div>
 			<div class="gdpr-faq-accordion-content" >
-				<p>Our plugin has the following 3 consent variables implemented by default for each cookie category:</p>
-				<strong>gdpr_consent__strict</strong> => values: <strong>true</strong> or <strong>false</strong><br>
-				<strong>gdpr_consent__thirdparty</strong> => values: <strong>true</strong> or <strong>false</strong><br>
-				<strong>gdpr_consent__advanced</strong> => values: <strong>true</strong> or <strong>false</strong><br>
+				<p><?php esc_html_e( 'Our plugin has the following 3 consent variables implemented by default for each cookie category:', 'gdpr-cookie-compliance' ); ?></p>
+				<strong>gdpr_consent__strict</strong> => <?php esc_html_e( 'values', 'gdpr-cookie-compliance' ); ?>: <strong>true</strong> <?php esc_html_e( 'or', 'gdpr-cookie-compliance' ); ?> <strong>false</strong><br>
+				<strong>gdpr_consent__thirdparty</strong> => <?php esc_html_e( 'values', 'gdpr-cookie-compliance' ); ?>: <strong>true</strong> <?php esc_html_e( 'or', 'gdpr-cookie-compliance' ); ?> <strong>false</strong><br>
+				<strong>gdpr_consent__advanced</strong> => <?php esc_html_e( 'values', 'gdpr-cookie-compliance' ); ?>: <strong>true</strong> <?php esc_html_e( 'or', 'gdpr-cookie-compliance' ); ?> <strong>false</strong><br>
 				<br>
-				<p>You also have a single variable that includes all categories that the user accepted:</p>
-				<strong>gdpr_consent__cookies</strong> => values: <strong>strict|thirdparty|advanced</strong> or <strong>strict|thirdparty</strong> or <strong>strict|advanced</strong>
+				<p><?php esc_html_e( 'You also have a single variable that includes all categories that the user accepted:', 'gdpr-cookie-compliance' ); ?></p>
+				<strong>gdpr_consent__cookies</strong> => <?php esc_html_e( 'values', 'gdpr-cookie-compliance' ); ?>: <strong>strict|thirdparty|advanced</strong> <?php esc_html_e( 'or', 'gdpr-cookie-compliance' ); ?> <strong>strict|thirdparty</strong> <?php esc_html_e( 'or', 'gdpr-cookie-compliance' ); ?> <strong>strict|advanced</strong>
 				<br>
-				<p>These consent variables can be used to configure your Google Tag Manager.</p>
+				<p><?php esc_html_e( 'These consent variables can be used to configure your Google Tag Manager.', 'gdpr-cookie-compliance' ); ?></p>
 			</div>
 			<!--  .gdpr-faq-accordion-content -->
 		</div>
@@ -753,8 +753,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<p>
 					<?php 
 					  echo sprintf(
-					    esc_html__( 'Please ensure you have the %s enabled.', 'gdpr-cookie-compliance' ),
-					    '<strong><a href="' . esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=general-settings' ) ) . '" class="gdpr_admin_link" target="_blank">Force Reload</a></strong>'
+					    esc_html__( 'Please ensure you have the %s Force Reload %s enabled.', 'gdpr-cookie-compliance' ),
+					    '<strong><a href="' . esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=general-settings' ) ) . '" class="gdpr_admin_link" target="_blank">', '</a></strong>'
 					  );
 					?>	
 				</p>

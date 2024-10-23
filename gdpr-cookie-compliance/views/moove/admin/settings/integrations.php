@@ -150,7 +150,7 @@
                   else : 
                     ?>
                       <tr>
-                        <td colspan="8"><?php esc_html_e( 'No integration modules found.', 'gdpr-cookie-compliance-addon' ); ?></td>
+                        <td colspan="8"><?php esc_html_e( 'No integration modules found.', 'gdpr-cookie-compliance' ); ?></td>
                       </tr>
                     <?php 
                   endif; 
@@ -167,6 +167,6 @@
     <br>
     <hr />
     <br />
-    <button type="submit" class="button button-primary"><?php esc_html_e( 'Save changes', 'gdpr-cookie-compliance-addon' ); ?></button>
+    <button type="submit" class="button button-primary"><?php esc_html_e( 'Save changes', 'gdpr-cookie-compliance' ); ?></button>
     <?php do_action( 'gdpr_cc_banner_buttons_settings' ); ?>
   </form>

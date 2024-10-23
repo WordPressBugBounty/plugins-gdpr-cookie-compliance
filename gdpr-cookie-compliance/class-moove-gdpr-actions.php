@@ -698,7 +698,7 @@ class Moove_GDPR_Actions {
 			<div class="gdpr-locked-section">
 				<span>
 					<i class="dashicons dashicons-lock"></i>
-					<h4>This feature is part of the Premium Add-on</h4>
+					<h4><?php esc_html_e( 'This feature is part of the Premium Add-on', 'gdpr-cookie-compliance' ); ?></h4>
 					<?php
 					$gdpr_default_content = new Moove_GDPR_Content();
 					$option_key           = $gdpr_default_content->moove_gdpr_get_key_name();
