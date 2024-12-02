@@ -10,7 +10,7 @@
     var _html = $('html');
     var _instances = [];
 
-    var _attrAriaHidden = 'aria-hidden';
+    var _attrAriaHidden = 'ah';
     var _dataAriaHidden = 'gdpr_lightbox-' + _attrAriaHidden;
 
     var _focusableElementsSelector = 'a[href],area[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),button:not([disabled]),iframe,object,embed,[contenteditable],[tabindex]:not([tabindex^="-"])';
@@ -27,7 +27,7 @@
             facebookvideo: facebookvideoHandler,
             iframe: iframeHandler
         },
-        template: '<div class="gdpr_lightbox" role="dialog" aria-label="Dialog Window (Press escape to close)" tabindex="-1"><div class="gdpr_lightbox-wrap" data-gdpr_lightbox-close role="document"><div class="gdpr_lightbox-loader" aria-hidden="true">Loading...</div><div class="gdpr_lightbox-container"><div class="gdpr_lightbox-content"></div><button class="gdpr_lightbox-close" type="button" aria-label="Close (Press escape to close)" data-gdpr_lightbox-close>&times;</button></div></div></div>'
+        template: '<div class="gdpr_lightbox" role="dialog" aria-label="Dialog Window (Press escape to close)" tabindex="-1"><div class="gdpr_lightbox-wrap" data-gdpr_lightbox-close role="document"><div class="gdpr_lightbox-loader">Loading...</div><div class="gdpr_lightbox-container"><div class="gdpr_lightbox-content"></div><button class="gdpr_lightbox-close" type="button" aria-label="Close (Press escape to close)" data-gdpr_lightbox-close>&times;</button></div></div></div>'
     };
 
     var _imageRegexp = /(^data:image\/)|(\.(png|jpe?g|gif|svg|webp|bmp|ico|tiff?)(\?\S*)?$)/i;
