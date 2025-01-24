@@ -24,7 +24,7 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 		if ( is_array( $_POST ) ) :
 			foreach ( $_POST as $form_key => $form_value ) :
 				if ( 'moove_gdpr_privacy_overview_tab_content' === $form_key ) :
-					$value                                  = wp_unslash( $form_value );
+					$value                                  = wp_kses_post( wp_unslash( $form_value ) );
 					$gdpr_options[ $form_key . $wpml_lang ] = $value;
 					update_option( $option_name, $gdpr_options );
 					$gdpr_options = get_option( $option_name );

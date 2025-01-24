@@ -24,7 +24,7 @@
       <div class="moove-gdpr-modal-right-content">
           <div class="moove-gdpr-modal-title"> 
             <div>
-              <span class="tab-title"><?php echo $content->modal_title; ?></span>
+              <span class="tab-title"><?php echo esc_attr( $content->modal_title ); ?></span>
             </div>
             <?php echo gdpr_get_module('company-logo'); ?>
           </div>

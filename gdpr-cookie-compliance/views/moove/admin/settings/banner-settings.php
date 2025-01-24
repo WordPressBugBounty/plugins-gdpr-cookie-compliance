@@ -105,10 +105,11 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 
 			foreach ( $_POST as $form_key => $form_value ) :
 				if ( 'moove_gdpr_info_bar_content' === $form_key ) :
+					$form_value 														= wp_kses_post( $form_value );
 					$value                                  = wpautop( wp_unslash( $form_value ) );
 					$gdpr_options[ $form_key . $wpml_lang ] = $value;
 				elseif ( 'moove_gdpr_modal_strictly_secondary_notice' . $wpml_lang === $form_key ) :
-					$value                     = wpautop( wp_unslash( $form_value ) );
+					$value                     = wp_kses_post( wpautop( wp_unslash( $form_value ) ) );
 					$gdpr_options[ $form_key ] = $value;
 				elseif ( 'gdpr_initialization_delay' === $form_key ) :
 					$value                     = intval( $form_value );
@@ -181,6 +182,7 @@ $initalization_delay 	= isset( $gdpr_options['gdpr_initialization_delay'] ) && i
 						$_content .= '<p>' . sprintf( esc_html__( 'You can find out more about which cookies we are using or switch them off in [%s]settings[/%s].', 'gdpr-cookie-compliance' ), 'setting', 'setting' ) . '</p>';
 						$content  = $_content;
 					endif;
+					$content = wp_kses_post( $content );
 					?>
 					<?php
 					$settings = array(

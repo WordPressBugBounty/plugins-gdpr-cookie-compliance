@@ -28,10 +28,10 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 
 			foreach ( $_POST as $form_key => $form_value ) :
 				if ( 'moove_gdpr_info_bar_content' === $form_key ) :
-					$value                                  = wpautop( wp_unslash( $form_value ) );
+					$value                                  = wp_kses_post( wpautop( wp_unslash( $form_value ) ) );
 					$gdpr_options[ $form_key . $wpml_lang ] = $value;
 				elseif ( 'moove_gdpr_modal_strictly_secondary_notice' . $wpml_lang === $form_key ) :
-					$value                     = wpautop( wp_unslash( $form_value ) );
+					$value                     = wp_kses_post( pautop( wp_unslash( $form_value ) ) );
 					$gdpr_options[ $form_key ] = $value;
 				elseif ( 'moove_gdpr_floating_button_enable' !== $form_key && 'moove_gdpr_modal_powered_by_disable' !== $form_key && 'moove_gdpr_company_logo_id' !== $form_key ) :
 					$value                     = sanitize_text_field( wp_unslash( $form_value ) );

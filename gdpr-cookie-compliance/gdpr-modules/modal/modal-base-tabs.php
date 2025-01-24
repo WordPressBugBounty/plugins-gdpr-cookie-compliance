@@ -24,7 +24,7 @@
       <!--  .moove-gdpr-modal-left-content -->
       <div class="moove-gdpr-modal-right-content">
         <div class="moove-gdpr-modal-title">
-          <?php echo $content->modal_title; ?> 
+          <?php echo esc_attr( $content->modal_title ); ?> 
         </div>
         <!-- .moove-gdpr-modal-ritle -->
         <div class="main-modal-content">
