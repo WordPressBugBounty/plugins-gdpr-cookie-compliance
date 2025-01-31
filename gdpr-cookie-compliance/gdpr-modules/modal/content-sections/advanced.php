@@ -5,7 +5,7 @@
 ?>
 
 <?php if ( $content->show ) : ?>
-  <div id="advanced-cookies" class="moove-gdpr-tab-main" <?php echo esc_attr( $content->visibility ); ?>>
+  <div id="advanced-cookies" class="moove-gdpr-tab-main" <?php echo $content->visibility; ?>>
     <span class="tab-title"><?php echo esc_attr( $content->tab_title ); ?></span>
     <div class="moove-gdpr-tab-main-content">
       <?php echo $content->tab_content; ?>
