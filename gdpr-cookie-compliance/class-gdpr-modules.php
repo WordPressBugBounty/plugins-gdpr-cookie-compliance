@@ -325,7 +325,7 @@ class GDPR_Modules {
 		$data->options         = $modal_options;
 		$data->wpml_lang       = $wpml_lang;
 		$data->tab_title       = esc_attr( $tab_title );
-		$data->tab_content     = wpautop( $tab_content );
+		$data->tab_content     = wp_kses_post( wpautop( $tab_content ) );
 		$data->show            = isset( $modal_options['moove_gdpr_third_party_cookies_enable'] ) && 1 === intval( $modal_options['moove_gdpr_third_party_cookies_enable'] ) ? true : false;
 		$data->is_checked      = 1 !== $strictly ? '' : 'disabled';
 		$data->fieldset        = 1 !== $strictly ? 'fl-strenabled' : 'fl-disabled';

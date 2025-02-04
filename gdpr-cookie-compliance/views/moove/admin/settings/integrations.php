@@ -124,9 +124,9 @@
                           </td>
                           <td>
                             <div class="gdpr-conditional-field" data-dependency="#gdpr_integrations_<?php echo $_gdin_module_slug; ?>">
-                              <input type="text" class="regular-text" <?php echo isset( $_gdin_module['atts'] ) && isset( $_gdin_module['atts']['input'] ) ? $_gdin_module['atts']['input'] : ''; ?> name="gdpr_integrations_<?php echo $_gdin_module_slug; ?>_id" placeholder="<?php echo $_gdin_module['id_format']; ?>" value="<?php echo isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] ? $_gdin_module['tacking_id'] : ''; ?>">
+                              <input type="text" class="regular-text" <?php echo isset( $_gdin_module['atts'] ) && isset( $_gdin_module['atts']['input'] ) ? $_gdin_module['atts']['input'] : ''; ?> name="gdpr_integrations_<?php echo $_gdin_module_slug; ?>_id" placeholder="<?php echo $_gdin_module['id_format']; ?>" value="<?php echo isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] ? esc_attr( $_gdin_module['tacking_id'] ) : ''; ?>">
                               <?php if ( isset( $_gdin_module['atts'] ) && isset( $_gdin_module['atts']['input'] ) && 'disabled' === $_gdin_module['atts']['input'] ) : ?>
-                                <input type="hidden" name="gdpr_integrations_<?php echo $_gdin_module_slug; ?>_id" value="<?php echo isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] ? $_gdin_module['tacking_id'] : ''; ?>">
+                                <input type="hidden" name="gdpr_integrations_<?php echo $_gdin_module_slug; ?>_id" value="<?php echo isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] ? esc_attr( $_gdin_module['tacking_id'] ) : ''; ?>">
                               <?php endif; ?>
                             </div>
                             <!-- .gdpr-conditional-field -->

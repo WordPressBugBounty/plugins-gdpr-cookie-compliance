@@ -145,7 +145,7 @@ class Moove_GDPR_Actions {
 					'name'				=> 'Google Tag Manager',
 					'desc'				=> 'Compatibility for GTM4WP',
 					'cookie_cat'	=> isset( $gdin_values['gtm4wp'] ) ? intval( $gdin_values['gtm4wp'] ) : 2,
-					'tacking_id'	=> isset(  $storedoptions['gtm-code'] ) && $storedoptions['gtm-code'] ? $storedoptions['gtm-code'] : '',
+					'tacking_id'	=> isset(  $storedoptions['gtm-code'] ) && $storedoptions['gtm-code'] ? esc_attr( $storedoptions['gtm-code'] ) : '',
 					'id_format'		=> 'G-XXXXXXX',
 					'atts'				=> array(
 						'toggle'		=> true,

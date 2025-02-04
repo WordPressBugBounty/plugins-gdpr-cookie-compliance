@@ -43,7 +43,7 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 			foreach ( $_POST as $form_key => $form_value ) :
 
 				if ( 'moove_gdpr_performance_cookies_tab_content' === $form_key ) :
-					$value                                  = wp_unslash( $form_value );
+					$value                                  = wp_kses_post( wp_unslash( $form_value ) );
 					$gdpr_options[ $form_key . $wpml_lang ] = $value;
 					update_option( $option_name, $gdpr_options );
 					$gdpr_options = get_option( $option_name );
@@ -141,7 +141,7 @@ $nav_label = isset( $gdpr_options[ 'moove_gdpr_performance_cookies_tab_title' . 
 							'media_buttons' => false,
 							'editor_height' => 150,
 						);
-						wp_editor( $content, 'moove_gdpr_performance_cookies_tab_content', $settings );
+						wp_editor( wp_kses_post( $content ), 'moove_gdpr_performance_cookies_tab_content', $settings );
 					?>
 				</th>
 			</tr>

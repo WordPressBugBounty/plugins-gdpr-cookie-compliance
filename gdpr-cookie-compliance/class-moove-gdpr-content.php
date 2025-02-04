@@ -51,13 +51,13 @@ class Moove_GDPR_Content {
 				ob_start();
 				?>
 				<!-- Google tag (gtag.js) -->
-				<script src="https://www.googletagmanager.com/gtag/js?id=<?php echo $_gdin_module['tacking_id']; ?>" data-type="gdpr-integration"></script>
+				<script src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>" data-type="gdpr-integration"></script>
 				<script data-type="gdpr-integration">
 				  window.dataLayer = window.dataLayer || [];
 				  function gtag(){dataLayer.push(arguments);}
 				  gtag('js', new Date());
 
-				  gtag('config', '<?php echo $_gdin_module['tacking_id']; ?>');
+				  gtag('config', '<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');
 				</script>
 				<?php
 				$cache_array[$cookie_cat_n]['header'] .= ob_get_clean();
@@ -73,13 +73,13 @@ class Moove_GDPR_Content {
 				ob_start();
 				?>
 				<!-- Google tag (gtag.js) - Google Analytics 4 -->
-				<script src="https://www.googletagmanager.com/gtag/js?id=<?php echo $_gdin_module['tacking_id']; ?>" data-type="gdpr-integration"></script>
+				<script src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>" data-type="gdpr-integration"></script>
 				<script data-type="gdpr-integration">
 				  window.dataLayer = window.dataLayer || [];
 				  function gtag(){dataLayer.push(arguments);}
 				  gtag('js', new Date());
 
-				  gtag('config', '<?php echo $_gdin_module['tacking_id']; ?>');
+				  gtag('config', '<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');
 				</script>
 				<?php
 				$cache_array[$cookie_cat_n]['header'] .= ob_get_clean();
@@ -99,14 +99,14 @@ class Moove_GDPR_Content {
 				new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 				j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 				'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-				})(window,document,'script','dataLayer','<?php echo $_gdin_module['tacking_id']; ?>');</script>
+				})(window,document,'script','dataLayer','<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');</script>
 				<!-- End Google Tag Manager -->
 				<?php
 				$cache_array[$cookie_cat_n]['header'] .= ob_get_clean();
 				ob_start();
 				?>
 				<!-- Google Tag Manager (noscript) -->
-				<noscript data-type="gdpr-integration"><iframe src="https://www.googletagmanager.com/ns.html?id=<?php echo $_gdin_module['tacking_id']; ?>"
+				<noscript data-type="gdpr-integration"><iframe src="https://www.googletagmanager.com/ns.html?id=<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>"
 				height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 				<!-- End Google Tag Manager (noscript) -->
 				<?php
@@ -148,7 +148,7 @@ class Moove_GDPR_Content {
 				new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 				j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 				'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-				})(window,document,'script','dataLayer','<?php echo $gdin_modules['gtmc2']['tacking_id']; ?>');</script>
+				})(window,document,'script','dataLayer','<?php echo esc_attr( $gdin_modules['gtmc2']['tacking_id'] ); ?>');</script>
 				<!-- End Google Tag Manager -->
 			<?php
 		endif;
@@ -190,13 +190,13 @@ class Moove_GDPR_Content {
 				ob_start();
 				?>
 				<!-- Global site tag (gtag.js) - Google Ads -->
-				<script type="text/javascript" data-type="gdpr-integration" src="https://www.googletagmanager.com/gtag/js?id=<?php echo $_gdin_module['tacking_id']; ?>"></script>
+				<script type="text/javascript" data-type="gdpr-integration" src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>"></script>
 				<script data-type="gdpr-integration">
 				  window.dataLayer = window.dataLayer || [];
 				  function gtag(){dataLayer.push(arguments);}
 				  gtag('js', new Date());
 
-				  gtag('config', '<?php echo $_gdin_module['tacking_id']; ?>');
+				  gtag('config', '<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');
 				</script>
 				<!-- End Google Ads -->
 				<?php
@@ -222,7 +222,7 @@ class Moove_GDPR_Content {
 				  t.src=v;s=b.getElementsByTagName(e)[0];
 				  s.parentNode.insertBefore(t,s)}(window, document,'script',
 				  'https://connect.facebook.net/en_US/fbevents.js');
-				  fbq('init', '<?php echo $_gdin_module['tacking_id']; ?>');
+				  fbq('init', '<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');
 				  fbq('track', 'PageView');
 				</script>
 				<?php
@@ -231,7 +231,7 @@ class Moove_GDPR_Content {
 				?>
 				<noscript data-type="gdpr-integration">
 				  <img height="1" width="1" style="display:none" 
-				       src="https://www.facebook.com/tr?id=<?php echo $_gdin_module['tacking_id']; ?>&ev=PageView&noscript=1"/>
+				       src="https://www.facebook.com/tr?id=<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>&ev=PageView&noscript=1"/>
 				</noscript>
 				<!-- End Facebook Pixel Code -->
 				<?php
@@ -244,6 +244,7 @@ class Moove_GDPR_Content {
 	public static function gdpr_insert_integration_gtm4wp_snippet( $cache_array, $_gdin_module ) {
 		if ( defined('GTM4WP_OPTIONS') && defined ( 'GTM4WP_OPTION_GTM_PLACEMENT' ) && defined ( 'GTM4WP_PLACEMENT_OFF' ) ) :
       $storedoptions = (array) get_option( GTM4WP_OPTIONS );
+    	$gtm4wp_container_code_written = false;
 			if ( ( isset( $storedoptions[GTM4WP_OPTION_GTM_PLACEMENT] ) && $storedoptions[GTM4WP_OPTION_GTM_PLACEMENT] === GTM4WP_PLACEMENT_OFF ) && isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] && intval( $_gdin_module['cookie_cat'] ) ) :
 				$cookie_cat_n = intval( $_gdin_module['cookie_cat'] ) === 2 ? 'thirdparty' : ( intval( $_gdin_module['cookie_cat'] ) === 3 ? 'advanced' : '' );
 				if ( $cookie_cat_n && ! $gtm4wp_container_code_written ) :
@@ -254,14 +255,14 @@ class Moove_GDPR_Content {
 					new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 					j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 					'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-					})(window,document,'script','dataLayer','<?php echo $_gdin_module['tacking_id']; ?>');</script>
+					})(window,document,'script','dataLayer','<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');</script>
 					<!-- End Google Tag Manager -->
 					<?php
 					$cache_array[$cookie_cat_n]['header'] .= ob_get_clean();
 					ob_start();
 					?>
 					<!-- Google Tag Manager (noscript) -->
-					<noscript data-type="gdpr-integration"><iframe src="https://www.googletagmanager.com/ns.html?id=<?php echo $_gdin_module['tacking_id']; ?>"
+					<noscript data-type="gdpr-integration"><iframe src="https://www.googletagmanager.com/ns.html?id=<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>"
 					height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 					<!-- End Google Tag Manager (noscript) -->
 					<?php
