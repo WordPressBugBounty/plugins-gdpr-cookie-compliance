@@ -1750,6 +1750,7 @@
           try {
             $(document).find('script[data-gdpr]').each(function() {
               gdpr_cc_log( 'script_removed: ' + $(this).attr('src') );
+              $(this).remove();
             });
             var cookies = document.cookie.split(";");
             var domain  = window.location.hostname;
