@@ -26,14 +26,14 @@ $plugin_details  = $gdpr_controller->get_gdpr_plugin_details( 'gdpr-cookie-compl
 			<div class="gdpr-faq-forum-content">
 				<p><span class="gdpr-chevron-left">&#8250;</span> <?php esc_html_e( 'Includes a cookiewall layout', 'gdpr-cookie-compliance' ); ?></p>
 				<p><span class="gdpr-chevron-left">&#8250;</span> <?php esc_html_e( 'Export & import', 'gdpr-cookie-compliance' ); ?></p>
-        <p><span class="gdpr-chevron-left">&#8250;</span> <?php esc_html_e( 'Consent Log', 'gdpr-cookie-compliance' ); ?></p>
+		<p><span class="gdpr-chevron-left">&#8250;</span> <?php esc_html_e( 'Consent Log', 'gdpr-cookie-compliance' ); ?></p>
 				<p><span class="gdpr-chevron-left">&#8250;</span> <?php esc_html_e( 'WordPress Multisite support', 'gdpr-cookie-compliance' ); ?></p>
 				<p><span class="gdpr-chevron-left">&#8250;</span> <?php esc_html_e( 'Accept cookies on scroll', 'gdpr-cookie-compliance' ); ?></p>
 				<p><span class="gdpr-chevron-left">&#8250;</span> <?php esc_html_e( 'Consent Analytics', 'gdpr-cookie-compliance' ); ?></p>
 				<p><span class="gdpr-chevron-left">&#8250;</span> <?php esc_html_e( 'Display cookie banner for EU visitors only', 'gdpr-cookie-compliance' ); ?></p>
 				<p><span class="gdpr-chevron-left">&#8250;</span> <?php esc_html_e( 'Language specific scripts', 'gdpr-cookie-compliance' ); ?></p>
 				<p><span class="gdpr-chevron-left">&#8250;</span> <?php esc_html_e( 'and more...', 'gdpr-cookie-compliance' ); ?></p>
-      </div>
+			</div>
 			<!-- gdpr-faq-forum-content -->
 			<hr />
 			<a href="https://www.mooveagency.com/wordpress-plugins/gdpr-cookie-compliance/" target="_blank" class="plugin-buy-now-btn"><?php esc_html_e( 'Buy Now', 'gdpr-cookie-compliance' ); ?></a>
@@ -47,7 +47,6 @@ $plugin_details  = $gdpr_controller->get_gdpr_plugin_details( 'gdpr-cookie-compl
 		apply_filters( 'gdpr_cc_keephtml', $content, true );
 		$support_class = apply_filters( 'gdpr_support_sidebar_class', '' );
 	?>
-	
 	<div class="m-plugin-box">
 		<div class="box-header">
 			<h4><?php esc_html_e( 'Find this plugin useful?', 'gdpr-cookie-compliance' ); ?></h4>
@@ -107,7 +106,7 @@ $plugin_details  = $gdpr_controller->get_gdpr_plugin_details( 'gdpr-cookie-compl
 		<!--  .box-header -->
 		<div class="box-content">
 			<a href="https://www.mooveagency.com/wordpress-plugins/user-activity-tracking-and-log/" target="_blank">
-				<img src='<?php echo trailingslashit( moove_gdpr_get_plugin_directory_url() ); ?>dist/images/uat-promo-wp.png?rev=<?php echo MOOVE_GDPR_VERSION; ?>'/>
+				<img src='<?php echo esc_attr( trailingslashit( moove_gdpr_get_plugin_directory_url() ) ); ?>dist/images/uat-promo-wp.png?rev=<?php echo esc_attr( MOOVE_GDPR_VERSION ); ?>'/>
 			</a>
 			<hr>
 			<p><?php esc_html_e( 'Track user activity & duration on your website with this incredibly powerful, easy-to-use and well supported plugin.', 'gdpr-cookie-compliance' ); ?></p>

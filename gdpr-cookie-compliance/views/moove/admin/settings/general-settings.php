@@ -48,11 +48,11 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 				'moove_gdpr_modal_powered_by_disable',
 				'gdpr_force_reload',
 				'script_insertion_method',
-				'gdpr_cookie_removal'
+				'gdpr_cookie_removal',
 			);
-			
+
 			foreach ( $_POST as $form_key => $form_value ) :
-				if ( ! in_array( $form_key, $restricted_keys ) ) :
+				if ( ! in_array( $form_key, $restricted_keys ) ) : // phpcs:ignore
 					$value                     = sanitize_text_field( wp_unslash( $form_value ) );
 					$gdpr_options[ $form_key ] = $value;
 				endif;
@@ -78,10 +78,10 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_reset_nonce'] ) ) :
 	if ( ! wp_verify_nonce( $nonce, 'moove_gdpr_reset_nonce_field' ) ) :
 		die( 'Security check' );
 	else :
-		if ( isset( $_POST['gdpr_reset_settings'] ) && intval( $_POST['gdpr_reset_settings'] )  === 1 ) :
-			$gdpr_content 	= new Moove_GDPR_Content();
-			$option_name 		= $gdpr_content->moove_gdpr_get_option_name();
-			$option_key     = $gdpr_content->moove_gdpr_get_key_name();
+		if ( isset( $_POST['gdpr_reset_settings'] ) && intval( $_POST['gdpr_reset_settings'] ) === 1 ) :
+			$gdpr_content = new Moove_GDPR_Content();
+			$option_name  = $gdpr_content->moove_gdpr_get_option_name();
+			$option_key   = $gdpr_content->moove_gdpr_get_key_name();
 			update_option( $option_name, array() );
 			gdpr_delete_option();
 			if ( function_exists( 'update_site_option' ) ) :
@@ -89,22 +89,18 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_reset_nonce'] ) ) :
 			else :
 				delete_option( $option_key );
 			endif;
-			$gdpr_options         = get_option( $option_name );
-			$gdpr_options         = is_array( $gdpr_options ) ? $gdpr_options : array();			
+			$gdpr_options = get_option( $option_name );
+			$gdpr_options = is_array( $gdpr_options ) ? $gdpr_options : array();
 		endif;
 	endif;
 endif;
 
-$gdpr_force_reload 	= isset( $gdpr_options['gdpr_force_reload'] ) && intval( $gdpr_options['gdpr_force_reload'] ) >= 0 ? intval( $gdpr_options['gdpr_force_reload'] ) : apply_filters( 'gdpr_force_reload', false );
-$script_insertion_method 	= isset( $gdpr_options['script_insertion_method'] ) && intval( $gdpr_options['script_insertion_method'] ) >= 0 ? intval( $gdpr_options['script_insertion_method'] ) : apply_filters( 'gdpr_cc_prevent_ajax_script_inject', true );
+$gdpr_force_reload       = isset( $gdpr_options['gdpr_force_reload'] ) && intval( $gdpr_options['gdpr_force_reload'] ) >= 0 ? intval( $gdpr_options['gdpr_force_reload'] ) : apply_filters( 'gdpr_force_reload', false );
+$script_insertion_method = isset( $gdpr_options['script_insertion_method'] ) && intval( $gdpr_options['script_insertion_method'] ) >= 0 ? intval( $gdpr_options['script_insertion_method'] ) : apply_filters( 'gdpr_cc_prevent_ajax_script_inject', true );
 
-$static_cookie_removal 		= isset( $gdpr_options['gdpr_cookie_removal'] ) && intval( $gdpr_options['gdpr_cookie_removal'] ) >= 0 ? intval( $gdpr_options['gdpr_cookie_removal'] ) : ! apply_filters( 'gdpr_ajax_cookie_removal', false );
-
-
+$static_cookie_removal = isset( $gdpr_options['gdpr_cookie_removal'] ) && intval( $gdpr_options['gdpr_cookie_removal'] ) >= 0 ? intval( $gdpr_options['gdpr_cookie_removal'] ) : ! apply_filters( 'gdpr_ajax_cookie_removal', false );
 ?>
-<form action="<?php esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=general-settings' ) ); ?>" method="post" id="moove_gdpr_tab_general_settings">
-	<h2><?php esc_html_e( 'General Settings', 'gdpr-cookie-compliance' ); ?></h2>
-	<hr />
+<form action="<?php esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=general-settings&gcat=settings' ) ); ?>" method="post" id="moove_gdpr_tab_general_settings">
 	<?php wp_nonce_field( 'moove_gdpr_nonce_field', 'moove_gdpr_nonce' ); ?>
 	<table class="form-table">
 		<tbody>
@@ -167,11 +163,9 @@ $static_cookie_removal 		= isset( $gdpr_options['gdpr_cookie_removal'] ) && intv
 					<label for="moove_gdpr_consent_expiration"><?php esc_html_e( 'Consent expiry', 'gdpr-cookie-compliance' ); ?></label>
 				</th>
 				<td>
-				
 					<span style="margin-right: 5px;"><?php esc_html_e( 'Consent expires after', 'gdpr-cookie-compliance' ); ?></span>
-					<input name="moove_gdpr_consent_expiration" min="0" step="1" type="number" id="moove_gdpr_consent_expiration" value="<?php echo isset( $gdpr_options[ 'moove_gdpr_consent_expiration' ] ) && intval( $gdpr_options[ 'moove_gdpr_consent_expiration' ] ) >= 0 ? esc_attr( $gdpr_options[ 'moove_gdpr_consent_expiration' ] ) : '365'; ?>" style="width: 80px;">
+					<input name="moove_gdpr_consent_expiration" min="0" step="1" type="number" id="moove_gdpr_consent_expiration" value="<?php echo isset( $gdpr_options['moove_gdpr_consent_expiration'] ) && intval( $gdpr_options['moove_gdpr_consent_expiration'] ) >= 0 ? esc_attr( $gdpr_options['moove_gdpr_consent_expiration'] ) : '365'; ?>" style="width: 80px;">
 					<span style="margin-left: 5px;"><?php esc_html_e( 'days', 'gdpr-cookie-compliance' ); ?>.</span>
-				
 					<p class="description">
 						<?php esc_html_e( '(Enter 0 if you want the consent to expire at the end of the current browsing session.)', 'gdpr-cookie-compliance' ); ?>
 					</p>
@@ -200,7 +194,7 @@ $static_cookie_removal 		= isset( $gdpr_options['gdpr_cookie_removal'] ) && intv
 		</div>
 		<!--  .gdpr-popup-content-header -->
 		<div class="gdpr-popup-content-content">
-			<form action="<?php esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=general-settings' ) ); ?>" method="post">
+			<form action="<?php esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=general-settings&gcat=settings' ) ); ?>" method="post">
 				<?php wp_nonce_field( 'moove_gdpr_reset_nonce_field', 'moove_gdpr_reset_nonce' ); ?>
 				<h4><strong><?php esc_html_e( 'Please confirm that you would like to reset the plugin settings to the default state', 'gdpr-cookie-compliance' ); ?> </strong></h4><p><strong><?php esc_html_e( 'This action will remove all of your custom modifications and settings', 'gdpr-cookie-compliance' ); ?></strong></p>
 				<input type="hidden" value="1" name="gdpr_reset_settings" />

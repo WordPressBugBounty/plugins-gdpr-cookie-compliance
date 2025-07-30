@@ -74,11 +74,9 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 	endif;
 endif;
 
-$nav_label = isset( $gdpr_options[ 'moove_gdpr_performance_cookies_tab_title' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_performance_cookies_tab_title' . $wpml_lang ] ? $gdpr_options[ 'moove_gdpr_performance_cookies_tab_title' . $wpml_lang ] : __( '3rd Party Cookies', 'gdpr-cookie-compliance' );
+$nav_label = isset( $gdpr_options[ 'moove_gdpr_performance_cookies_tab_title' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_performance_cookies_tab_title' . $wpml_lang ] ? $gdpr_options[ 'moove_gdpr_performance_cookies_tab_title' . $wpml_lang ] : __( 'Analytics', 'gdpr-cookie-compliance' );
 ?>
-<h2><?php echo esc_attr( $nav_label ); ?></h2>
-<hr />
-<form action="<?php echo esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=third-party-cookies' ) ); ?>" method="post" id="moove_gdpr_tab_third_party_cookies">
+<form action="<?php echo esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=third-party-cookies&gcat=cookie_categories' ) ); ?>" method="post" id="moove_gdpr_tab_third_party_cookies">
 	<?php wp_nonce_field( 'moove_gdpr_nonce_field', 'moove_gdpr_nonce' ); ?>
 	<table class="form-table <?php echo $empty_scripts ? 'moove-gdpr-form-error' : ''; ?>">
 		<tbody>
@@ -133,8 +131,8 @@ $nav_label = isset( $gdpr_options[ 'moove_gdpr_performance_cookies_tab_title' . 
 				<th colspan="2" scope="row">
 					<?php
 						$content = isset( $gdpr_options[ 'moove_gdpr_performance_cookies_tab_content' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_performance_cookies_tab_content' . $wpml_lang ] ? wp_unslash( $gdpr_options[ 'moove_gdpr_performance_cookies_tab_content' . $wpml_lang ] ) : false;
-						if ( ! $content ) :
-							$content = $gdpr_default_content->moove_gdpr_get_third_party_content();
+					if ( ! $content ) :
+						$content = $gdpr_default_content->moove_gdpr_get_third_party_content();
 						endif;
 
 						$settings = array(
@@ -142,7 +140,7 @@ $nav_label = isset( $gdpr_options[ 'moove_gdpr_performance_cookies_tab_title' . 
 							'editor_height' => 150,
 						);
 						wp_editor( wp_kses_post( $content ), 'moove_gdpr_performance_cookies_tab_content', $settings );
-					?>
+						?>
 				</th>
 			</tr>
 		</tbody>

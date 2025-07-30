@@ -611,7 +611,7 @@ body.gdpr-no-icons {
 		}
 		.moove-gdpr-company-logo-holder {
 			padding: 0;
-			margin-bottom: 30px;
+			margin-bottom: 25px;
 			img {
 				max-height: 75px;
 				max-width: 70%;
@@ -870,7 +870,7 @@ body.gdpr-no-icons {
 					margin: 0;
 					padding: 0;
 					list-style: none;
-					margin-bottom: 15px;
+					margin-bottom: 7px;
 					&.menu-item-selected a,
 					&.menu-item-selected button {
 						background-color: #fff;
@@ -2304,6 +2304,8 @@ i.moovegdpr-arrow-close {
     #strict-necessary-cookies,
     #third_party_cookies,
     #advanced-cookies,
+    #performance-ccat,
+    #preference-ccat,
     #cookie_policy_modal {
       .tab-title {
         padding: 10px;

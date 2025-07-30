@@ -42,7 +42,7 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 				'moove_gdpr_modal_powered_by_disable',
 				'moove_gdpr_save_settings_button_enable',
 				'moove_gdpr_close_button_enable',
-				'moove_gdpr_colour_scheme',				
+				'moove_gdpr_colour_scheme',
 				'gdpr_close_button_bhv_redirect',
 			);
 
@@ -52,25 +52,22 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 				if ( 'moove_gdpr_info_bar_content' === $form_key ) :
 					$value                                  = wpautop( wp_unslash( $form_value ) );
 					$gdpr_options[ $form_key . $wpml_lang ] = $value;
-				elseif ( 'moove_gdpr_modal_strictly_secondary_notice' . $wpml_lang === $form_key ) :
-					$value                     = wpautop( wp_unslash( $form_value ) );
-					$gdpr_options[ $form_key ] = $value;					
-				elseif ( ! in_array( $form_key, $restricted_keys ) ) :
+				elseif ( ! in_array( $form_key, $restricted_keys ) ) : // phpcs:ignore
 					$value                     = sanitize_text_field( wp_unslash( $form_value ) );
 					$gdpr_options[ $form_key ] = $value;
 				elseif ( 'gdpr_gs_buttons_order' === $form_key ) :
-					$value 										 	= json_decode( wp_unslash( $form_value ), true );
-					$allowed_values 					 	= array( 'enable', 'reject', 'save', 'close' );
-					$buttons_order 							= array();
+					$value          = json_decode( wp_unslash( $form_value ), true );
+					$allowed_values = array( 'enable', 'reject', 'save', 'close' );
+					$buttons_order  = array();
 					if ( is_array( $value ) ) :
 						foreach ( $value as $button_type ) :
-							if ( in_array( $button_type, $allowed_values ) ) :
+							if ( in_array( $button_type, $allowed_values ) ) : // phpcs:ignore
 								$buttons_order[] = $button_type;
 							endif;
 						endforeach;
 					endif;
-					$buttons_order = $buttons_order ? $buttons_order : $allowed_values;
-					$gdpr_options[ $form_key ] = json_encode( $buttons_order );
+					$buttons_order             = $buttons_order ? $buttons_order : $allowed_values;
+					$gdpr_options[ $form_key ] = json_encode( $buttons_order ); // phpcs:ignore
 				endif;
 			endforeach;
 
@@ -98,9 +95,9 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 			$gdpr_options['gdpr_reject_button_bhv_ss'] = 1;
 			if ( '1' === $moove_reject_all_button_enable ) :
 				if ( isset( $_POST['gdpr_reject_button_bhv_ss'] ) && intval( $_POST['gdpr_reject_button_bhv_ss'] ) ) :
-					$gdpr_options['gdpr_reject_button_bhv_ss'] 						= intval( $_POST['gdpr_reject_button_bhv_ss'] );
-					$gdpr_options['gdpr_reject_button_bhv_ss_bg_colour'] 	= isset( $_POST['gdpr_reject_button_bhv_ss_bg_colour'] ) ? sanitize_text_field( wp_unslash( $_POST['gdpr_reject_button_bhv_ss_bg_colour'] ) ) : '';
-					$gdpr_options['gdpr_reject_button_bhv_ss_txt_colour'] 	= isset( $_POST['gdpr_reject_button_bhv_ss_txt_colour'] ) ? sanitize_text_field( wp_unslash( $_POST['gdpr_reject_button_bhv_ss_txt_colour'] ) ) : '';
+					$gdpr_options['gdpr_reject_button_bhv_ss']            = intval( $_POST['gdpr_reject_button_bhv_ss'] );
+					$gdpr_options['gdpr_reject_button_bhv_ss_bg_colour']  = isset( $_POST['gdpr_reject_button_bhv_ss_bg_colour'] ) ? sanitize_text_field( wp_unslash( $_POST['gdpr_reject_button_bhv_ss_bg_colour'] ) ) : '';
+					$gdpr_options['gdpr_reject_button_bhv_ss_txt_colour'] = isset( $_POST['gdpr_reject_button_bhv_ss_txt_colour'] ) ? sanitize_text_field( wp_unslash( $_POST['gdpr_reject_button_bhv_ss_txt_colour'] ) ) : '';
 				endif;
 			endif;
 
@@ -126,18 +123,15 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 	endif;
 endif;
 
-$buttons_order 				= isset( $gdpr_options['gdpr_gs_buttons_order'] ) ? json_decode( $gdpr_options['gdpr_gs_buttons_order'], true ) : array( 'enable', 'reject', 'save', 'close' );
+$buttons_order = isset( $gdpr_options['gdpr_gs_buttons_order'] ) ? json_decode( $gdpr_options['gdpr_gs_buttons_order'], true ) : array( 'enable', 'reject', 'save', 'close' );
 if ( ! isset( $gdpr_options['moove_gdpr_cb_close_button_enable'] ) ) :
-	if ( ! in_array( 'close', $buttons_order ) ) :
+	if ( ! in_array( 'close', $buttons_order ) ) : // phpcs:ignore
 		$buttons_order[] = 'close';
 	endif;
 	$gdpr_options['moove_gdpr_cb_close_button_enable'] = '1';
 endif;
-
 ?>
-<form action="<?php esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=general-settings' ) ); ?>" method="post" id="moove_gdpr_tab_general_settings">
-	<h2><?php esc_html_e( 'Cookie Settings Screen', 'gdpr-cookie-compliance' ); ?></h2>
-	<hr />
+<form action="<?php esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=general-settings&gcat=settings' ) ); ?>" method="post" id="moove_gdpr_tab_general_settings">
 	<?php wp_nonce_field( 'moove_gdpr_nonce_field', 'moove_gdpr_nonce' ); ?>
 	<table class="form-table">
 		<tbody>
@@ -163,14 +157,14 @@ endif;
 
 			<tr class="gdpr-sortable-buttons-wrap">
 				<td colspan="2">
-					<h4 style="margin-bottom: 0;"><?php esc_html_e( 'Button Setup', 'gdpr-cookie-compliance' ) ?></h4>
-					<p class="description"><i><?php esc_html_e( 'You can change the order by drag & drop', 'gdpr-cookie-compliance' ) ?></i></p><br>
-					<input type="hidden" name="gdpr_gs_buttons_order" class="gdpr-buttons-order-inpval" value='<?php echo json_encode( $buttons_order, true ); ?>'>
+					<h4 style="margin-bottom: 0;"><?php esc_html_e( 'Button Setup', 'gdpr-cookie-compliance' ); ?></h4>
+					<p class="description"><i><?php esc_html_e( 'You can change the order by drag & drop', 'gdpr-cookie-compliance' ); ?></i></p><br>
+					<input type="hidden" name="gdpr_gs_buttons_order" class="gdpr-buttons-order-inpval" value='<?php echo json_encode( $buttons_order, true ); // phpcs:ignore ?>'>
 					<div class="gdpr-sortable-buttons">
-						<?php 
-							foreach ( $buttons_order as $button_type ) : 
-								if ( 'save' === $button_type ) :
-									?>
+						<?php
+						foreach ( $buttons_order as $button_type ) :
+							if ( 'save' === $button_type ) :
+								?>
 										<div class="gdpr-sortable-button" data-type="save">
 											<table>
 												<tbody>
@@ -266,31 +260,26 @@ endif;
 																<tr>
 																	<td>
 																		<fieldset class="gdpr-reject-options">
-																			<?php 
+																			<?php
 																			$gdpr_reject_button_bhv_ss = isset( $gdpr_options['gdpr_reject_button_bhv_ss'] ) && intval( $gdpr_options['gdpr_reject_button_bhv_ss'] ) ? intval( $gdpr_options['gdpr_reject_button_bhv_ss'] ) : 1;
 
-																			$gdpr_reject_button_bhv_ss_bg_colour = isset( $gdpr_options['gdpr_reject_button_bhv_ss_bg_colour'] ) && sanitize_url( wp_unslash( $gdpr_options['gdpr_reject_button_bhv_ss_bg_colour'] ) ) ? sanitize_url( wp_unslash( $gdpr_options['gdpr_reject_button_bhv_ss_bg_colour'] ) ) : '#000000';
+																			$gdpr_reject_button_bhv_ss_bg_colour = isset( $gdpr_options['gdpr_reject_button_bhv_ss_bg_colour'] ) && sanitize_url( wp_unslash( $gdpr_options['gdpr_reject_button_bhv_ss_bg_colour'] ) ) ? sanitize_url( wp_unslash( $gdpr_options['gdpr_reject_button_bhv_ss_bg_colour'] ) ) : '#000000'; // phpcs:ignore
 
-																			$gdpr_reject_button_bhv_ss_txt_colour = isset( $gdpr_options['gdpr_reject_button_bhv_ss_txt_colour'] ) && sanitize_url( wp_unslash( $gdpr_options['gdpr_reject_button_bhv_ss_txt_colour'] ) ) ? sanitize_url( wp_unslash( $gdpr_options['gdpr_reject_button_bhv_ss_txt_colour'] ) ) : '#d6d6d6';
+																			$gdpr_reject_button_bhv_ss_txt_colour = isset( $gdpr_options['gdpr_reject_button_bhv_ss_txt_colour'] ) && sanitize_url( wp_unslash( $gdpr_options['gdpr_reject_button_bhv_ss_txt_colour'] ) ) ? sanitize_url( wp_unslash( $gdpr_options['gdpr_reject_button_bhv_ss_txt_colour'] ) ) : '#d6d6d6'; // phpcs:ignore
 																			?>
-					
 																			<label for="gdpr_reject_button_bhv_ss_1">
-																				<input name="gdpr_reject_button_bhv_ss" type="radio" <?php echo $gdpr_reject_button_bhv_ss === 1 ? 'checked' : ''; ?> id="gdpr_reject_button_bhv_ss_1" value="1">
+																				<input name="gdpr_reject_button_bhv_ss" type="radio" <?php echo 1 === $gdpr_reject_button_bhv_ss ? 'checked' : ''; ?> id="gdpr_reject_button_bhv_ss_1" value="1">
 																				<?php esc_html_e( 'Same as Accept button', 'gdpr-cookie-compliance' ); ?>
-																			</label>
-																		
+																			</label>																		
 																			<br />
-
 																			<label for="gdpr_reject_button_bhv_ss_2">
-																				<input name="gdpr_reject_button_bhv_ss" type="radio" <?php echo $gdpr_reject_button_bhv_ss === 2 ? 'checked' : ''; ?> id="gdpr_reject_button_bhv_ss_2" value="2">
+																				<input name="gdpr_reject_button_bhv_ss" type="radio" <?php echo 2 === $gdpr_reject_button_bhv_ss ? 'checked' : ''; ?> id="gdpr_reject_button_bhv_ss_2" value="2">
 																				<?php esc_html_e( 'Less visible', 'gdpr-cookie-compliance' ); ?>	
-																			</label>
-																			
+																			</label>																			
 																			<br />
-
 																			<div class="gdpr-conditional-field-group">
 																				<label for="gdpr_reject_button_bhv_ss_3">
-																					<input name="gdpr_reject_button_bhv_ss" type="radio" <?php echo $gdpr_reject_button_bhv_ss === 3 ? 'checked' : ''; ?> id="gdpr_reject_button_bhv_ss_3" value="3">
+																					<input name="gdpr_reject_button_bhv_ss" type="radio" <?php echo 3 === $gdpr_reject_button_bhv_ss ? 'checked' : ''; ?> id="gdpr_reject_button_bhv_ss_3" value="3">
 																					<?php esc_html_e( 'Custom colour', 'gdpr-cookie-compliance' ); ?>													
 																				</label>
 																				<br>
@@ -319,12 +308,9 @@ endif;
 																						</td>
 																					</tr>
 																				</table>
-																				
 																			</div>
 																			<!-- .gdpr-conditional-field-group -->
-
 																			<br />
-
 																		</fieldset>
 																	</td>
 																</tr>
@@ -351,7 +337,6 @@ endif;
 																<input type="checkbox" name="moove_gdpr_cb_close_button_enable" id="moove_gdpr_cb_close_button_enable" <?php echo isset( $gdpr_options['moove_gdpr_cb_close_button_enable'] ) ? ( intval( $gdpr_options['moove_gdpr_cb_close_button_enable'] ) === 1 ? 'checked' : ( ! isset( $gdpr_options['moove_gdpr_cb_close_button_enable'] ) ? 'checked' : '' ) ) : ''; ?> >
 																<span class="gdpr-checkbox-slider" data-enable="<?php esc_html_e( 'Enabled', 'gdpr-cookie-compliance' ); ?>" data-disable="<?php esc_html_e( 'Disabled', 'gdpr-cookie-compliance' ); ?>"></span>
 															</label>
-															
 														</td>
 													</tr>													
 												</tbody>
@@ -359,7 +344,7 @@ endif;
 										</div>
 									<?php
 								endif;
-							endforeach; 
+							endforeach;
 						?>
 				</td>
 			</tr>
@@ -383,7 +368,6 @@ endif;
 						</tr>
 					</table>
 					<br />
-					
 				</td>
 
 			</tr>

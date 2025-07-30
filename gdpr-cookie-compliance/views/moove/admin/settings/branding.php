@@ -30,16 +30,13 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 				if ( 'moove_gdpr_info_bar_content' === $form_key ) :
 					$value                                  = wp_kses_post( wpautop( wp_unslash( $form_value ) ) );
 					$gdpr_options[ $form_key . $wpml_lang ] = $value;
-				elseif ( 'moove_gdpr_modal_strictly_secondary_notice' . $wpml_lang === $form_key ) :
-					$value                     = wp_kses_post( pautop( wp_unslash( $form_value ) ) );
-					$gdpr_options[ $form_key ] = $value;
 				elseif ( 'moove_gdpr_floating_button_enable' !== $form_key && 'moove_gdpr_modal_powered_by_disable' !== $form_key && 'moove_gdpr_company_logo_id' !== $form_key ) :
 					$value                     = sanitize_text_field( wp_unslash( $form_value ) );
 					$gdpr_options[ $form_key ] = $value;
 				endif;
 			endforeach;
 			$logo_attachment_id = false;
-			
+
 			if ( isset( $gdpr_options['moove_gdpr_company_logo'] ) && $gdpr_options['moove_gdpr_company_logo'] ) :
 				$logo_attachment_id = attachment_url_to_postid( $gdpr_options['moove_gdpr_company_logo'] );
 				if ( $logo_attachment_id && intval( $logo_attachment_id ) ) :
@@ -66,9 +63,7 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 	endif;
 endif;
 ?>
-<form action="<?php echo esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=branding' ) ); ?>" method="post" id="moove_gdpr_tab_branding_settings">
-	<h2><?php esc_html_e( 'Branding', 'gdpr-cookie-compliance' ); ?></h2>
-	<hr />
+<form action="<?php echo esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=branding&gcat=settings' ) ); ?>" method="post" id="moove_gdpr_tab_branding_settings">
 	<?php wp_nonce_field( 'moove_gdpr_nonce_field', 'moove_gdpr_nonce' ); ?>
 	<table class="form-table">
 		<tbody>
@@ -102,13 +97,13 @@ endif;
 					endif;
 					?>
 					<?php
-					$plugin_dir = moove_gdpr_get_plugin_directory_url();
-					$image_url  = isset( $gdpr_options['moove_gdpr_company_logo'] ) && $gdpr_options['moove_gdpr_company_logo'] ? $gdpr_options['moove_gdpr_company_logo'] : $plugin_dir . 'dist/images/gdpr-logo.png';
-					$logo_attachment_id =  isset( $gdpr_options['moove_gdpr_company_logo_id'] ) && $gdpr_options['moove_gdpr_company_logo_id'] ? $gdpr_options['moove_gdpr_company_logo_id'] : '';
+					$plugin_dir         = moove_gdpr_get_plugin_directory_url();
+					$image_url          = isset( $gdpr_options['moove_gdpr_company_logo'] ) && $gdpr_options['moove_gdpr_company_logo'] ? $gdpr_options['moove_gdpr_company_logo'] : $plugin_dir . 'dist/images/gdpr-logo.png';
+					$logo_attachment_id = isset( $gdpr_options['moove_gdpr_company_logo_id'] ) && $gdpr_options['moove_gdpr_company_logo_id'] ? $gdpr_options['moove_gdpr_company_logo_id'] : '';
 					?>
 					<span class="moove_gdpr_company_logo_holder" style="background-image: url(<?php echo esc_url( $image_url ); ?>);"></span><br /><br />
 					<input class="regular-text code" type="text" name="moove_gdpr_company_logo" value="<?php echo esc_url( $image_url ); ?>" required> <br /><br />
-					<input type="hidden" name="moove_gdpr_company_logo_id" value='<?php echo $logo_attachment_id; ?>'>
+					<input type="hidden" name="moove_gdpr_company_logo_id" value='<?php echo esc_attr( $logo_attachment_id ); ?>'>
 					<a href="#" class="button moove_gdpr_company_logo_upload">Upload Logo</a>
 					<script>
 						jQuery(document).ready(function($) {
@@ -181,17 +176,6 @@ endif;
 
 					?>
 					<input name="moove_gdpr_plugin_font_family" type="text" id="moove_gdpr_plugin_font_family" value="<?php echo isset( $gdpr_options['moove_gdpr_plugin_font_family'] ) && $gdpr_options['moove_gdpr_plugin_font_family'] ? esc_attr( $gdpr_options['moove_gdpr_plugin_font_family'] ) : "'Nunito', sans-serif"; ?>" class="regular-text <?php echo esc_attr( $field_class ); ?>">
-				</td>
-			</tr>
-			<tr>
-				<th scope="row">
-					<label for="moove_gdpr_cdn_url"><?php esc_html_e( 'CDN Base URL', 'gdpr-cookie-compliance' ); ?></label>
-				</th>
-				<td>
-					<input name="moove_gdpr_cdn_url" type="text" id="moove_gdpr_cdn_url" value="<?php echo isset( $gdpr_options['moove_gdpr_cdn_url'] ) && $gdpr_options['moove_gdpr_cdn_url'] ? esc_url( $gdpr_options['moove_gdpr_cdn_url'] ) : ''; ?>" class="regular-text">
-					<p class="description">
-						<strong>* <?php esc_html_e( 'Optional, leave it empty to use default domain','gdpr-cookie-compliance');?></strong><br /><?php esc_html_e('Enter your CDN root URL to enable CDN for GDPR Lity library files. The URL can be http, https or protocol-relative', 'gdpr-cookie-compliance' ); ?> (<?php esc_html_e( 'e.g.','gdpr-cookie-compliance');?> //<?php esc_html_e( 'cdn.example.com','gdpr-cookie-compliance');?>/).</p>
-					<!--  .description -->
 				</td>
 			</tr>
 			<?php do_action( 'gdpr_cc_general_modal_settings' ); ?>

@@ -8,7 +8,7 @@
   <div id="advanced-cookies" class="moove-gdpr-tab-main" <?php echo $content->visibility; ?>>
     <span class="tab-title"><?php echo esc_attr( $content->tab_title ); ?></span>
     <div class="moove-gdpr-tab-main-content">
-      <?php echo $content->tab_content; ?>
+      <?php echo $content->tab_content; // phpcs:ignore ?>
       <div class="moove-gdpr-status-bar">
         <div class="gdpr-cc-form-wrap">
           <div class="gdpr-cc-form-fieldset">
@@ -30,7 +30,7 @@
       <!-- .moove-gdpr-status-bar -->
     <?php if ( $content->warning_message  ) : ?>
       <div class="moove-gdpr-strict-secondary-warning-message" style="margin-top: 10px; display: none;">
-        <?php echo $content->warning_message; ?>
+        <?php echo $content->warning_message; // phpcs:ignore ?>
       </div>
       <!--  .moove-gdpr-strict-secondary-warning-message -->
     <?php endif; ?>

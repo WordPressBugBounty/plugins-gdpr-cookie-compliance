@@ -44,14 +44,10 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 	endif;
 	do_action( 'gdpr_cookie_filter_settings' );
 endif;
-?>
-<?php
+
 $nav_label = isset( $gdpr_options[ 'moove_gdpr_privacy_overview_tab_title' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_privacy_overview_tab_title' . $wpml_lang ] ? $gdpr_options[ 'moove_gdpr_privacy_overview_tab_title' . $wpml_lang ] : __( 'Privacy Overview', 'gdpr-cookie-compliance' );
 ?>
-
-<h2><?php echo esc_attr( $nav_label ); ?></h2>
-<hr />
-<form action="<?php esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=privacy-overview' ) ); ?>" method="post" id="moove_gdpr_tab_privacy_overview">
+<form action="<?php esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=privacy-overview&gcat=settings' ) ); ?>" method="post" id="moove_gdpr_tab_privacy_overview">
 	<?php wp_nonce_field( 'moove_gdpr_nonce_field', 'moove_gdpr_nonce' ); ?>
 	<table class="form-table">
 		<tbody>

@@ -56,11 +56,8 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 	endif;
 endif;
 ?>
-<form action="<?php esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=floating_button' ) ); ?>" method="post" id="moove_gdpr_tab_floating_button">
+<form action="<?php esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=floating_button&gcat=settings' ) ); ?>" method="post" id="moove_gdpr_tab_floating_button">
 	<?php wp_nonce_field( 'moove_gdpr_nonce_field', 'moove_gdpr_nonce' ); ?>
-	<h2><?php esc_html_e( 'Floating Button', 'gdpr-cookie-compliance' ); ?></h2>
-	<hr />
-
 	<table class="form-table">
 		<tbody>
 			<tr>

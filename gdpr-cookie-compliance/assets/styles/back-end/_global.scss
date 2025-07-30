@@ -10,6 +10,39 @@
   }
 }
 
+.gdpr-top-menu-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  margin: 0 -5px;
+  margin: 10px 0 0;
+  padding-left: 1px;
+
+  .nav-tab {
+    margin: 0;
+    border: 1px solid #dcdcde;
+    background-color: #fff;
+    margin-left: -1px;
+    padding: 5px 15px;
+    outline: none;
+    box-shadow: none;
+
+    &.nav-tab-active {
+      background-color: #f79322;
+      border: #f79322;
+      pointer-events: none;
+      color: #fff;
+    }
+
+    &:hover {
+      color: #f79322;
+    }
+  }
+}
+
+.gdpr-top-menu-links + hr {
+  margin-top: 0;
+}
+
 .gdpr-admin-lbl {
   padding: 2px 5px;
   font-size: 12px;
@@ -1390,9 +1423,9 @@ body[class*="gdpr-cookie-compliance_page_moove-gdpr"] {
 #wp-moove_gdpr_advanced_cookies_tab_content-wrap,
 #wp-moove_gdpr_info_bar_content-wrap,
 #wp-moove_gdpr_cookies_policy_tab_content-wrap,
-#wp-moove_gdpr_strictly_necessary_cookies_warning-wrap,
-#wp-moove_gdpr_ifb_content-wrap,
-#wp-moove_gdpr_modal_strictly_secondary_notice-wrap {
+#wp-moove_gdpr_performance_ccat_tab_content-wrap,
+#wp-moove_gdpr_preference_ccat_tab_content-wrap,
+#wp-moove_gdpr_ifb_content-wrap {
     max-width: 100%;
 }
 span.separator {

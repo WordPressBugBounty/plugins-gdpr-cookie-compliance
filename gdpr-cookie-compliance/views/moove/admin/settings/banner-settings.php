@@ -58,9 +58,9 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 			$gdpr_options['gdpr_reject_button_bhv'] = 1;
 			if ( '1' === $moove_gdpr_reject_enable ) :
 				if ( isset( $_POST['gdpr_reject_button_bhv'] ) && intval( $_POST['gdpr_reject_button_bhv'] ) ) :
-					$gdpr_options['gdpr_reject_button_bhv'] 						= intval( $_POST['gdpr_reject_button_bhv'] );
-					$gdpr_options['gdpr_reject_button_bhv_bg_colour'] 	= isset( $_POST['gdpr_reject_button_bhv_bg_colour'] ) ? sanitize_text_field( wp_unslash( $_POST['gdpr_reject_button_bhv_bg_colour'] ) ) : '';
-					$gdpr_options['gdpr_reject_button_bhv_txt_colour'] 	= isset( $_POST['gdpr_reject_button_bhv_txt_colour'] ) ? sanitize_text_field( wp_unslash( $_POST['gdpr_reject_button_bhv_txt_colour'] ) ) : '';
+					$gdpr_options['gdpr_reject_button_bhv']            = intval( $_POST['gdpr_reject_button_bhv'] );
+					$gdpr_options['gdpr_reject_button_bhv_bg_colour']  = isset( $_POST['gdpr_reject_button_bhv_bg_colour'] ) ? sanitize_text_field( wp_unslash( $_POST['gdpr_reject_button_bhv_bg_colour'] ) ) : '';
+					$gdpr_options['gdpr_reject_button_bhv_txt_colour'] = isset( $_POST['gdpr_reject_button_bhv_txt_colour'] ) ? sanitize_text_field( wp_unslash( $_POST['gdpr_reject_button_bhv_txt_colour'] ) ) : '';
 				endif;
 			endif;
 
@@ -81,14 +81,14 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 			$gdpr_options['gdpr_close_button_bhv'] = 1;
 			if ( '1' === $moove_gdpr_close_enable ) :
 				if ( isset( $_POST['gdpr_close_button_bhv'] ) && intval( $_POST['gdpr_close_button_bhv'] ) ) :
-					$gdpr_options['gdpr_close_button_bhv'] 				= intval( $_POST['gdpr_close_button_bhv'] );
-					$gdpr_options['gdpr_close_button_bhv_redirect'] 	= isset( $_POST['gdpr_close_button_bhv_redirect'] ) ? sanitize_url( wp_unslash( $_POST['gdpr_close_button_bhv_redirect'] ) ) : '';
+					$gdpr_options['gdpr_close_button_bhv']          = intval( $_POST['gdpr_close_button_bhv'] );
+					$gdpr_options['gdpr_close_button_bhv_redirect'] = isset( $_POST['gdpr_close_button_bhv_redirect'] ) ? esc_url_raw( wp_unslash( $_POST['gdpr_close_button_bhv_redirect'] ) ) : '';
 				endif;
 			endif;
 
 			// Cookie Banner Colour Scheme.
 			$moove_gdpr_colour_scheme = '2';
-			
+
 			if ( isset( $_POST['moove_gdpr_colour_scheme'] ) ) :
 				$moove_gdpr_colour_scheme = '1';
 			endif;
@@ -96,7 +96,7 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 
 			// Cookie Banner Accesibility.
 			$gdpr_accesibility = '0';
-			
+
 			if ( isset( $_POST['gdpr_accesibility'] ) ) :
 				$gdpr_accesibility = '1';
 			endif;
@@ -104,7 +104,7 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 
 			// Cookie Banner Hide on Mobile.
 			$gdpr_cb_show_mobile = '0';
-			
+
 			if ( isset( $_POST['gdpr_cb_show_mobile'] ) ) :
 				$gdpr_cb_show_mobile = '1';
 			endif;
@@ -113,29 +113,26 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 
 			foreach ( $_POST as $form_key => $form_value ) :
 				if ( 'moove_gdpr_info_bar_content' === $form_key ) :
-					$form_value 														= wp_kses_post( $form_value );
+					$form_value                             = wp_kses_post( $form_value );
 					$value                                  = wpautop( wp_unslash( $form_value ) );
 					$gdpr_options[ $form_key . $wpml_lang ] = $value;
-				elseif ( 'moove_gdpr_modal_strictly_secondary_notice' . $wpml_lang === $form_key ) :
-					$value                     = wp_kses_post( wpautop( wp_unslash( $form_value ) ) );
-					$gdpr_options[ $form_key ] = $value;
 				elseif ( 'gdpr_initialization_delay' === $form_key ) :
 					$value                     = intval( $form_value );
 					$gdpr_options[ $form_key ] = $value;
 				elseif ( 'gdpr_bs_buttons_order' === $form_key ) :
-					$value 										 	= json_decode( wp_unslash( $form_value ), true );
-					$allowed_values 					 	= array( 'accept', 'reject', 'settings', 'close' );
-					$buttons_order 							= array();
+					$value          = json_decode( wp_unslash( $form_value ), true );
+					$allowed_values = array( 'accept', 'reject', 'settings', 'close' );
+					$buttons_order  = array();
 					if ( is_array( $value ) ) :
 						foreach ( $value as $button_type ) :
-							if ( in_array( $button_type, $allowed_values ) ) :
+							if ( in_array( $button_type, $allowed_values ) ) : // phpcs:ignore
 								$buttons_order[] = $button_type;
 							endif;
 						endforeach;
 					endif;
-					$buttons_order = $buttons_order ? $buttons_order : $allowed_values;
-					$gdpr_options[ $form_key ] = json_encode( $buttons_order );					
-				elseif ( ! in_array( $form_key, $restricted_keys ) ) :
+					$buttons_order             = $buttons_order ? $buttons_order : $allowed_values;
+					$gdpr_options[ $form_key ] = json_encode( $buttons_order ); // phpcs:ignore
+				elseif ( ! in_array( $form_key, $restricted_keys ) ) : // phpcs:ignore
 					$value                     = sanitize_text_field( wp_unslash( $form_value ) );
 					$gdpr_options[ $form_key ] = $value;
 				endif;
@@ -152,18 +149,14 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 	endif;
 endif;
 
-$buttons_order 				= isset( $gdpr_options['gdpr_bs_buttons_order'] ) ? json_decode( $gdpr_options['gdpr_bs_buttons_order'], true ) : array('accept', 'reject', 'settings', 'close');
+$buttons_order = isset( $gdpr_options['gdpr_bs_buttons_order'] ) ? json_decode( $gdpr_options['gdpr_bs_buttons_order'], true ) : array( 'accept', 'reject', 'settings', 'close' );
 
-$initalization_delay 	= isset( $gdpr_options['gdpr_initialization_delay'] ) && intval( $gdpr_options['gdpr_initialization_delay'] ) >= 0 ? intval( $gdpr_options['gdpr_initialization_delay'] ) : apply_filters( 'gdpr_init_script_delay', 2000 );
+$initalization_delay = isset( $gdpr_options['gdpr_initialization_delay'] ) && intval( $gdpr_options['gdpr_initialization_delay'] ) >= 0 ? intval( $gdpr_options['gdpr_initialization_delay'] ) : apply_filters( 'gdpr_init_script_delay', 2000 );
 
 $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( $gdpr_options['gdpr_cb_show_mobile'] ) >= 0 ? intval( $gdpr_options['gdpr_cb_show_mobile'] ) : apply_filters( 'gdpr_show_banner_on_mobile', 1 );
-
 ?>
-<form action="<?php echo esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=banner-settings' ) ); ?>" method="post" id="moove_gdpr_tab_banner_settings">
+<form action="<?php echo esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=banner-settings&gcat=settings' ) ); ?>" method="post" id="moove_gdpr_tab_banner_settings">
 	<?php wp_nonce_field( 'moove_gdpr_nonce_field', 'moove_gdpr_nonce' ); ?>
-	<h2><?php esc_html_e( 'Cookie Banner Settings', 'gdpr-cookie-compliance' ); ?></h2>
-	<hr />
-
 	<table class="form-table">
 		<tbody>
 			<tr>
@@ -189,9 +182,9 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 					<?php
 					$content = isset( $gdpr_options[ 'moove_gdpr_info_bar_content' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_info_bar_content' . $wpml_lang ] ? maybe_unserialize( $gdpr_options[ 'moove_gdpr_info_bar_content' . $wpml_lang ] ) : false;
 					if ( ! $content ) :
-						$_content = '<p>' . esc_html__( 'We are using cookies to give you the best experience on our website.', 'gdpr-cookie-compliance' ) .'</p>';
-						$_content .= '<p>' . sprintf( esc_html__( 'You can find out more about which cookies we are using or switch them off in [%s]settings[/%s].', 'gdpr-cookie-compliance' ), 'setting', 'setting' ) . '</p>';
-						$content  = $_content;
+						$_content  = '<p>' . esc_html__( 'We are using cookies to give you the best experience on our website.', 'gdpr-cookie-compliance' ) . '</p>';
+						$_content .= '<p>' . sprintf( esc_html__( 'You can find out more about which cookies we are using or switch them off in [%1$s]settings[/%2$s].', 'gdpr-cookie-compliance' ), 'setting', 'setting' ) . '</p>'; // phpcs:ignore
+						$content   = $_content;
 					endif;
 					$content = wp_kses_post( $content );
 					?>
@@ -205,7 +198,7 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 					?>
 					<p class="description">
 					<?php
-						$content = __( 'You can use the following shortcut to link the Cookie Settings Screen:', 'gdpr-cookie-compliance' );
+						$content  = __( 'You can use the following shortcut to link the Cookie Settings Screen:', 'gdpr-cookie-compliance' );
 						$content .= '<br><span><strong>[setting]</strong>';
 						$content .= __( 'settings', 'gdpr-cookie-compliance' );
 						$content .= '<strong>[/setting]</strong></span>';
@@ -214,7 +207,6 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 					</p>
 				</th>
 			</tr>
-			
 			<tr>
 				<td colspan="2" style="padding: 0;">
 					<hr />
@@ -223,14 +215,14 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 
 			<tr class="gdpr-sortable-buttons-wrap">
 				<td colspan="2">
-					<h4 style="margin-bottom: 0;"><?php esc_html_e( 'Button Setup', 'gdpr-cookie-compliance' ) ?></h4>
-					<p class="description"><i><?php esc_html_e( 'You can change the order by drag & drop', 'gdpr-cookie-compliance' ) ?></i></p><br>
-					<input type="hidden" name="gdpr_bs_buttons_order" class="gdpr-buttons-order-inpval" value='<?php echo json_encode( $buttons_order, true ); ?>'>
+					<h4 style="margin-bottom: 0;"><?php esc_html_e( 'Button Setup', 'gdpr-cookie-compliance' ); ?></h4>
+					<p class="description"><i><?php esc_html_e( 'You can change the order by drag & drop', 'gdpr-cookie-compliance' ); ?></i></p><br>
+					<input type="hidden" name="gdpr_bs_buttons_order" class="gdpr-buttons-order-inpval" value='<?php echo json_encode( $buttons_order, true ); // phpcs:ignore ?>'>
 					<div class="gdpr-sortable-buttons">
-						<?php 
-							foreach ( $buttons_order as $button_type ) : 
-								if ( 'accept' === $button_type ) :
-									?>
+						<?php
+						foreach ( $buttons_order as $button_type ) :
+							if ( 'accept' === $button_type ) :
+								?>
 										<div class="gdpr-sortable-button" data-type="accept">
 											<table>
 												<tbody>
@@ -247,10 +239,9 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 														</td>
 													</tr>
 													<tr>
-														<td colspan="2"><p class="description" id="moove_gdpr_accept_button_enable-description" ><?php esc_html_e( "Accept button allows users to accept all cookies.", 'gdpr-cookie-compliance' ); ?></p>
+														<td colspan="2"><p class="description" id="moove_gdpr_accept_button_enable-description" ><?php esc_html_e( 'Accept button allows users to accept all cookies.', 'gdpr-cookie-compliance' ); ?></p>
 															<!--  .description --></td>
 													</tr>
-													
 													<tr class="gdpr-conditional-field" data-dependency="#moove_gdpr_accept_button_enable">
 														<th scope="row">
 															<label for="moove_gdpr_infobar_accept_button_label"><?php esc_html_e( 'Accept - Button Label', 'gdpr-cookie-compliance' ); ?></label>
@@ -279,13 +270,12 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 																<input type="checkbox" name="moove_gdpr_reject_button_enable" id="moove_gdpr_reject_button_enable" <?php echo isset( $gdpr_options['moove_gdpr_reject_button_enable'] ) ? ( intval( $gdpr_options['moove_gdpr_reject_button_enable'] ) === 1 ? 'checked' : ( ! isset( $gdpr_options['moove_gdpr_reject_button_enable'] ) ? 'checked' : '' ) ) : ''; ?> >
 																<span class="gdpr-checkbox-slider" data-enable="<?php esc_html_e( 'Enabled', 'gdpr-cookie-compliance' ); ?>" data-disable="<?php esc_html_e( 'Disabled', 'gdpr-cookie-compliance' ); ?>"></span>
 															</label>
-															
 															<!--  .description -->
 														</td>
 													</tr>
 
 													<tr>
-														<td colspan="2"><p class="description" id="moove_gdpr_reject_button_enable-description" ><?php esc_html_e( "Reject button allows users to reject all cookies.", 'gdpr-cookie-compliance' ); ?></p>
+														<td colspan="2"><p class="description" id="moove_gdpr_reject_button_enable-description" ><?php esc_html_e( 'Reject button allows users to reject all cookies.', 'gdpr-cookie-compliance' ); ?></p>
 															<!--  .description --></td>
 													</tr>
 
@@ -306,31 +296,26 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 																<tr>
 																	<td>
 																		<fieldset class="gdpr-reject-options">
-																			<?php 
+																			<?php
 																			$gdpr_reject_button_bhv = isset( $gdpr_options['gdpr_reject_button_bhv'] ) && intval( $gdpr_options['gdpr_reject_button_bhv'] ) ? intval( $gdpr_options['gdpr_reject_button_bhv'] ) : 1;
 
-																			$gdpr_reject_button_bhv_bg_colour = isset( $gdpr_options['gdpr_reject_button_bhv_bg_colour'] ) && sanitize_url( wp_unslash( $gdpr_options['gdpr_reject_button_bhv_bg_colour'] ) ) ? sanitize_url( wp_unslash( $gdpr_options['gdpr_reject_button_bhv_bg_colour'] ) ) : '#000000';
+																			$gdpr_reject_button_bhv_bg_colour = isset( $gdpr_options['gdpr_reject_button_bhv_bg_colour'] ) && esc_url_raw( wp_unslash( $gdpr_options['gdpr_reject_button_bhv_bg_colour'] ) ) ? esc_url_raw( wp_unslash( $gdpr_options['gdpr_reject_button_bhv_bg_colour'] ) ) : '#000000';
 
-																			$gdpr_reject_button_bhv_txt_colour = isset( $gdpr_options['gdpr_reject_button_bhv_txt_colour'] ) && sanitize_url( wp_unslash( $gdpr_options['gdpr_reject_button_bhv_txt_colour'] ) ) ? sanitize_url( wp_unslash( $gdpr_options['gdpr_reject_button_bhv_txt_colour'] ) ) : '#d6d6d6';
+																			$gdpr_reject_button_bhv_txt_colour = isset( $gdpr_options['gdpr_reject_button_bhv_txt_colour'] ) && esc_url_raw( wp_unslash( $gdpr_options['gdpr_reject_button_bhv_txt_colour'] ) ) ? esc_url_raw( wp_unslash( $gdpr_options['gdpr_reject_button_bhv_txt_colour'] ) ) : '#d6d6d6';
 																			?>
-					
 																			<label for="gdpr_reject_button_bhv_1">
-																				<input name="gdpr_reject_button_bhv" type="radio" <?php echo $gdpr_reject_button_bhv === 1 ? 'checked' : ''; ?> id="gdpr_reject_button_bhv_1" value="1">
+																				<input name="gdpr_reject_button_bhv" type="radio" <?php echo 1 === $gdpr_reject_button_bhv ? 'checked' : ''; ?> id="gdpr_reject_button_bhv_1" value="1">
 																				<?php esc_html_e( 'Same as Accept button', 'gdpr-cookie-compliance' ); ?>
 																			</label>
-																		
 																			<br />
-
 																			<label for="gdpr_reject_button_bhv_2">
-																				<input name="gdpr_reject_button_bhv" type="radio" <?php echo $gdpr_reject_button_bhv === 2 ? 'checked' : ''; ?> id="gdpr_reject_button_bhv_2" value="2">
+																				<input name="gdpr_reject_button_bhv" type="radio" <?php echo 2 === $gdpr_reject_button_bhv ? 'checked' : ''; ?> id="gdpr_reject_button_bhv_2" value="2">
 																				<?php esc_html_e( 'Less visible', 'gdpr-cookie-compliance' ); ?>	
 																			</label>
-																			
 																			<br />
-
 																			<div class="gdpr-conditional-field-group">
 																				<label for="gdpr_reject_button_bhv_3">
-																					<input name="gdpr_reject_button_bhv" type="radio" <?php echo $gdpr_reject_button_bhv === 3 ? 'checked' : ''; ?> id="gdpr_reject_button_bhv_3" value="3">
+																					<input name="gdpr_reject_button_bhv" type="radio" <?php echo 3 === $gdpr_reject_button_bhv ? 'checked' : ''; ?> id="gdpr_reject_button_bhv_3" value="3">
 																					<?php esc_html_e( 'Custom colour', 'gdpr-cookie-compliance' ); ?>													
 																				</label>
 																				<br>
@@ -346,7 +331,6 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 
 																						</td>
 																					</tr>
-
 																					<tr>
 																						<td style="padding-left: 22px; width: 200px;"><strong><?php esc_html_e( 'Text Colour', 'gdpr-cookie-compliance' ); ?></strong></td>
 																						<td>							
@@ -355,16 +339,12 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 																								<input class="iris-colorpicker regular-text" name="gdpr_reject_button_bhv_txt_colour" value="<?php echo esc_attr( $color ); ?>" style="background-color: <?php echo esc_attr( $color ); ?>" type="text">
 																								<span class="iris-selectbtn"><?php esc_html_e( 'Select', 'gdpr-cookie-compliance' ); ?></span>
 																							</div>
-
 																						</td>
 																					</tr>
 																				</table>
-																				
 																			</div>
 																			<!-- .gdpr-conditional-field-group -->
-
 																			<br />
-
 																		</fieldset>
 																	</td>
 																</tr>
@@ -391,15 +371,13 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 																<input type="checkbox" name="moove_gdpr_settings_button_enable" id="moove_gdpr_settings_button_enable" <?php echo isset( $gdpr_options['moove_gdpr_settings_button_enable'] ) ? ( intval( $gdpr_options['moove_gdpr_settings_button_enable'] ) === 1 ? 'checked' : ( ! isset( $gdpr_options['moove_gdpr_settings_button_enable'] ) ? 'checked' : '' ) ) : ''; ?> >
 																<span class="gdpr-checkbox-slider" data-enable="<?php esc_html_e( 'Enabled', 'gdpr-cookie-compliance' ); ?>" data-disable="<?php esc_html_e( 'Disabled', 'gdpr-cookie-compliance' ); ?>"></span>
 															</label>
-															
 															<!--  .description -->
 														</td>
 													</tr>
 													<tr>
-														<td colspan="2"><p class="description" id="moove_gdpr_settings_button_enable-description" ><?php esc_html_e( "Settings button opens up the Cookie Settings Screen.", 'gdpr-cookie-compliance' ); ?></p>
+														<td colspan="2"><p class="description" id="moove_gdpr_settings_button_enable-description" ><?php esc_html_e( 'Settings button opens up the Cookie Settings Screen.', 'gdpr-cookie-compliance' ); ?></p>
 															<!--  .description --></td>
 													</tr>
-
 													<tr class="gdpr-conditional-field" data-dependency="#moove_gdpr_settings_button_enable">
 														<th scope="row">
 															<label for="moove_gdpr_infobar_settings_button_label"><?php esc_html_e( 'Settings - Button Label', 'gdpr-cookie-compliance' ); ?></label>
@@ -428,7 +406,6 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 																<input type="checkbox" name="moove_gdpr_close_button_enable" id="moove_gdpr_close_button_enable" <?php echo isset( $gdpr_options['moove_gdpr_close_button_enable'] ) ? ( intval( $gdpr_options['moove_gdpr_close_button_enable'] ) === 1 ? 'checked' : ( ! isset( $gdpr_options['moove_gdpr_close_button_enable'] ) ? 'checked' : '' ) ) : ''; ?> >
 																<span class="gdpr-checkbox-slider" data-enable="<?php esc_html_e( 'Enabled', 'gdpr-cookie-compliance' ); ?>" data-disable="<?php esc_html_e( 'Disabled', 'gdpr-cookie-compliance' ); ?>"></span>
 															</label>
-															
 														</td>
 													</tr>
 													<tr class="gdpr-conditional-field" data-dependency="#moove_gdpr_close_button_enable">
@@ -439,49 +416,40 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 																<tr>
 																	<td>
 																		<fieldset class="gdpr-close-options">
-																			<?php 
+																			<?php
 																			$gdpr_close_button_bhv = isset( $gdpr_options['gdpr_close_button_bhv'] ) && intval( $gdpr_options['gdpr_close_button_bhv'] ) ? intval( $gdpr_options['gdpr_close_button_bhv'] ) : 1;
 
-																			$gdpr_close_button_bhv_redirect = isset( $gdpr_options['gdpr_close_button_bhv_redirect'] ) && sanitize_url( wp_unslash( $gdpr_options['gdpr_close_button_bhv_redirect'] ) ) ? sanitize_url( wp_unslash( $gdpr_options['gdpr_close_button_bhv_redirect'] ) ) : '';
+																			$gdpr_close_button_bhv_redirect = isset( $gdpr_options['gdpr_close_button_bhv_redirect'] ) && esc_url_raw( wp_unslash( $gdpr_options['gdpr_close_button_bhv_redirect'] ) ) ? esc_url_raw( wp_unslash( $gdpr_options['gdpr_close_button_bhv_redirect'] ) ) : '';
 																			?>
-					
 																			<label for="gdpr_close_button_bhv_1">
-																				<input name="gdpr_close_button_bhv" type="radio" <?php echo $gdpr_close_button_bhv === 1 ? 'checked' : ''; ?> id="gdpr_close_button_bhv_1" value="1">
+																				<input name="gdpr_close_button_bhv" type="radio" <?php echo 1 === $gdpr_close_button_bhv ? 'checked' : ''; ?> id="gdpr_close_button_bhv_1" value="1">
 																				<?php esc_html_e( 'as a Close button', 'gdpr-cookie-compliance' ); ?>
 																				<span class="gdpr_cb_bhv_desc"><?php esc_html_e( '(The Cookie Banner becomes hidden for the duration of the current browsing session, without accepting or rejecting cookies. The Cookie Banner will re-appear when the user next visits your site.)', 'gdpr-cookie-compliance' ); ?></span>
 																			</label>
-																		
 																			<br /><br />
-
 																			<label for="gdpr_close_button_bhv_2">
-																				<input name="gdpr_close_button_bhv" type="radio" <?php echo $gdpr_close_button_bhv === 2 ? 'checked' : ''; ?> id="gdpr_close_button_bhv_2" value="2">
+																				<input name="gdpr_close_button_bhv" type="radio" <?php echo 2 === $gdpr_close_button_bhv ? 'checked' : ''; ?> id="gdpr_close_button_bhv_2" value="2">
 																				<?php esc_html_e( 'as a Reject button', 'gdpr-cookie-compliance' ); ?>
 																				<span class="gdpr_cb_bhv_desc"><?php esc_html_e( '(The cookies are rejected and the cookie banner does not re-appear until the cookie consent expires.)', 'gdpr-cookie-compliance' ); ?></span>
 																			</label>
-
 																			<br /><br />
-
 																			<label for="gdpr_close_button_bhv_3">
-																				<input name="gdpr_close_button_bhv" type="radio" <?php echo $gdpr_close_button_bhv === 3 ? 'checked' : ''; ?> id="gdpr_close_button_bhv_3" value="3">
+																				<input name="gdpr_close_button_bhv" type="radio" <?php echo 3 === $gdpr_close_button_bhv ? 'checked' : ''; ?> id="gdpr_close_button_bhv_3" value="3">
 																				<?php esc_html_e( 'as an Accept button', 'gdpr-cookie-compliance' ); ?>
 																				<span class="gdpr_cb_bhv_desc"><?php esc_html_e( '(The cookies are accepted and the cookie banner does not re-appear until the cookie consent expires.)', 'gdpr-cookie-compliance' ); ?></span>
 																			</label>
-																			
 																			<br /><br />
-
 																			<div class="gdpr-conditional-field-group">
 																				<label for="gdpr_close_button_bhv_4">
-																					<input name="gdpr_close_button_bhv" type="radio" <?php echo $gdpr_close_button_bhv === 4 ? 'checked' : ''; ?> id="gdpr_close_button_bhv_4" value="4">
+																					<input name="gdpr_close_button_bhv" type="radio" <?php echo 4 === $gdpr_close_button_bhv ? 'checked' : ''; ?> id="gdpr_close_button_bhv_4" value="4">
 																					<?php esc_html_e( 'as a Redirect', 'gdpr-cookie-compliance' ); ?>
 																					<span class="gdpr_cb_bhv_desc"><?php esc_html_e( '(The cookies are rejected and the user will be redirected to the specified URL.)', 'gdpr-cookie-compliance' ); ?></span>
 																				</label>
 																				<br>
-																				<input type="text" name="gdpr_close_button_bhv_redirect" id="gdpr_close_button_bhv_redirect" style="display: none;" class="regular-text" placeholder="<?php esc_html_e('Redirect location', 'gdpr-cookie-compliance') ?>" value="<?php echo esc_url( $gdpr_close_button_bhv_redirect ); ?>">
+																				<input type="text" name="gdpr_close_button_bhv_redirect" id="gdpr_close_button_bhv_redirect" style="display: none;" class="regular-text" placeholder="<?php esc_html_e( 'Redirect location', 'gdpr-cookie-compliance' ); ?>" value="<?php echo esc_url( $gdpr_close_button_bhv_redirect ); ?>">
 																			</div>
 																			<!-- .gdpr-conditional-field-group -->
-
 																			<br />
-
 																		</fieldset>
 																	</td>
 																</tr>
@@ -493,7 +461,7 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 										</div>
 									<?php
 								endif;
-							endforeach; 
+							endforeach;
 						?>
 				</td>
 			</tr>
@@ -555,7 +523,7 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 					</label>
 					<p class="description">
 						<?php
-							$content = __( 'Choose the right accessibility experience for your users. You can decide wether pressing tab key on your keyboard should first focus on the Cookie Banner or on your website\'s content.', 'gdpr-cookie-compliance' );			
+							$content = __( 'Choose the right accessibility experience for your users. You can decide wether pressing tab key on your keyboard should first focus on the Cookie Banner or on your website\'s content.', 'gdpr-cookie-compliance' );
 							apply_filters( 'gdpr_cc_keephtml', $content, true );
 						?>
 					</p>            
@@ -568,7 +536,7 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 				</th>
 				<td>
 					<label class="gdpr-checkbox-toggle">
-						<input type="checkbox" name="gdpr_cb_show_mobile" <?php echo $gdpr_cb_show_mobile === 1 ? 'checked' : ''; ?> >
+						<input type="checkbox" name="gdpr_cb_show_mobile" <?php echo 1 === $gdpr_cb_show_mobile ? 'checked' : ''; ?> >
 						<span class="gdpr-checkbox-slider" data-enable="<?php esc_html_e( 'Visible', 'gdpr-cookie-compliance' ); ?>" data-disable="<?php esc_html_e( 'Hidden', 'gdpr-cookie-compliance' ); ?>"></span>
 					</label>   
 				</td>
@@ -580,13 +548,13 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 				</th>
 				<td>
 					<span style="white-space: nowrap;">
-						<input type="number" value="<?php echo $initalization_delay; ?>" min="0" step="1" name="gdpr_initialization_delay" id="gdpr_initialization_delay" style="width: 100px;">
+						<input type="number" value="<?php echo esc_attr( $initalization_delay ); ?>" min="0" step="1" name="gdpr_initialization_delay" id="gdpr_initialization_delay" style="width: 100px;">
 						<?php esc_html_e( 'milliseconds', 'gdpr-cookie-compliance' ); ?>
 					</span>
 
 					<p class="description">
 						<?php
-							$content = __( 'This feature can be used to improve Largest Contentful Paint (LCP) metric in PageSpeed Insights.', 'gdpr-cookie-compliance' );
+							$content  = __( 'This feature can be used to improve Largest Contentful Paint (LCP) metric in PageSpeed Insights.', 'gdpr-cookie-compliance' );
 							$content .= '<br />';
 							$content .= __( 'Set 0 for the Cookie Banner to appear with no delay.', 'gdpr-cookie-compliance' );
 							apply_filters( 'gdpr_cc_keephtml', $content, true );

@@ -9,8 +9,8 @@
     <span class="tab-title"><?php echo esc_attr( $content->tab_title ); ?></span>
     <div class="moove-gdpr-tab-main-content">
       <?php 
-        echo $content->tab_content;
-        echo $content->warning_message_top ? $content->warning_message_top : '';
+        echo $content->tab_content; // phpcs:ignore
+        echo $content->warning_message_top ? $content->warning_message_top : ''; // phpcs:ignore
       ?>
       <div class="moove-gdpr-status-bar <?php echo esc_attr( $content->checkbox_state ); ?>">
         <div class="gdpr-cc-form-wrap">
@@ -33,7 +33,7 @@
       <!-- .moove-gdpr-status-bar -->
       <?php if ( $content->warning_message_bottom ) : ?>
         <div class="moove-gdpr-strict-warning-message" style="margin-top: 10px;">
-          <?php echo $content->warning_message_bottom; ?>
+          <?php echo $content->warning_message_bottom; // phpcs:ignore ?>
         </div>
         <!--  .moove-gdpr-tab-main-content -->
       <?php endif; ?>

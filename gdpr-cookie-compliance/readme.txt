@@ -1,14 +1,14 @@
-=== GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice - CCPA, DSGVO, RGPD ===
+=== GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law ===
 Contributors: MooveAgency
 Donate link: https://www.mooveagency.com/wordpress-plugins/gdpr-cookie-compliance/
-Tags: GDPR, CCPA, DSGVO, CPRA, RGPD
-Stable tag: 4.16.1
+Tags: GDPR, CCPA, DSGVO, cookie banner, cookie consent, cookie notice
+Stable tag: 5.0
 Requires at least: 4.5
-Tested up to: 6.7
-Requires PHP: 5.6
+Tested up to: 6.8
+Requires PHP: 6.4
 License: GPLv3
 
-Cookie notice banner for GDPR, CCPA, CPRA, LGPD, RGPD, PECR, AAP, PIPEDA, VCDPA, CPRA, ICO, GPDP, DSGVO, BfDl, CNIL, AEPD, PDPB, DPA, PDPA, TTDSG, POPIA, APA, ePrivacy, COPPA, CASL, European cookie law, data protection and privacy regulations and other cookie law and consent notice requirements on your website.
+Cookie notice banner for GDPR, CCPA, EU cookie law, data protection and privacy regulations and other cookie law and consent notice requirements on your website.
 
 == Description ==
 
@@ -20,30 +20,25 @@ Cookie notice banner for GDPR, CCPA, CPRA, LGPD, RGPD, PECR, AAP, PIPEDA, VCDPA,
 * **Local Data Storage** - all user data is stored locally on your website only - we do not collect or store any of your user data on our servers
 * **Simple** to use — install & setup in seconds
 * Give your users **full control** over cookies stored on their computer, including the ability for users to **revoke their consent**.
+* Direct integration of **GTM, Google Analytics, Meta Pixel, GTM4WP** and more
+* **Google Consent Mode v2** fully supported
 * **Fully customisable** - upload your own logo, colours, fonts
 * **Fully editable** - change all text
-* Direct integration of **GTM, GA, Meta Pixel, GTM4WP** and more
-* **Google Consent Mode v2** fully supported
-* **Set the position** of the Cookie Consent Banner: at the top or bottom of your pages
 * **Flexible** - decide which scripts will be loaded by default or only when the user gives consent
 * **'Accept'**, **'Reject'**, 'Close' and 'Settings' buttons & you can also change their order
 * **Consent expiration** settings
 * Link to **Privacy Policy** page
-* Simple, beautiful & intuitive user interface
-* Choose from **two unique layouts**
-* Sleek animations to enhance the user experience
 * **Mobile responsive** design
 * **SEO friendly**
 * Optimized for **WCAG & ADA** accessibility guidelines
 * WPML, QTranslate, WP Multilang, TranslatePress and Polylang compatible, .pot file for translations included
-* **CDN** base URL supported
 * Supports all major **caching** servers and plugins
-* Available in **19 languages**
+* Available in **22 languages**
 * Optimised for PHP 7 and PHP 8
 
 ### Premium Features Available
 
-* **Consent Log** - gives you the ability to store user consent information in the event that you need to prove that consent was given
+* **Consent Log** - stores user consent information to prove that consent was given
 * **Geo-location** - the Cookie Consent Banner can be shown to visitors from the European Union or selected countries only (ie. Canada, California etc.)
 * **Google Site Kit integration** - our plugin supports the Google Site Kit natively
 * **Cookie wall / Full-screen layout** - if enabled, the Cookie Consent Banner will be display in a full screen mode, and force users to either accept or reject cookies before they can see your content
@@ -229,9 +224,9 @@ The Brazilian General Data Protection Law (“Lei Geral de Proteção de Dados�
 == Screenshots ==
 
 1. GDPR Cookie Compliance - Front-end - Privacy Overview
-2. GDPR Cookie Compliance - Front-end - Strictly Necessary Cookies
-3. GDPR Cookie Compliance - Front-end - 3rd Party Cookies
-4. GDPR Cookie Compliance - Front-end - Additional Cookies
+2. GDPR Cookie Compliance - Front-end - Necessary
+3. GDPR Cookie Compliance - Front-end - Analytics
+4. GDPR Cookie Compliance - Front-end - Marketing
 5. GDPR Cookie Compliance - Front-end - Cookie Policy
 6. GDPR Cookie Compliance - Front-end - One Page Layout
 7. GDPR Cookie Compliance - Front-end - Cookie Consent Banner
@@ -245,10 +240,10 @@ The Brazilian General Data Protection Law (“Lei Geral de Proteção de Dados�
 15. GDPR Cookie Compliance - Admin - Floating Button
 16. GDPR Cookie Compliance - Admin - General Settings
 17. GDPR Cookie Compliance - Admin - Privacy Overview
-18. GDPR Cookie Compliance - Admin - Strictly Necessary Cookies
-19. GDPR Cookie Compliance - Admin - 3rd Party Cookies (GA Example Head)
-20. GDPR Cookie Compliance - Admin - Additional Cookies (GTM Example Head)
-21. GDPR Cookie Compliance - Admin - Additional Cookies (GTM Example Body)
+18. GDPR Cookie Compliance - Admin - Necessary
+19. GDPR Cookie Compliance - Admin - Analytics (GA Example Head)
+20. GDPR Cookie Compliance - Admin - Marketing (GTM Example Head)
+21. GDPR Cookie Compliance - Admin - Marketing (GTM Example Body)
 22. GDPR Cookie Compliance - Admin - Cookie Policy
 23. GDPR Cookie Compliance - Admin - Help - FAQ
 24. GDPR Cookie Compliance - Admin - Help - Hooks & Filters
@@ -269,6 +264,13 @@ The Brazilian General Data Protection Law (“Lei Geral de Proteção de Dados�
 39. GDPR Cookie Compliance - Front-end - Cookie Shortcode [Premium]
 
 == Changelog ==
+= 5.0.0: 30 July 2025 = 
+* Admin screen improvements
+* Strictly Necessary cookie improvements
+* Accessibility improvements
+* Bugfixes
+* Additional cookie categories [PREMIUM]
+
 = 4.16.1: 24 March 2025 = 
 * Accessibility improvements
 * Added option to hide banner on mobile
@@ -884,8 +886,8 @@ The Brazilian General Data Protection Law (“Lei Geral de Proteção de Dados�
 = 1.3.0 =
 * PHP Cookie checker implemented
 * PHP function to check Strictly Necessary Cookies: "gdpr_cookie_is_accepted( 'strict' )"
-* PHP function to check 3rd Party Cookies: "gdpr_cookie_is_accepted( 'thirdparty' )"
-* PHP function to check Advanced Cookies: "gdpr_cookie_is_accepted( 'advanced' )"
+* PHP function to check Analytics Cookies: "gdpr_cookie_is_accepted( 'thirdparty' )"
+* PHP function to check Marketing Cookies: "gdpr_cookie_is_accepted( 'advanced' )"
 * Force reload hook added "add_action( 'gdpr_force_reload', '__return_true' )"
 * Fixed layout issues in old Safari
 

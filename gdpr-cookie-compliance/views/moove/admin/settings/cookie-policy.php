@@ -56,9 +56,7 @@ endif;
 <?php
 $nav_label = isset( $gdpr_options[ 'moove_gdpr_cookie_policy_tab_nav_label' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_cookie_policy_tab_nav_label' . $wpml_lang ] ? $gdpr_options[ 'moove_gdpr_cookie_policy_tab_nav_label' . $wpml_lang ] : __( 'Cookie Policy', 'gdpr-cookie-compliance' );
 ?>
-<h2><?php echo esc_attr( $nav_label ); ?></h2>
-<hr />
-<form action="<?php echo esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=cookie-policy' ) ); ?>" method="post" id="moove_gdpr_tab_cookie_policy">
+<form action="<?php echo esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=cookie-policy&gcat=settings' ) ); ?>" method="post" id="moove_gdpr_tab_cookie_policy">
 	<?php wp_nonce_field( 'moove_gdpr_nonce_field', 'moove_gdpr_nonce' ); ?>
 	<table class="form-table">
 		<tbody>

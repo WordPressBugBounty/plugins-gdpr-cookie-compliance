@@ -12,6 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 ?>
-<h2><?php _e('Cookie Declaration','gdpr-cookie-compliance'); ?></h2>
+<h2><?php esc_html_e( 'Cookie Declaration', 'gdpr-cookie-compliance' ); ?></h2>
 <hr />
-<?php do_action('gdpr_premium_section_ads'); ?>
+<?php do_action( 'gdpr_premium_section_ads' ); ?>

@@ -29,59 +29,58 @@ class Moove_GDPR_License_Manager {
 	 * Bulk activate licence on MultiSites
 	 */
 	public static function gdpr_msba_bulk_activate_ajx() {
-    $licence_key  = isset( $_POST['licence_key'] ) ? sanitize_text_field( wp_unslash( $_POST['licence_key'] ) ) : '';
-    $blog_id      = isset( $_POST['blog_id'] ) ? intval( wp_unslash( $_POST['blog_id'] ) ) : false;
-    $nonce      	= isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : false;
-    $action 			= 'activate';
-    $validate_license     = array(
-      'valid'   => false,
-      'key'     => $licence_key,
-      'message' => $nonce
-    );
+		$licence_key      = isset( $_POST['licence_key'] ) ? sanitize_text_field( wp_unslash( $_POST['licence_key'] ) ) : '';
+		$blog_id          = isset( $_POST['blog_id'] ) ? intval( wp_unslash( $_POST['blog_id'] ) ) : false;
+		$nonce            = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : false;
+		$action           = 'activate';
+		$validate_license = array(
+			'valid'   => false,
+			'key'     => $licence_key,
+			'message' => $nonce,
+		);
 
-    if ( $blog_id && $licence_key && class_exists('Moove_GDPR_License_Manager') && wp_verify_nonce( $nonce, 'gdpr_tab_licence_bulk' ) && current_user_can('manage_options') ) :
-      switch_to_blog( $blog_id );
-      $licence_manager = new Moove_GDPR_License_Manager();
+		if ( $blog_id && $licence_key && class_exists( 'Moove_GDPR_License_Manager' ) && wp_verify_nonce( $nonce, 'gdpr_tab_licence_bulk' ) && current_user_can( 'manage_options' ) ) :
+			switch_to_blog( $blog_id );
+			$licence_manager = new Moove_GDPR_License_Manager();
 
-      $validate_license = $licence_manager->validate_license( $licence_key, 'gdpr', 'activate' );
-      if ( $validate_license && isset( $validate_license['valid'] ) && true === $validate_license['valid'] ) :
-        $plugin_token     = isset( $validate_license['data'] ) && isset( $validate_license['data']['download_token'] ) && $validate_license['data']['download_token'] ? $validate_license['data']['download_token'] : false;
+			$validate_license = $licence_manager->validate_license( $licence_key, 'gdpr', 'activate' );
+			if ( $validate_license && isset( $validate_license['valid'] ) && true === $validate_license['valid'] ) :
+				$plugin_token = isset( $validate_license['data'] ) && isset( $validate_license['data']['download_token'] ) && $validate_license['data']['download_token'] ? $validate_license['data']['download_token'] : false;
 
-        $gdpr_default_content = new Moove_GDPR_Content();
-        $option_key           = $gdpr_default_content->moove_gdpr_get_key_name(); 
+				$gdpr_default_content = new Moove_GDPR_Content();
+				$option_key           = $gdpr_default_content->moove_gdpr_get_key_name();
 
-        update_option(
-          $option_key,
-          array(
-            'key'        => $validate_license['key'],
-            'activation' => $validate_license['data']['today'],
-          )
-        );
-        // VALID.
-        $messages = isset( $validate_license['message'] ) && is_array( $validate_license['message'] ) ? implode( '<br>', $validate_license['message'] ) : '';
+				update_option(
+					$option_key,
+					array(
+						'key'        => $validate_license['key'],
+						'activation' => $validate_license['data']['today'],
+					)
+				);
+				// VALID.
+				$messages = isset( $validate_license['message'] ) && is_array( $validate_license['message'] ) ? implode( '<br>', $validate_license['message'] ) : '';
 
-        if ( $plugin_token && 'activate' === $action ) :
-          $plugin_slug = $licence_manager->get_add_on_plugin_slug();       
-          
-          if ( $plugin_slug ) :
-            if ( $licence_manager->is_plugin_installed( $plugin_slug ) ) {
-              $installed = true;
-            } else {
-              $installed = $licence_manager->install_plugin( $plugin_token );
-            }
-            if ( ! is_wp_error( $installed ) && $installed ) {
-            	$plugin_path 	=  
-              $activate 		= activate_plugin( $plugin_slug );              
-            }
-          endif;
-        endif;
-      endif;
+				if ( $plugin_token && 'activate' === $action ) :
+						$plugin_slug = $licence_manager->get_add_on_plugin_slug();
 
-      restore_current_blog();
-    endif;
-    echo json_encode( $validate_license );
-    die();
-  }
+					if ( $plugin_slug ) :
+						if ( $licence_manager->is_plugin_installed( $plugin_slug ) ) {
+							$installed = true;
+						} else {
+							$installed = $licence_manager->install_plugin( $plugin_token );
+						}
+						if ( ! is_wp_error( $installed ) && $installed ) {
+							$activate = activate_plugin( $plugin_slug );
+						}
+							endif;
+					endif;
+				endif;
+
+			restore_current_blog();
+	endif;
+		echo json_encode( $validate_license ); // phpcs:ignore
+		die();
+	}
 
 	/**
 	 * Licence validation
@@ -91,16 +90,16 @@ class Moove_GDPR_License_Manager {
 	 * @param string $action Action.
 	 */
 	public function validate_license( $license_key = false, $type = 'gdpr', $action = 'check' ) {
-		$content       	= new Moove_GDPR_Content();
-		$license_token 	= $content->get_license_token();
-		$request_url	 	= MOOVE_SHOP_URL . "/wp-json/license-manager/v1/validate_licence/?license_key=$license_key&license_token=$license_token&license_type=$type&license_action=$action";
-		
-		$response = wp_remote_get( 
+		$content       = new Moove_GDPR_Content();
+		$license_token = $content->get_license_token();
+		$request_url   = MOOVE_SHOP_URL . "/wp-json/license-manager/v1/validate_licence/?license_key=$license_key&license_token=$license_token&license_type=$type&license_action=$action";
+
+		$response = wp_remote_get(
 			$request_url,
 			array(
-        'timeout'     => 40,
-        'httpversion' => '1.1'
-    	)
+				'timeout'     => 40,
+				'httpversion' => '1.1',
+			)
 		);
 
 		$body = wp_remote_retrieve_body( $response );
@@ -109,10 +108,10 @@ class Moove_GDPR_License_Manager {
 			$error = $response;
 			return array(
 				'valid'   => false,
-				'key'			=> $license_key,
+				'key'     => $license_key,
 				'message' => array(
 					'We cannot activate the licence due to errors with the setup of your website and/or your hosting.',
-					'<strong>' . ( is_object( $error ) && method_exists( $error, 'get_error_messages' ) ? implode('<br />', $error->get_error_messages() ) : '' ) . '</strong>',
+					'<strong>' . ( is_object( $error ) && method_exists( $error, 'get_error_messages' ) ? implode( '<br />', $error->get_error_messages() ) : '' ) . '</strong>',
 					'Once you resolve the issues, you will be able to activate the licence. You can also <a href="https://support.mooveagency.com/forum/gdpr-cookie-compliance/" target="_blank" class="error_admin_link">contact our support</a> if you need any additional assistance.',
 				),
 			);
@@ -124,15 +123,15 @@ class Moove_GDPR_License_Manager {
 				$error = $response;
 				return array(
 					'valid'   => false,
-					'key'			=> $license_key,
+					'key'     => $license_key,
 					'message' => array(
 						'We cannot activate the licence due to errors with the setup of your website and/or your hosting.',
-						'<strong>' . ( method_exists( $error, 'get_error_messages' ) ? implode('<br />', $error->get_error_messages() ) : '' ) . '</strong>',
+						'<strong>' . ( method_exists( $error, 'get_error_messages' ) ? implode( '<br />', $error->get_error_messages() ) : '' ) . '</strong>',
 						'Once you resolve the issues, you will be able to activate the licence. You can also <a href="https://support.mooveagency.com/forum/gdpr-cookie-compliance/" target="_blank" class="error_admin_link">contact our support</a> if you need any additional assistance.',
 					),
 				);
 			endif;
-			
+
 		}
 	}
 

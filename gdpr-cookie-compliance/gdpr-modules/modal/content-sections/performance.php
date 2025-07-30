@@ -5,16 +5,16 @@
 ?>
 
 <?php if ( $content->show ) : ?>
-  <div id="third_party_cookies" class="moove-gdpr-tab-main" <?php echo $content->visibility; ?>>
+  <div id="performance-ccat" class="moove-gdpr-tab-main" <?php echo $content->visibility; ?>>
     <span class="tab-title"><?php echo esc_attr( $content->tab_title ); ?></span>
     <div class="moove-gdpr-tab-main-content">
       <?php echo $content->tab_content; // phpcs:ignore ?>
       <div class="moove-gdpr-status-bar">
         <div class="gdpr-cc-form-wrap">
           <div class="gdpr-cc-form-fieldset">
-            <label class="cookie-switch" for="moove_gdpr_performance_cookies">    
+            <label class="cookie-switch" for="moove_gdpr_performance_cc_cookies">    
               <span class="gdpr-sr-only"><?php esc_html_e( 'Enable or Disable Cookies', 'gdpr-cookie-compliance' ); ?></span>     
-              <input type="checkbox" aria-label="<?php echo esc_attr( $content->tab_title ); ?>" value="check" name="moove_gdpr_performance_cookies" id="moove_gdpr_performance_cookies" <?php echo $content->is_checked; ?>>
+              <input type="checkbox" aria-label="<?php echo esc_attr( $content->tab_title ); ?>" value="check" name="moove_gdpr_performance_cc_cookies" id="moove_gdpr_performance_cc_cookies" <?php echo $content->is_checked; ?>>
               <span class="cookie-slider cookie-round gdpr-sr" data-text-enable="<?php echo esc_attr( $content->text_enable ); ?>" data-text-disabled="<?php echo esc_attr( $content->text_disable ); ?>">
                 <span class="gdpr-sr-label">
                   <span class="gdpr-sr-enable"><?php echo esc_attr( $content->text_enable ); ?></span>
@@ -34,9 +34,9 @@
         </div>
         <!--  .moove-gdpr-tab-main-content -->
       <?php endif; ?>
-      <?php do_action( 'gdpr_modules_content_extension', $content, 'thirdparty' ); ?> 
+      <?php do_action( 'gdpr_modules_content_extension', $content, 'performance' ); ?> 
     </div>
     <!--  .moove-gdpr-tab-main-content -->
   </div>
-  <!-- #third_party_cookies -->
+  <!-- #performance-ccat -->
 <?php endif; ?>

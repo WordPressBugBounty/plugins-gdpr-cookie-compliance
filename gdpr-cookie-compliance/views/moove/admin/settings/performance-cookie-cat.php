@@ -1,6 +1,6 @@
 <?php
 /**
- * Accept Cookies on Scroll File Doc Comment
+ * Consent Log Doc Comment
  *
  * @category  Views
  * @package   gdpr-cookie-compliance
@@ -12,6 +12,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 ?>
-<h2><?php esc_html_e( 'Accept Cookies on Scroll / Hide timer', 'gdpr-cookie-compliance' ); ?></h2>
-<hr />
 <?php do_action( 'gdpr_premium_section_ads' ); ?>

@@ -133,20 +133,6 @@
 
         var previous_sn = false;
 
-        var $inputs = $('input[name=moove_gdpr_strictly_necessary_cookies_functionality]');
-        $inputs.on('focus', function() {
-          previous_sn = $inputs.filter(':checked');
-        });
-
-
-        $(document).on('change','input[name="moove_gdpr_strictly_necessary_cookies_functionality"]', function(e){
-          if ( $(this).val() === '1' && $(this).closest('td').attr('data-fsm') === 'true' ) {
-            e.preventDefault();
-            previous_sn.prop('checked',true).focus();
-            $('.gdpr-admin-popup.gdpr-admin-popup-fsm-settings').fadeIn(200);
-          }
-        });
-
         $(document).on('click','.button-reset-settings',function(e){
           e.preventDefault();
           $('.gdpr-admin-popup.gdpr-admin-popup-reset-settings').fadeIn(200);

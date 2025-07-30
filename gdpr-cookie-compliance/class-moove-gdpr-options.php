@@ -51,14 +51,14 @@ class Moove_GDPR_Options {
 
 		$plugin_tabs = gdpr_get_admin_submenu_items();
 
-		$current_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : '';
+		$current_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : ''; // phpcs:ignore
 		if ( isset( $current_tab ) && '' !== $current_tab ) :
 			$active_tab = $current_tab;
 		else :
 			$active_tab = 'branding';
 		endif; // end if.
 
-		$plugin_link = esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=branding' ) );
+		$plugin_link = esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=branding&gcat=settings' ) );
 
 		foreach ( $plugin_tabs as $plugin_tab ) :
 			$gdpr__sub_settings_page = add_submenu_page(

@@ -4,7 +4,7 @@
  *  Plugin Name: GDPR Cookie Compliance
  *  Plugin URI: https://wordpress.org/plugins/gdpr-cookie-compliance/
  *  Description: Our plugin is useful in preparing your site for the following data protection and privacy regulations: GDPR, CCPA, PIPEDA, AAP, LGPD and others.
- *  Version: 4.16.1
+ *  Version: 5.0.0
  *  Author: Moove Agency
  *  Domain Path: /languages
  *  Author URI: https://www.mooveagency.com
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 
-define( 'MOOVE_GDPR_VERSION', '4.16.1' );
+define( 'MOOVE_GDPR_VERSION', '5.0.0' );
 if ( ! defined( 'MOOVE_SHOP_URL' ) ) :
 	define( 'MOOVE_SHOP_URL', 'https://shop.mooveagency.com' );
 endif;
@@ -44,8 +44,8 @@ function moove_gdpr_deactivate() {
 			$gdpr_key             = $gdpr_default_content->gdpr_get_activation_key( $option_key );
 
 			if ( $gdpr_key && isset( $gdpr_key['key'] ) && isset( $gdpr_key['activation'] ) ) :
-				$license_manager  		= new Moove_GDPR_License_Manager();
-				$validate_license 		= $license_manager->validate_license( $gdpr_key['key'], 'gdpr', 'deactivate' );
+				$license_manager  = new Moove_GDPR_License_Manager();
+				$validate_license = $license_manager->validate_license( $gdpr_key['key'], 'gdpr', 'deactivate' );
 				if ( $validate_license && isset( $validate_license['valid'] ) && true === $validate_license['valid'] ) :
 					update_option(
 						$option_key,
@@ -57,8 +57,8 @@ function moove_gdpr_deactivate() {
 				endif;
 			endif;
 		endif;
-	} catch (Exception $e) {
-		
+	} catch ( Exception $e ) {
+		echo esc_html( $e->getMessage() );
 	}
 }
 
@@ -109,8 +109,7 @@ add_filter( 'plugin_row_meta', 'gdpr_cookie_add_plugin_meta_links', 10, 2 );
  * Loading assets
  */
 function gdpr_cookie_compliance_load_libs() {
-
-	if ( current_user_can('edit_posts') && isset( $_GET['elementor-preview'] ) && intval( $_GET['elementor-preview'] ) ) :
+	if ( current_user_can( 'edit_posts' ) && isset( $_GET['elementor-preview'] ) && intval( $_GET['elementor-preview'] ) ) : // phpcs:ignore
 		/**
 		 * Prevent loading the GDPR plugin in Elementor previews
 		 */
@@ -150,12 +149,12 @@ function gdpr_cookie_compliance_load_libs() {
 		include_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . 'class-moove-gdpr-controller.php';
 		include_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . 'class-moove-gdpr-license-manager.php';
 		include_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . 'class-moove-gdpr-review.php';
-		
+
 		/**
 		 * Custom Functions
 		 */
 		include_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'gdpr-functions.php';
-		
+
 		/**
 		 * Actions
 		 */

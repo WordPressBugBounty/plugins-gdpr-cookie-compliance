@@ -155,6 +155,6 @@ class Moove_GDPR_DB_Controller {
 		global $wpdb;
 		$table_name = self::gdpr_table();
 		delete_option( 'gdpr_cc_db_created' );
-		return $wpdb->query(  "DROP TABLE IF EXISTS {$wpdb->prefix}gdpr_cc_options" ); // db call ok; no-cache ok.
+		return $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}gdpr_cc_options" ); // db call ok; no-cache ok.
 	}
 }

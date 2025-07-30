@@ -30,11 +30,14 @@ class Moove_GDPR_Content {
 
 	/**
 	 * Integration Extensions
+	 *
+	 * @param array $cache_array Cache array.
+	 * @param array $gdpr_options Plugin options.
 	 */
 	public static function gdpr_extend_integration_snippets( $cache_array, $gdpr_options ) {
-		$gdin_values        = isset( $gdpr_options['gdin_values'] ) ? json_decode( $gdpr_options['gdin_values'], true ) : array();
+		$gdin_values = isset( $gdpr_options['gdin_values'] ) ? json_decode( $gdpr_options['gdin_values'], true ) : array();
 		if ( $gdin_values && ! empty( $gdin_values ) && is_array( $gdin_values ) ) :
-			$gdin_modules       = gdpr_get_integration_modules( $gdpr_options, $gdin_values );
+			$gdin_modules = gdpr_get_integration_modules( $gdpr_options, $gdin_values );
 			foreach ( $gdin_modules as $_gdin_module_slug => $_gdin_module ) :
 				if ( isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] && $_gdin_module['status'] ) :
 					$cache_array = apply_filters( 'gdpr_insert_integration_' . $_gdin_module_slug . '_snippet', $cache_array, $_gdin_module );
@@ -44,56 +47,152 @@ class Moove_GDPR_Content {
 		return $cache_array;
 	}
 
+	/**
+	 * Loads the simplified admin top menu items
+	 *
+	 * @param array $active_tab Active Tab.
+	 * @param array $current_gcat Active Tab Category.
+	 * @param array $modal_options Plugin settings.
+	 * @return array $wpml_lang Translation slug.
+	 */
+	public static function gdpr_admin_top_nav_links_gcat( $active_tab, $current_gcat ) {
+		$current_gcat = $current_gcat ? $current_gcat : ( ! isset( $_GET['tab'] ) && isset( $_GET['page'] ) && esc_attr( $_GET['page'] ) === 'moove-gdpr'  ? 'settings' : '' );
+
+		$view_cnt = new GDPR_View();
+		$tab_data = $view_cnt->load( 'moove.admin.nav-tabs.' . $current_gcat, array(
+			'active_tab'		=> $active_tab,
+			'current_gcat'	=> $current_gcat
+		));
+		apply_filters( 'gdpr_cc_keephtml', $tab_data, true );
+
+	}
+
+	/**
+	 * Integration Extensions
+	 *
+	 * @param array $cache_array Cache array.
+	 * @param array $_gdin_module Integration Module.
+	 */
 	public static function gdpr_insert_integration_ga_snippet( $cache_array, $_gdin_module ) {
 		if ( isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] && intval( $_gdin_module['cookie_cat'] ) ) :
-			$cookie_cat_n = intval( $_gdin_module['cookie_cat'] ) === 2 ? 'thirdparty' : ( intval( $_gdin_module['cookie_cat'] ) === 3 ? 'advanced' : '' );
+			$cookie_cat_n = '';
+			switch ( intval( $_gdin_module['cookie_cat'] ) ) {
+				case 2:
+					$cookie_cat_n = 'thirdparty';
+					break;
+				case 3:
+					$cookie_cat_n = 'advanced';
+					break;
+				case 4:
+					$cookie_cat_n = 'performance';
+					break;
+				case 5:
+					$cookie_cat_n = 'preference';
+					break;
+				default:
+					// code...
+					break;
+			}
+
 			if ( $cookie_cat_n ) :
 				ob_start();
 				?>
+				<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<!-- Google tag (gtag.js) -->
 				<script src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>" data-type="gdpr-integration"></script>
 				<script data-type="gdpr-integration">
-				  window.dataLayer = window.dataLayer || [];
-				  function gtag(){dataLayer.push(arguments);}
-				  gtag('js', new Date());
+					window.dataLayer = window.dataLayer || [];
+					function gtag(){dataLayer.push(arguments);}
+					gtag('js', new Date());
 
-				  gtag('config', '<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');
+					gtag('config', '<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');
 				</script>
+				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<?php
-				$cache_array[$cookie_cat_n]['header'] .= ob_get_clean();
+				$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
 			endif;
 		endif;
 		return $cache_array;
 	}
 
+	/**
+	 * Integration Extensions
+	 *
+	 * @param array $cache_array Cache array.
+	 * @param array $_gdin_module Integration Module.
+	 */
 	public static function gdpr_insert_integration_ga4_snippet( $cache_array, $_gdin_module ) {
 		if ( isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] && intval( $_gdin_module['cookie_cat'] ) ) :
-			$cookie_cat_n = intval( $_gdin_module['cookie_cat'] ) === 2 ? 'thirdparty' : ( intval( $_gdin_module['cookie_cat'] ) === 3 ? 'advanced' : '' );
+			$cookie_cat_n = '';
+			switch ( intval( $_gdin_module['cookie_cat'] ) ) {
+				case 2:
+					$cookie_cat_n = 'thirdparty';
+					break;
+				case 3:
+					$cookie_cat_n = 'advanced';
+					break;
+				case 4:
+					$cookie_cat_n = 'performance';
+					break;
+				case 5:
+					$cookie_cat_n = 'preference';
+					break;
+				default:
+					// code...
+					break;
+			}
+
 			if ( $cookie_cat_n ) :
 				ob_start();
 				?>
+				<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<!-- Google tag (gtag.js) - Google Analytics 4 -->
 				<script src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>" data-type="gdpr-integration"></script>
 				<script data-type="gdpr-integration">
-				  window.dataLayer = window.dataLayer || [];
-				  function gtag(){dataLayer.push(arguments);}
-				  gtag('js', new Date());
+					window.dataLayer = window.dataLayer || [];
+					function gtag(){dataLayer.push(arguments);}
+					gtag('js', new Date());
 
-				  gtag('config', '<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');
+					gtag('config', '<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');
 				</script>
+				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<?php
-				$cache_array[$cookie_cat_n]['header'] .= ob_get_clean();
+				$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
 			endif;
 		endif;
 		return $cache_array;
 	}
 
+	/**
+	 * Integration Extensions
+	 *
+	 * @param array $cache_array Cache array.
+	 * @param array $_gdin_module Integration Module.
+	 */
 	public static function gdpr_insert_integration_gtm_snippet( $cache_array, $_gdin_module ) {
 		if ( isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] && intval( $_gdin_module['cookie_cat'] ) ) :
-			$cookie_cat_n = intval( $_gdin_module['cookie_cat'] ) === 2 ? 'thirdparty' : ( intval( $_gdin_module['cookie_cat'] ) === 3 ? 'advanced' : '' );
+			$cookie_cat_n = '';
+			switch ( intval( $_gdin_module['cookie_cat'] ) ) {
+				case 2:
+					$cookie_cat_n = 'thirdparty';
+					break;
+				case 3:
+					$cookie_cat_n = 'advanced';
+					break;
+				case 4:
+					$cookie_cat_n = 'performance';
+					break;
+				case 5:
+					$cookie_cat_n = 'preference';
+					break;
+				default:
+					// code...
+					break;
+			}
 			if ( $cookie_cat_n ) :
 				ob_start();
 				?>
+				<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<!-- Google Tag Manager -->
 				<script data-type="gdpr-integration">(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 				new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -102,45 +201,62 @@ class Moove_GDPR_Content {
 				})(window,document,'script','dataLayer','<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');</script>
 				<!-- End Google Tag Manager -->
 				<?php
-				$cache_array[$cookie_cat_n]['header'] .= ob_get_clean();
+				$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
 				ob_start();
 				?>
 				<!-- Google Tag Manager (noscript) -->
 				<noscript data-type="gdpr-integration"><iframe src="https://www.googletagmanager.com/ns.html?id=<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>"
 				height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 				<!-- End Google Tag Manager (noscript) -->
+				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<?php
-				$cache_array[$cookie_cat_n]['body'] .= ob_get_clean();
+				$cache_array[ $cookie_cat_n ]['body'] .= ob_get_clean();
 			endif;
 		endif;
 		return $cache_array;
 	}
 
-	public static function gdpr_google_consent_mode2_snippet(){
+	public static function moove_gdpr_after_body_open() {
 		$gdpr_default_content = new Moove_GDPR_Content();
-  	$option_name          = $gdpr_default_content->moove_gdpr_get_option_name();
+		$option_name          = $gdpr_default_content->moove_gdpr_get_option_name();
 		$gdpr_options         = get_option( $option_name );
-		$gdin_values       	 	= isset( $gdpr_options['gdin_values'] ) ? json_decode( $gdpr_options['gdin_values'], true ) : array();
-   	$gdin_modules       	= gdpr_get_integration_modules( $gdpr_options, $gdin_values );
-   	if ( isset( $gdin_modules['gtmc2'] ) && isset( $gdin_modules['gtmc2']['tacking_id'] ) && $gdin_modules['gtmc2']['status'] ) :
-			?>
-				<script>
-				  // Define dataLayer and the gtag function.
-				  window.dataLayer = window.dataLayer || [];
-				  function gtag(){dataLayer.push(arguments);}
+		if ( isset( $gdpr_options['moove_gdpr_strictly_body_scripts'] ) && $gdpr_options['moove_gdpr_strictly_body_scripts'] ) :
+			echo $gdpr_options['moove_gdpr_strictly_body_scripts'];
+		endif;
+	}
 
-				  // Set default consent to 'denied' as a placeholder
-				  // Determine actual values based on your own requirements
-				  gtag('consent', 'default', {
-				    'ad_storage': 'denied',
-				    'ad_user_data': 'denied',
-				    'ad_personalization': 'denied',
-				    'analytics_storage': 'denied',
-				    'personalization_storage': 'denied',
+	/**
+	 * Integration Extensions
+	 */
+	public static function gdpr_google_consent_mode2_snippet() {
+		$gdpr_default_content = new Moove_GDPR_Content();
+		$option_name          = $gdpr_default_content->moove_gdpr_get_option_name();
+		$gdpr_options         = get_option( $option_name );
+		$gdin_values          = isset( $gdpr_options['gdin_values'] ) ? json_decode( $gdpr_options['gdin_values'], true ) : array();
+		$gdin_modules         = gdpr_get_integration_modules( $gdpr_options, $gdin_values );
+		if ( isset( $gdpr_options['moove_gdpr_strictly_header_scripts'] ) && $gdpr_options['moove_gdpr_strictly_header_scripts'] ) :
+			echo $gdpr_options['moove_gdpr_strictly_header_scripts'];
+		endif;
+		if ( isset( $gdin_modules['gtmc2'] ) && isset( $gdin_modules['gtmc2']['tacking_id'] ) && $gdin_modules['gtmc2']['status'] ) :
+			?>
+				<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
+				<script>
+					// Define dataLayer and the gtag function.
+					window.dataLayer = window.dataLayer || [];
+					function gtag(){dataLayer.push(arguments);}
+
+					// Set default consent to 'denied' as a placeholder
+					// Determine actual values based on your own requirements
+					gtag('consent', 'default', {
+						'ad_storage': 'denied',
+						'ad_user_data': 'denied',
+						'ad_personalization': 'denied',
+						'analytics_storage': 'denied',
+						'personalization_storage': 'denied',
 						'security_storage': 'denied',
 						'functionality_storage': 'denied',
-						'wait_for_update': '<?php echo apply_filters( 'gdpr_cc_gtm2_wait_for_update', '2000' ) ?>'
-				  });
+						'wait_for_update': '<?php echo esc_attr( apply_filters( 'gdpr_cc_gtm2_wait_for_update', '2000' ) ); ?>'
+					});
 				</script>
 
 				<!-- Google Tag Manager -->
@@ -150,106 +266,205 @@ class Moove_GDPR_Content {
 				'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 				})(window,document,'script','dataLayer','<?php echo esc_attr( $gdin_modules['gtmc2']['tacking_id'] ); ?>');</script>
 				<!-- End Google Tag Manager -->
+				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 			<?php
 		endif;
 	}
 
+	/**
+	 * Integration Extensions
+	 *
+	 * @param array $cache_array Cache array.
+	 * @param array $_gdin_module Integration Module.
+	 */
 	public static function gdpr_insert_integration_gtmc2_snippet( $cache_array, $_gdin_module ) {
 		if ( isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] && intval( $_gdin_module['cookie_cat'] ) ) :
-			$cookie_cat_n = intval( $_gdin_module['cookie_cat'] ) === 2 ? 'thirdparty' : ( intval( $_gdin_module['cookie_cat'] ) === 3 ? 'advanced' : '' );
+			$cookie_cat_n = '';
+			switch ( intval( $_gdin_module['cookie_cat'] ) ) {
+				case 2:
+					$cookie_cat_n = 'thirdparty';
+					break;
+				case 3:
+					$cookie_cat_n = 'advanced';
+					break;
+				case 4:
+					$cookie_cat_n = 'performance';
+					break;
+				case 5:
+					$cookie_cat_n = 'preference';
+					break;
+				default:
+					// code...
+					break;
+			}
+
 			if ( $cookie_cat_n ) :
 				ob_start();
 				?>
+				<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<script>
 					gtag('consent', 'update', {
-			      'ad_storage': 'granted',
-				    'ad_user_data': 'granted',
-				    'ad_personalization': 'granted',
-				    'analytics_storage': 'granted',
-				    'personalization_storage': 'granted',
+					'ad_storage': 'granted',
+					'ad_user_data': 'granted',
+					'ad_personalization': 'granted',
+					'analytics_storage': 'granted',
+					'personalization_storage': 'granted',
 						'security_storage': 'granted',
 						'functionality_storage': 'granted',
-			    });
+				});
 
-			    dataLayer.push({
-					 'event': 'cookie_consent_update'
+				dataLayer.push({
+					'event': 'cookie_consent_update'
 					});
 				</script>	
+				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<?php
-				$cache_array[$cookie_cat_n]['header'] .= ob_get_clean();
+				$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
 				ob_start();
 			endif;
 		endif;
 		return $cache_array;
 	}
 
+	/**
+	 * Integration Extensions
+	 *
+	 * @param array $cache_array Cache array.
+	 * @param array $_gdin_module Integration Module.
+	 */
 	public static function gdpr_insert_integration_gadc_snippet( $cache_array, $_gdin_module ) {
 		if ( isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] && intval( $_gdin_module['cookie_cat'] ) ) :
-			$cookie_cat_n = intval( $_gdin_module['cookie_cat'] ) === 2 ? 'thirdparty' : ( intval( $_gdin_module['cookie_cat'] ) === 3 ? 'advanced' : '' );
+			$cookie_cat_n = '';
+			switch ( intval( $_gdin_module['cookie_cat'] ) ) {
+				case 2:
+					$cookie_cat_n = 'thirdparty';
+					break;
+				case 3:
+					$cookie_cat_n = 'advanced';
+					break;
+				case 4:
+					$cookie_cat_n = 'performance';
+					break;
+				case 5:
+					$cookie_cat_n = 'preference';
+					break;
+				default:
+					// code...
+					break;
+			}
 			if ( $cookie_cat_n ) :
 				ob_start();
 				?>
+				<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<!-- Global site tag (gtag.js) - Google Ads -->
 				<script type="text/javascript" data-type="gdpr-integration" src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>"></script>
 				<script data-type="gdpr-integration">
-				  window.dataLayer = window.dataLayer || [];
-				  function gtag(){dataLayer.push(arguments);}
-				  gtag('js', new Date());
-
-				  gtag('config', '<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');
+					window.dataLayer = window.dataLayer || [];
+					function gtag(){dataLayer.push(arguments);}
+					gtag('js', new Date());
+					gtag('config', '<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');
 				</script>
 				<!-- End Google Ads -->
+				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<?php
-				$cache_array[$cookie_cat_n]['header'] .= ob_get_clean();				
+				$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
 			endif;
 		endif;
 		return $cache_array;
 	}
 
+	/**
+	 * Integration Extensions
+	 *
+	 * @param array $cache_array Cache array.
+	 * @param array $_gdin_module Integration Module.
+	 */
 	public static function gdpr_insert_integration_fbp_snippet( $cache_array, $_gdin_module ) {
 		if ( isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] && intval( $_gdin_module['cookie_cat'] ) ) :
-			$cookie_cat_n = intval( $_gdin_module['cookie_cat'] ) === 2 ? 'thirdparty' : ( intval( $_gdin_module['cookie_cat'] ) === 3 ? 'advanced' : '' );
+			$cookie_cat_n = '';
+			switch ( intval( $_gdin_module['cookie_cat'] ) ) {
+				case 2:
+					$cookie_cat_n = 'thirdparty';
+					break;
+				case 3:
+					$cookie_cat_n = 'advanced';
+					break;
+				case 4:
+					$cookie_cat_n = 'performance';
+					break;
+				case 5:
+					$cookie_cat_n = 'preference';
+					break;
+				default:
+					// code...
+					break;
+			}
 			if ( $cookie_cat_n ) :
 				ob_start();
 				?>
+				<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<!-- Facebook Pixel Code -->
 				<script data-type="gdpr-integration">
-				  !function(f,b,e,v,n,t,s)
-				  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-				  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-				  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-				  n.queue=[];t=b.createElement(e);t.async=!0;
-				  t.src=v;s=b.getElementsByTagName(e)[0];
-				  s.parentNode.insertBefore(t,s)}(window, document,'script',
-				  'https://connect.facebook.net/en_US/fbevents.js');
-				  fbq('init', '<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');
-				  fbq('track', 'PageView');
+					!function(f,b,e,v,n,t,s)
+					{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+					n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+					if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+					n.queue=[];t=b.createElement(e);t.async=!0;
+					t.src=v;s=b.getElementsByTagName(e)[0];
+					s.parentNode.insertBefore(t,s)}(window, document,'script',
+					'https://connect.facebook.net/en_US/fbevents.js');
+					fbq('init', '<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');
+					fbq('track', 'PageView');
 				</script>
 				<?php
-				$cache_array[$cookie_cat_n]['header'] .= ob_get_clean();
+				$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
 				ob_start();
 				?>
 				<noscript data-type="gdpr-integration">
-				  <img height="1" width="1" style="display:none" 
-				       src="https://www.facebook.com/tr?id=<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>&ev=PageView&noscript=1"/>
+					<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>&ev=PageView&noscript=1"/>
 				</noscript>
 				<!-- End Facebook Pixel Code -->
+				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<?php
-				$cache_array[$cookie_cat_n]['body'] .= ob_get_clean();
+				$cache_array[ $cookie_cat_n ]['body'] .= ob_get_clean();
 			endif;
 		endif;
 		return $cache_array;
 	}
 
+	/**
+	 * Integration Extensions
+	 *
+	 * @param array $cache_array Cache array.
+	 * @param array $_gdin_module Integration Module.
+	 */
 	public static function gdpr_insert_integration_gtm4wp_snippet( $cache_array, $_gdin_module ) {
-		if ( defined('GTM4WP_OPTIONS') && defined ( 'GTM4WP_OPTION_GTM_PLACEMENT' ) && defined ( 'GTM4WP_PLACEMENT_OFF' ) ) :
-      $storedoptions = (array) get_option( GTM4WP_OPTIONS );
-    	$gtm4wp_container_code_written = false;
-			if ( ( isset( $storedoptions[GTM4WP_OPTION_GTM_PLACEMENT] ) && $storedoptions[GTM4WP_OPTION_GTM_PLACEMENT] === GTM4WP_PLACEMENT_OFF ) && isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] && intval( $_gdin_module['cookie_cat'] ) ) :
-				$cookie_cat_n = intval( $_gdin_module['cookie_cat'] ) === 2 ? 'thirdparty' : ( intval( $_gdin_module['cookie_cat'] ) === 3 ? 'advanced' : '' );
+		if ( defined( 'GTM4WP_OPTIONS' ) && defined( 'GTM4WP_OPTION_GTM_PLACEMENT' ) && defined( 'GTM4WP_PLACEMENT_OFF' ) ) :
+			$storedoptions                 = (array) get_option( GTM4WP_OPTIONS );
+			$gtm4wp_container_code_written = false;
+			if ( ( isset( $storedoptions[ GTM4WP_OPTION_GTM_PLACEMENT ] ) && GTM4WP_PLACEMENT_OFF === $storedoptions[ GTM4WP_OPTION_GTM_PLACEMENT ] ) && isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] && intval( $_gdin_module['cookie_cat'] ) ) :
+				$cookie_cat_n = '';
+				switch ( intval( $_gdin_module['cookie_cat'] ) ) {
+					case 2:
+						$cookie_cat_n = 'thirdparty';
+						break;
+					case 3:
+						$cookie_cat_n = 'advanced';
+						break;
+					case 4:
+						$cookie_cat_n = 'performance';
+						break;
+					case 5:
+						$cookie_cat_n = 'preference';
+						break;
+					default:
+						// code...
+						break;
+				}
 				if ( $cookie_cat_n && ! $gtm4wp_container_code_written ) :
 					ob_start();
 					?>
+					<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 					<!-- Google Tag Manager -->
 					<script data-type="gdpr-integration">(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 					new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -258,16 +473,17 @@ class Moove_GDPR_Content {
 					})(window,document,'script','dataLayer','<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');</script>
 					<!-- End Google Tag Manager -->
 					<?php
-					$cache_array[$cookie_cat_n]['header'] .= ob_get_clean();
+					$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
 					ob_start();
 					?>
 					<!-- Google Tag Manager (noscript) -->
 					<noscript data-type="gdpr-integration"><iframe src="https://www.googletagmanager.com/ns.html?id=<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>"
 					height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 					<!-- End Google Tag Manager (noscript) -->
+					<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 					<?php
-					$cache_array[$cookie_cat_n]['body'] .= ob_get_clean();
-					$gtm4wp_container_code_written = true;
+					$cache_array[ $cookie_cat_n ]['body'] .= ob_get_clean();
+					$gtm4wp_container_code_written         = true;
 				endif;
 			endif;
 		endif;
@@ -286,8 +502,8 @@ class Moove_GDPR_Content {
 
 	/**
 	 * Returns the GDPR activation key
+	 *
 	 * @param string $option_key Option key.
-	 * 
 	 */
 	public function gdpr_get_activation_key( $option_key ) {
 		$value = get_option( $option_key );
@@ -306,7 +522,7 @@ class Moove_GDPR_Content {
 					$value = $_value;
 				endif;
 			endif;
-		endif;	
+		endif;
 		return $value;
 	}
 
@@ -322,7 +538,7 @@ class Moove_GDPR_Content {
 	/**
 	 * Strict Necessary Tab Content
 	 *
-	 * @return string Filtered Content
+	 * @return string Filtered Content.
 	 */
 	public function moove_gdpr_get_strict_necessary_content() {
 		$_content = '<p>' . __( 'Strictly Necessary Cookie should be enabled at all times so that we can save your preferences for cookie settings.', 'gdpr-cookie-compliance' ) . '</p>';
@@ -330,26 +546,9 @@ class Moove_GDPR_Content {
 	}
 
 	/**
-	 * Strict Necessary Warning Message
-	 *
-	 * @return string Filtered Content
-	 */
-	public function moove_gdpr_get_strict_necessary_warning() {
-		$_content          = '';
-		$options_name      = $this->moove_gdpr_get_option_name();
-		$gdpr_options      = get_option( $options_name );
-		$wpml_lang_options = $this->moove_gdpr_get_wpml_lang();
-
-		if ( ! isset( $gdpr_options[ 'moove_gdpr_strictly_necessary_cookies_warning' . $wpml_lang_options ] ) ) :
-			$_content = __( 'If you disable this cookie, we will not be able to save your preferences. This means that every time you visit this website you will need to enable or disable cookies again.', 'gdpr-cookie-compliance' );
-		endif;
-		return $_content;
-	}
-
-	/**
 	 * Advanced Cookies Tab Content
 	 *
-	 * @return string Filtered Content
+	 * @return string Filtered Content.
 	 */
 	public function moove_gdpr_get_advanced_cookies_content() {
 		$_content = '<p>' . __( 'This website uses the following additional cookies:</p><p>(List the cookies that you are using on the website here.)', 'gdpr-cookie-compliance' ) . '</p>';
@@ -359,7 +558,7 @@ class Moove_GDPR_Content {
 	/**
 	 * Third Party Cookies Tab Content
 	 *
-	 * @return string Filtered Content
+	 * @return string Filtered Content.
 	 */
 	public function moove_gdpr_get_third_party_content() {
 		$_content  = '<p>' . __( 'This website uses Google Analytics to collect anonymous information such as the number of visitors to the site, and the most popular pages.', 'gdpr-cookie-compliance' );
@@ -370,7 +569,7 @@ class Moove_GDPR_Content {
 	/**
 	 * Cookie Policy Tab Content
 	 *
-	 * @return string Filtered Content
+	 * @return string Filtered Content.
 	 */
 	public function moove_gdpr_get_cookie_policy_content() {
 		$privacy_policy_page = get_option( 'wp_page_for_privacy_policy' );
@@ -387,7 +586,7 @@ class Moove_GDPR_Content {
 	/**
 	 * Cookie Policy Tab Content
 	 *
-	 * @return string Filtered Content
+	 * @return string Filtered Content.
 	 */
 	public function moove_gdpr_ifb_content() {
 		$_content  = '<h2>' . __( 'This content is blocked', 'gdpr-cookie-compliance' );
@@ -397,8 +596,6 @@ class Moove_GDPR_Content {
 		$_content .= '[setting]' . esc_html__( 'Adjust your settings', 'gdpr-cookie-compliance' ) . '[/setting] ';
 		return $_content;
 	}
-
-
 
 	/**
 	 * Get option name
@@ -415,52 +612,40 @@ class Moove_GDPR_Content {
 	}
 
 	/**
-	 * Get strict secondary notice
-	 */
-	public function moove_gdpr_get_secondary_notice() {
-		$_content          = '';
-		$options_name      = $this->moove_gdpr_get_option_name();
-		$gdpr_options      = get_option( $options_name );
-		$wpml_lang_options = $this->moove_gdpr_get_wpml_lang();
-		if ( ! isset( $gdpr_options[ 'moove_gdpr_modal_strictly_secondary_notice' . $wpml_lang_options ] ) ) :
-			$_content = __( 'Please enable Strictly Necessary Cookies first so that we can save your preferences!', 'gdpr-cookie-compliance' );
-		endif;
-		return $_content;
-	}
-
-	/**
 	 * Get WMPL language code
+	 *
+	 * @param string $type Type.
 	 */
 	public function moove_gdpr_get_wpml_lang( $type = 'code' ) {
-		if ( function_exists( 'trp_get_languages' ) && isset( $_GET['gdpr-lang'] ) && is_admin() ) :
-			$lang_code = sanitize_text_field( wp_unslash( $_GET['gdpr-lang'] ) );
-			if ( $type === 'code' ) :
+		if ( function_exists( 'trp_get_languages' ) && isset( $_GET['gdpr-lang'] ) && is_admin() ) : // phpcs:ignore
+			$lang_code = sanitize_text_field( wp_unslash( $_GET['gdpr-lang'] ) ); // phpcs:ignore
+			if ( 'code' === $type ) :
 				return $lang_code;
 			else :
 				$trp_languages = trp_get_languages();
-				return isset( $trp_languages[$lang_code] ) ? $trp_languages[$lang_code] : '';
+				return isset( $trp_languages[ $lang_code ] ) ? $trp_languages[ $lang_code ] : '';
 			endif;
-		elseif ( class_exists( 'Falang' ) && isset( $_GET['gdpr-lang'] ) && is_admin() ) :
-			$lang_code = sanitize_text_field( wp_unslash( $_GET['gdpr-lang'] ) );
-			if ( $type === 'code' ) :
+		elseif ( class_exists( 'Falang' ) && isset( $_GET['gdpr-lang'] ) && is_admin() ) : // phpcs:ignore
+			$lang_code = sanitize_text_field( wp_unslash( $_GET['gdpr-lang'] ) ); // phpcs:ignore
+			if ( 'code' === $type ) :
 				return $lang_code;
 			else :
-				$falang_languages 		= Falang()->get_model()->get_languages_list();
-				$lang_name 						= $lang_code;
+				$falang_languages = Falang()->get_model()->get_languages_list();
+				$lang_name        = $lang_code;
 				foreach ( $falang_languages as $language ) :
-					$_code 			= isset( $language->locale ) ? $language->locale : ( isset( $language->slug ) ? $language->slug : '' );
-					$lang_name 	= $_code === $lang_code && isset( $language->name ) ? $language->name : $lang_name;
+					$_code     = isset( $language->locale ) ? $language->locale : ( isset( $language->slug ) ? $language->slug : '' );
+					$lang_name = $_code === $lang_code && isset( $language->name ) ? $language->name : $lang_name;
 				endforeach;
 				return $lang_name;
 			endif;
 		else :
 			if ( function_exists( 'trp_get_languages' ) ) :
 				$trp_languages = trp_get_languages();
-				global $TRP_LANGUAGE;
-				return $type === 'code' ? $TRP_LANGUAGE : $trp_languages[ $TRP_LANGUAGE ];
+				global $TRP_LANGUAGE; // phpcs:ignore
+				return 'code' === $type ? $TRP_LANGUAGE : $trp_languages[ $TRP_LANGUAGE ]; // phpcs:ignore
 			elseif ( class_exists( 'Falang' ) ) :
 				$current_language = Falang()->get_current_language();
-				if ( $type === 'code' ) :
+				if ( 'code' === $type ) :
 					$lang = isset( $current_language->locale ) ? $current_language->locale : ( isset( $current_language->slug ) ? $current_language->slug : '' );
 				else :
 					$lang = isset( $current_language->name ) ? $current_language->name : '';
@@ -507,18 +692,22 @@ class Moove_GDPR_Content {
 	 */
 	public function gdpr_get_php_cookies() {
 		$cookies_accepted = array(
-			'strict'     => false,
-			'thirdparty' => false,
-			'advanced'   => false,
+			'strict'      => false,
+			'thirdparty'  => false,
+			'advanced'    => false,
+			'performance' => false,
+			'preference'  => false,
 		);
 		if ( isset( $_COOKIE['moove_gdpr_popup'] ) ) :
 			$cookies         = sanitize_text_field( wp_unslash( $_COOKIE['moove_gdpr_popup'] ) );
 			$cookies_decoded = json_decode( wp_unslash( $cookies ), true );
 			if ( $cookies_decoded && is_array( $cookies_decoded ) && ! empty( $cookies_decoded ) ) :
 				$cookies_accepted = array(
-					'strict'     => isset( $cookies_decoded['strict'] ) && intval( $cookies_decoded['strict'] ) === 1 ? true : false,
-					'thirdparty' => isset( $cookies_decoded['thirdparty'] ) && intval( $cookies_decoded['thirdparty'] ) === 1 ? true : false,
-					'advanced'   => isset( $cookies_decoded['advanced'] ) && intval( $cookies_decoded['advanced'] ) === 1 ? true : false,
+					'strict'      => isset( $cookies_decoded['strict'] ) && intval( $cookies_decoded['strict'] ) === 1 ? true : false,
+					'thirdparty'  => isset( $cookies_decoded['thirdparty'] ) && intval( $cookies_decoded['thirdparty'] ) === 1 ? true : false,
+					'advanced'    => isset( $cookies_decoded['advanced'] ) && intval( $cookies_decoded['advanced'] ) === 1 ? true : false,
+					'performance' => isset( $cookies_decoded['performance'] ) && intval( $cookies_decoded['performance'] ) === 1 ? true : false,
+					'preference'  => isset( $cookies_decoded['preference'] ) && intval( $cookies_decoded['preference'] ) === 1 ? true : false,
 				);
 		endif;
 	else :
@@ -526,12 +715,16 @@ class Moove_GDPR_Content {
 		$gdpr_options      = get_option( $options_name );
 		$wpml_lang_options = $this->moove_gdpr_get_wpml_lang();
 
-		$strictly_functionality = isset( $gdpr_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) && intval( $gdpr_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) ? intval( $gdpr_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) : 1;
+		$strictly_functionality = 2;
 		$thirdparty_default     = isset( $gdpr_options['moove_gdpr_third_party_cookies_enable_first_visit'] ) && intval( $gdpr_options['moove_gdpr_third_party_cookies_enable_first_visit'] ) ? intval( $gdpr_options['moove_gdpr_third_party_cookies_enable_first_visit'] ) : 0;
 		$advanced_default       = isset( $gdpr_options['moove_gdpr_advanced_cookies_enable_first_visit'] ) && intval( $gdpr_options['moove_gdpr_advanced_cookies_enable_first_visit'] ) ? intval( $gdpr_options['moove_gdpr_advanced_cookies_enable_first_visit'] ) : 0;
 
+		$performance_default = isset( $gdpr_options['moove_gdpr_performance_ccat_enable_first_visit'] ) && intval( $gdpr_options['moove_gdpr_performance_ccat_enable_first_visit'] ) ? intval( $gdpr_options['moove_gdpr_performance_ccat_enable_first_visit'] ) : 0;
+
+		$preference_default = isset( $gdpr_options['moove_gdpr_preference_ccat_enable_first_visit'] ) && intval( $gdpr_options['moove_gdpr_preference_ccat_enable_first_visit'] ) ? intval( $gdpr_options['moove_gdpr_preference_ccat_enable_first_visit'] ) : 0;
+
 		if ( 1 === $strictly_functionality ) :
-			if ( 1 === $thirdparty_default || 1 === $advanced_default ) :
+			if ( 1 === $thirdparty_default || 1 === $advanced_default || 1 === $performance_default || 1 === $preference_default ) :
 				$strict_default = 1;
 			else :
 				$strict_default = 0;
@@ -541,9 +734,11 @@ class Moove_GDPR_Content {
 		endif;
 
 		$cookies_accepted = array(
-			'strict'     => $strict_default,
-			'thirdparty' => $thirdparty_default,
-			'advanced'   => $advanced_default,
+			'strict'      => $strict_default,
+			'thirdparty'  => $thirdparty_default,
+			'advanced'    => $advanced_default,
+			'performance' => $performance_default,
+			'preference'  => $preference_default,
 		);
 
 	endif;
@@ -653,8 +848,9 @@ class Moove_GDPR_Content {
 					<hr />
 				</th>
 			</tr>
-			<?php 
-				if ( 'max_activation_reached' === $type ) : ?>
+			<?php
+			if ( 'max_activation_reached' === $type ) :
+				?>
 					<tr>
 						<th scope="row" style="padding: 0 0 10px 0;">
 							<label><?php esc_html_e( 'Enter a new licence key:', 'gdpr-cookie-compliance' ); ?></label>
@@ -725,7 +921,7 @@ class Moove_GDPR_Content {
 	public static function gdpr_get_alertbox( $type, $response, $gdpr_key ) {
 		if ( 'error' === $type ) :
 			$messages = isset( $response['message'] ) && is_array( $response['message'] ) ? implode( '</p><p>', $response['message'] ) : '';
-			if ( isset( $response['type'] ) && ( $response['type'] === 'inactive' || $response['type'] === 'max_activation_reached' || $response['type'] === 'suspended' ) ) :
+			if ( isset( $response['type'] ) && ( $response['type'] === 'inactive' || $response['type'] === 'max_activation_reached' || $response['type'] === 'suspended' ) ) : // phpcs:ignore
 				$gdpr_default_content = new Moove_GDPR_Content();
 				$option_key           = $gdpr_default_content->moove_gdpr_get_key_name();
 				$gdpr_key             = $gdpr_default_content->gdpr_get_activation_key( $option_key );
@@ -826,27 +1022,29 @@ class Moove_GDPR_Content {
 
 	/**
 	 * Licence Action Buttons
+	 *
+	 * @param boolean $show_title Show title.
 	 */
 	public static function gdpr_cc_licence_manager_action_button( $show_title = true ) {
-		if ( function_exists('is_multisite') && is_multisite() ) :
-			$is_bulk_view 	= isset( $_GET['view'] );
-			$button_view 		= $is_bulk_view ? '' : '&view=bulk';
+		if ( function_exists( 'is_multisite' ) && is_multisite() ) :
+			$is_bulk_view = isset( $_GET['view'] ); // phpcs:ignore
+			$button_view  = $is_bulk_view ? '' : '&view=bulk';
 			?>
 			<div class="gdpr-multisite-bal">
 				<?php if ( $show_title ) : ?>
 					<h3><?php esc_html_e( 'Bulk Multisite Activation', 'gdpr-cookie-compliance' ); ?></h3>
 					<p><?php esc_html_e( 'You can activate the Licence Key on all your subsites using the tool below.', 'gdpr-cookie-compliance' ); ?></p>
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=moove-gdpr_licence&tab=licence' . $button_view ) ); ?>" class="button button-primary button-inverse">
-						<?php 
-							if ( ! $is_bulk_view ) : 
-								esc_html_e( 'Bulk Licence Activation', 'gdpr-cookie-compliance' );
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=moove-gdpr_licence' . $button_view ) ); ?>" class="button button-primary button-inverse">
+						<?php
+						if ( ! $is_bulk_view ) :
+							esc_html_e( 'Bulk Licence Activation', 'gdpr-cookie-compliance' );
 							else :
 								esc_html_e( 'Single Activation', 'gdpr-cookie-compliance' );
 							endif;
-						?>
+							?>
 					</a>
 				<?php elseif ( $is_bulk_view ) : ?>
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=moove-gdpr_licence&tab=licence' . $button_view ) ); ?>" class="button button-primary button-inverse">
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=moove-gdpr_licence' . $button_view ) ); ?>" class="button button-primary button-inverse">
 						<?php esc_html_e( 'Single Activation', 'gdpr-cookie-compliance' ); ?>
 					</a>
 				<?php endif; ?>

@@ -64,11 +64,9 @@ if ( isset( $_POST['moove_gdpr_nonce'] ) && wp_verify_nonce( sanitize_key( wp_un
 	<?php
 endif;
 
-	$nav_label = isset( $gdpr_options[ 'moove_gdpr_advanced_cookies_tab_title' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_advanced_cookies_tab_title' . $wpml_lang ] ? $gdpr_options[ 'moove_gdpr_advanced_cookies_tab_title' . $wpml_lang ] : __( 'Additional Cookies', 'gdpr-cookie-compliance' );
+$nav_label = isset( $gdpr_options[ 'moove_gdpr_advanced_cookies_tab_title' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_advanced_cookies_tab_title' . $wpml_lang ] ? $gdpr_options[ 'moove_gdpr_advanced_cookies_tab_title' . $wpml_lang ] : __( 'Marketing', 'gdpr-cookie-compliance' );
 ?>
-<h2><?php echo esc_attr( $nav_label ); ?></h2>
-<hr />
-<form action="<?php echo esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=advanced-cookies' ) ); ?>" method="post" id="moove_gdpr_tab_advanced_cookies">
+<form action="<?php echo esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=advanced-cookies&gcat=cookie_categories' ) ); ?>" method="post" id="moove_gdpr_tab_advanced_cookies">
 	<?php wp_nonce_field( 'moove_gdpr_nonce_field', 'moove_gdpr_nonce' ); ?>
 	<table class="form-table <?php echo $empty_scripts ? 'moove-gdpr-form-error' : ''; ?>">
 	<tbody>

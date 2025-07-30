@@ -12,6 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 ?>
-<h2><?php esc_html_e('Multisite Settings','gdpr-cookie-compliance'); ?></h2>
+<h2><?php esc_html_e( 'Multisite Settings', 'gdpr-cookie-compliance' ); ?></h2>
 <hr />
-<?php do_action('gdpr_premium_section_ads'); ?>
+<?php do_action( 'gdpr_premium_section_ads' ); ?>

@@ -26,22 +26,22 @@ if ( ! function_exists( 'gdpr_get_admin_submenu_items' ) ) :
 	 */
 	function gdpr_get_admin_submenu_items() {
 		$plugin_tabs = array(
-			'help' => array(
-				'title'    => esc_html__( 'Documentation', 'gdpr-cookie-compliance' ),
-				'slug'     => 'help'
+			'help'           => array(
+				'title' => esc_html__( 'Documentation', 'gdpr-cookie-compliance' ),
+				'slug'  => 'help',
 			),
 			'video-tutorial' => array(
-				'title'    => esc_html__( 'Video Tutorial', 'gdpr-cookie-compliance' ),
-				'slug'     => 'video-tutorial'
+				'title' => esc_html__( 'Video Tutorial', 'gdpr-cookie-compliance' ),
+				'slug'  => 'video-tutorial',
 			),
-			'support' => array(
-				'title'    => esc_html__( 'Support', 'gdpr-cookie-compliance' ),
-				'slug'     => 'support'
+			'support'        => array(
+				'title' => esc_html__( 'Support', 'gdpr-cookie-compliance' ),
+				'slug'  => 'support',
 			),
-			'licence' => array(
-				'title'    => '<span style="color: #f89e26">' . esc_html__( 'Licence Manager', 'gdpr-cookie-compliance' ) . '</span>',
-				'slug'     => 'licence'
-			)
+			'licence'        => array(
+				'title' => '<span style="color: #f89e26">' . esc_html__( 'Licence Manager', 'gdpr-cookie-compliance' ) . '</span>',
+				'slug'  => 'licence',
+			),
 		);
 
 		$plugin_tabs = apply_filters( 'gdpr_admin_sidebar_nav_links', $plugin_tabs );
@@ -58,69 +58,76 @@ if ( ! function_exists( 'gdpr_get_site_id' ) ) :
 	}
 endif;
 
-if ( ! function_exists('gdpr_get_integration_modules') ) :
+if ( ! function_exists( 'gdpr_get_integration_modules' ) ) :
+	/**
+	 * Integration Modules Loading
+	 *
+	 * @param array $gdpr_options Plugin options.
+	 * @param array $gdin_values Integration modules.
+	 * @return array $extended integration modules
+	 */
 	function gdpr_get_integration_modules( $gdpr_options, $gdin_values ) {
 		$integration_modules = array(
-			'ga4'	=> array(
-				'name'				=> 'Google Analytics 4',
-				'desc'				=> '',
-				'cookie_cat'	=> isset( $gdin_values['ga4'] ) ? intval( $gdin_values['ga4'] ) : 2,
-				'tacking_id'	=> isset( $gdin_values['ga4_id'] ) ? $gdin_values['ga4_id'] : '',
-				'id_format'		=> 'G-XXXXXXX',
-				'atts'				=> array(
-					'toggle'		=> true,
-					'input'			=> ''
+			'ga4'   => array(
+				'name'       => 'Google Analytics 4',
+				'desc'       => '',
+				'cookie_cat' => isset( $gdin_values['ga4'] ) ? intval( $gdin_values['ga4'] ) : 2,
+				'tacking_id' => isset( $gdin_values['ga4_id'] ) ? $gdin_values['ga4_id'] : '',
+				'id_format'  => 'G-XXXXXXX',
+				'atts'       => array(
+					'toggle' => true,
+					'input'  => '',
 				),
-				'status'			=> isset( $gdin_values['ga4'] )
-			),		
-			'gtm'	=> array(
-				'name'			=> 'Google Tag Manager',
-				'desc'			=> 'Standard implementation',
-				'cookie_cat'	=> isset( $gdin_values['gtm'] ) ? intval( $gdin_values['gtm'] ) : 2,
-				'tacking_id'	=> isset( $gdin_values['gtm_id'] ) ? $gdin_values['gtm_id'] : '',
-				'id_format'	=> 'GTM-XXXXXX',
-				'atts'				=> array(
-					'toggle'		=> true,
-					'input'			=> ''
-				),
-				'status'		=> isset( $gdin_values['gtm'] )
-			),	
-			'gtmc2'	=> array(
-				'name'			=> 'Google Tag Manager',
-				'desc'			=> 'Consent Mode v2 [for advanced users only]',
-				'cookie_cat'	=> isset( $gdin_values['gtmc2'] ) ? intval( $gdin_values['gtmc2'] ) : 2,
-				'tacking_id'	=> isset( $gdin_values['gtmc2_id'] ) ? $gdin_values['gtmc2_id'] : '',
-				'id_format'	=> 'GTM-XXXXXX',
-				'atts'				=> array(
-					'toggle'		=> true,
-					'input'			=> ''
-				),
-				'status'		=> isset( $gdin_values['gtmc2'] )
+				'status'     => isset( $gdin_values['ga4'] ),
 			),
-			'gadc'	=> array(
-				'name'			=> 'Google Ads',
-				'desc'			=> '',
-				'cookie_cat'	=> isset( $gdin_values['gadc'] ) ? intval( $gdin_values['gadc'] ) : 2,
-				'tacking_id'	=> isset( $gdin_values['gadc_id'] ) ? $gdin_values['gadc_id'] : '',
-				'id_format'	=> 'AW-123456789',
-				'atts'				=> array(
-					'toggle'		=> true,
-					'input'			=> ''
+			'gtm'   => array(
+				'name'       => 'Google Tag Manager',
+				'desc'       => 'Standard implementation',
+				'cookie_cat' => isset( $gdin_values['gtm'] ) ? intval( $gdin_values['gtm'] ) : 2,
+				'tacking_id' => isset( $gdin_values['gtm_id'] ) ? $gdin_values['gtm_id'] : '',
+				'id_format'  => 'GTM-XXXXXX',
+				'atts'       => array(
+					'toggle' => true,
+					'input'  => '',
 				),
-				'status'		=> isset( $gdin_values['gadc'] )
+				'status'     => isset( $gdin_values['gtm'] ),
 			),
-			'fbp'	=> array(
-				'name'			=> 'Meta Pixel',
-				'desc'			=> '(Formerly Facebook Pixel)',
-				'cookie_cat'	=> isset( $gdin_values['fbp'] ) ? intval( $gdin_values['fbp'] ) : 2,
-				'tacking_id'	=> isset( $gdin_values['fbp_id'] ) ? $gdin_values['fbp_id'] : '',
-				'id_format'	=> '[15 digit ID]',
-				'atts'				=> array(
-					'toggle'		=> true,
-					'input'			=> ''
+			'gtmc2' => array(
+				'name'       => 'Google Tag Manager',
+				'desc'       => 'Consent Mode v2 [for advanced users only]',
+				'cookie_cat' => isset( $gdin_values['gtmc2'] ) ? intval( $gdin_values['gtmc2'] ) : 2,
+				'tacking_id' => isset( $gdin_values['gtmc2_id'] ) ? $gdin_values['gtmc2_id'] : '',
+				'id_format'  => 'GTM-XXXXXX',
+				'atts'       => array(
+					'toggle' => true,
+					'input'  => '',
 				),
-				'status'		=> isset( $gdin_values['fbp'] )
-			)			
+				'status'     => isset( $gdin_values['gtmc2'] ),
+			),
+			'gadc'  => array(
+				'name'       => 'Google Ads',
+				'desc'       => '',
+				'cookie_cat' => isset( $gdin_values['gadc'] ) ? intval( $gdin_values['gadc'] ) : 2,
+				'tacking_id' => isset( $gdin_values['gadc_id'] ) ? $gdin_values['gadc_id'] : '',
+				'id_format'  => 'AW-123456789',
+				'atts'       => array(
+					'toggle' => true,
+					'input'  => '',
+				),
+				'status'     => isset( $gdin_values['gadc'] ),
+			),
+			'fbp'   => array(
+				'name'       => 'Meta Pixel',
+				'desc'       => '(Formerly Facebook Pixel)',
+				'cookie_cat' => isset( $gdin_values['fbp'] ) ? intval( $gdin_values['fbp'] ) : 2,
+				'tacking_id' => isset( $gdin_values['fbp_id'] ) ? $gdin_values['fbp_id'] : '',
+				'id_format'  => '[15 digit ID]',
+				'atts'       => array(
+					'toggle' => true,
+					'input'  => '',
+				),
+				'status'     => isset( $gdin_values['fbp'] ),
+			),
 		);
 		return apply_filters( 'gdpr_integration_modules', $integration_modules, $gdpr_options, $gdin_values );
 	}
@@ -130,14 +137,18 @@ endif;
 if ( ! function_exists( 'gdpr_get_field' ) ) :
 	/**
 	 * Get simple value from gdpr database by option_key
+	 *
+	 * @param string $option_key Option key (optional).
+	 * @param int    $site_id Site ID (optional).
+	 * @return $results Results.
 	 */
 	function gdpr_get_field( $option_key = false, $site_id = false ) {
 		$results = false;
 		if ( $option_key ) :
-			$site_id 							= $site_id && intval( $site_id ) ? $site_id : gdpr_get_site_id();
-			$database_controller 	= new Moove_GDPR_DB_Controller();
-			$results							= $database_controller->get( $option_key, $site_id );
-			$results 							= $results && isset( $results->option_value ) ? maybe_unserialize( $results->option_value ) : false;
+			$site_id             = $site_id && intval( $site_id ) ? $site_id : gdpr_get_site_id();
+			$database_controller = new Moove_GDPR_DB_Controller();
+			$results             = $database_controller->get( $option_key, $site_id );
+			$results             = $results && isset( $results->option_value ) ? maybe_unserialize( $results->option_value ) : false;
 		endif;
 		return $results;
 	}
@@ -147,18 +158,21 @@ endif;
 if ( ! function_exists( 'gdpr_get_options' ) ) :
 	/**
 	 * Get simple value from gdpr database by option_key
+	 *
+	 * @param int $site_id Site ID (optional).
+	 * @return $results Results.
 	 */
 	function gdpr_get_options( $site_id = false ) {
-		$site_id 							= $site_id && intval( $site_id ) ? $site_id : gdpr_get_site_id();
-		$database_controller 	= new Moove_GDPR_DB_Controller();
-		$results							= $database_controller->get_options( $site_id );
-		$results_filtered 		= array();
+		$site_id             = $site_id && intval( $site_id ) ? $site_id : gdpr_get_site_id();
+		$database_controller = new Moove_GDPR_DB_Controller();
+		$results             = $database_controller->get_options( $site_id );
+		$results_filtered    = array();
 		if ( is_array( $results ) && ! empty( $results ) ) :
 			foreach ( $results as $key => $value ) :
-				$results_filtered[$key] = maybe_unserialize( $value->option_value );
+				$results_filtered[ $key ] = maybe_unserialize( $value->option_value );
 			endforeach;
 		endif;
-		$results_filtered 		= $results_filtered && ! empty( $results_filtered ) ? $results_filtered : false;
+		$results_filtered = $results_filtered && ! empty( $results_filtered ) ? $results_filtered : false;
 		return $results_filtered;
 	}
 
@@ -167,17 +181,22 @@ endif;
 if ( ! function_exists( 'gdpr_update_field' ) ) :
 	/**
 	 * Get simple value from gdpr database by option_key
+	 *
+	 * @param string $option_key Option key (optional).
+	 * @param string $option_value Option value (optional).
+	 * @param int    $site_id Site ID (optional).
+	 * @return $results Results.
 	 */
 	function gdpr_update_field( $option_key = false, $option_value = false, $site_id = false ) {
 		$results = false;
 		if ( $option_key ) :
-			$site_id 							= $site_id && intval( $site_id ) ? $site_id : gdpr_get_site_id();
-			$database_controller 	= new Moove_GDPR_DB_Controller();
-			$results							= $database_controller->update( 
+			$site_id             = $site_id && intval( $site_id ) ? $site_id : gdpr_get_site_id();
+			$database_controller = new Moove_GDPR_DB_Controller();
+			$results             = $database_controller->update(
 				array(
-					'option_key'		=> $option_key,
-					'option_value'	=> maybe_serialize( $option_value ),
-					'site_id'				=> $site_id
+					'option_key'   => $option_key,
+					'option_value' => maybe_serialize( $option_value ),
+					'site_id'      => $site_id,
 				)
 			);
 		endif;
@@ -191,14 +210,12 @@ if ( ! function_exists( 'gdpr_delete_option' ) ) :
 	 * Get simple value from gdpr database by option_key
 	 */
 	function gdpr_delete_option() {
-		$database_controller 	= new Moove_GDPR_DB_Controller();
-		$results							= $database_controller->delete_option();
+		$database_controller = new Moove_GDPR_DB_Controller();
+		$results             = $database_controller->delete_option();
 		return $results;
 	}
 
 endif;
-
-
 
 add_filter( 'plugin_action_links', 'moove_gdpr_plugin_settings_link', 10, 2 );
 /**
@@ -209,17 +226,16 @@ add_filter( 'plugin_action_links', 'moove_gdpr_plugin_settings_link', 10, 2 );
  */
 function moove_gdpr_plugin_settings_link( $links, $file ) {
 	if ( plugin_basename( dirname( __FILE__ ) . '/moove-gdpr.php' ) === $file ) {
-
 		/*
 		* Insert the Licence Manager link at the beginning
 		*/
-		$in = '<a href="'.esc_url( admin_url( 'admin.php' ) ).'?page=moove-gdpr_licence" target="_blank">' . __( 'Licence Manager', 'gdpr-cookie-compliance' ) . '</a>';
+		$in = '<a href="' . esc_url( admin_url( 'admin.php' ) ) . '?page=moove-gdpr_licence" target="_blank">' . __( 'Licence Manager', 'gdpr-cookie-compliance' ) . '</a>';
 		array_unshift( $links, $in );
 
 		/*
 		* Insert the Settings page link at the beginning
 		*/
-		$in = '<a href="'.esc_url( admin_url( 'admin.php' ) ).'?page=moove-gdpr" target="_blank">' . __( 'Settings', 'gdpr-cookie-compliance' ) . '</a>';
+		$in = '<a href="' . esc_url( admin_url( 'admin.php' ) ) . '?page=moove-gdpr" target="_blank">' . __( 'Settings', 'gdpr-cookie-compliance' ) . '</a>';
 		array_unshift( $links, $in );
 
 		/*
@@ -235,7 +251,6 @@ function moove_gdpr_plugin_settings_link( $links, $file ) {
 			$in = '<a href="https://www.mooveagency.com/wordpress-plugins/gdpr-cookie-compliance/" class="gdpr_admin_link gdpr_premium_buy_link" target="_blank">' . __( 'Buy Premium', 'gdpr-cookie-compliance' ) . '</a>';
 			array_push( $links, $in );
 		endif;
-
 
 	}
 	return $links;
@@ -289,6 +304,7 @@ function gdpr_get_attachment_id( $url ) {
  * Get image alt text by image URL or ID
  *
  * @param String $image_url Image URL or ID.
+ * @param array  $options Plugin options.
  *
  * @return Bool | String
  */
@@ -304,20 +320,21 @@ function gdpr_get_logo_alt( $image_url, $options = array() ) {
 /**
  * Get image widht & height by image URL
  *
- * @param string $image_url Image URL
+ * @param string $image_url Image URL.
+ * @param array  $options Plugin options.
  */
 function gdpr_get_logo_details( $image_url, $options = array() ) {
 	$image_details = array(
-		'width' 	=> false,
-		'height'	=> false,
+		'width'  => false,
+		'height' => false,
 	);
-	$image_size = apply_filters('gdpr_cc_company_logo_image_size', 'medium');
+	$image_size    = apply_filters( 'gdpr_cc_company_logo_image_size', 'medium' );
 	if ( $image_url && apply_filters( 'gdpr_cc_logo_details_enabled', true ) ) :
 
-		if ( strpos( $image_url,  'gdpr-cookie-compliance/dist/images/gdpr-logo.png' ) !== false ) :
+		if ( strpos( $image_url, 'gdpr-cookie-compliance/dist/images/gdpr-logo.png' ) !== false ) :
 			$image_details = array(
-				'width' 	=> 350,
-				'height'	=> 233,
+				'width'  => 350,
+				'height' => 233,
 			);
 		else :
 			if ( isset( $options['moove_gdpr_company_logo_id'] ) && intval( $options['moove_gdpr_company_logo_id'] ) ) :
@@ -326,19 +343,19 @@ function gdpr_get_logo_details( $image_url, $options = array() ) {
 				$attachment_id = attachment_url_to_postid( $image_url );
 			endif;
 			if ( $attachment_id ) :
-				$_image = wp_get_attachment_image_src( $attachment_id, $image_size );		
+				$_image = wp_get_attachment_image_src( $attachment_id, $image_size );
 				if ( ! isset( $options['moove_gdpr_company_logo_id'] ) ) :
-					$gdpr_default_content = new Moove_GDPR_Content();
-					$option_name          = $gdpr_default_content->moove_gdpr_get_option_name();	
-					$gdpr_options         = get_option( $option_name );
+					$gdpr_default_content                       = new Moove_GDPR_Content();
+					$option_name                                = $gdpr_default_content->moove_gdpr_get_option_name();
+					$gdpr_options                               = get_option( $option_name );
 					$gdpr_options['moove_gdpr_company_logo_id'] = $attachment_id;
 					update_option( $option_name, $gdpr_options );
 				endif;
 				if ( $_image ) :
 					$image_details = array(
-						'logo_url'	=> $_image[0],
-						'width' 		=> $_image[1],
-						'height'		=> $_image[2],
+						'logo_url' => $_image[0],
+						'width'    => $_image[1],
+						'height'   => $_image[2],
 					);
 				endif;
 			endif;
@@ -406,6 +423,7 @@ function gdpr_get_module( $module = '' ) {
 			default:
 		endswitch;
 	endif;
+	$response = apply_filters( 'gdpr_get_module_' . $module, $response, $module, $module_controller );
 	return $response;
 }
 
@@ -419,7 +437,7 @@ if ( ! function_exists( 'gdpr_cookie_is_accepted' ) ) :
 	function gdpr_cookie_is_accepted( $type = '' ) {
 		$response       = false;
 		$type           = sanitize_text_field( $type );
-		$accepted_types = array( 'strict', 'thirdparty', 'advanced' );
+		$accepted_types = array( 'strict', 'thirdparty', 'advanced', 'performance', 'preference' );
 		if ( $type && in_array( $type, $accepted_types ) ) :
 			$gdpr_content = new Moove_GDPR_Content();
 			$php_cookies  = $gdpr_content->gdpr_get_php_cookies();
@@ -628,13 +646,14 @@ if ( ! function_exists( 'gdpr_get_display_language_by_locale' ) ) :
 	}
 endif;
 
-add_action( 'gdpr_modal_base_module', 'gdpr_copyscape_cc_remove_hidden_elements', 10, 1 ); 
+add_action( 'gdpr_modal_base_module', 'gdpr_copyscape_cc_remove_hidden_elements', 10, 1 );
 add_action( 'gdpr_infobar_base_module', 'gdpr_copyscape_cc_remove_hidden_elements', 10, 1 );
 add_action( 'gdpr_branding_styles_module', 'gdpr_copyscape_cc_remove_hidden_elements', 10, 1 );
 add_action( 'gdpr_floating_button_module', 'gdpr_copyscape_cc_remove_hidden_elements', 10, 1 );
 
 /**
  * Disable showing HTML content if ?justtext=1 query parameter is part of the URL
+ *
  * @param string $modal_html Modal HTML.
  */
 function gdpr_copyscape_cc_remove_hidden_elements( $modal_html ) {
