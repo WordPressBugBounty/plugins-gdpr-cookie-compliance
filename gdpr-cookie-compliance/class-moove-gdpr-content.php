@@ -226,6 +226,14 @@ class Moove_GDPR_Content {
 	}
 
 	/**
+	 * Get strict secondary notice [DEPRECATED]
+	 */
+	public function moove_gdpr_get_secondary_notice() {
+		$_content          = '';
+		return $_content;
+	}
+
+	/**
 	 * Integration Extensions
 	 */
 	public static function gdpr_google_consent_mode2_snippet() {
