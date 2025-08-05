@@ -109,7 +109,13 @@ class Moove_GDPR_Content {
 				</script>
 				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<?php
-				$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
+
+				if ( ! defined( 'gdpr_i_ga_h' ) ) :
+					$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
+					define( 'gdpr_i_ga_h', true );
+				else :
+					ob_end_clean();
+				endif;				
 			endif;
 		endif;
 		return $cache_array;
@@ -157,7 +163,12 @@ class Moove_GDPR_Content {
 				</script>
 				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<?php
-				$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
+				if ( ! defined( 'gdpr_i_ga4_h' ) ) :
+					$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
+					define( 'gdpr_i_ga4_h', true );
+				else :
+					ob_end_clean();
+				endif;					
 			endif;
 		endif;
 		return $cache_array;
@@ -201,7 +212,12 @@ class Moove_GDPR_Content {
 				})(window,document,'script','dataLayer','<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');</script>
 				<!-- End Google Tag Manager -->
 				<?php
-				$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
+				if ( ! defined( 'gdpr_i_gtm_h' ) ) :
+					$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
+					define( 'gdpr_i_gtm_h', true );
+				else :
+					ob_end_clean();
+				endif;	
 				ob_start();
 				?>
 				<!-- Google Tag Manager (noscript) -->
@@ -210,7 +226,12 @@ class Moove_GDPR_Content {
 				<!-- End Google Tag Manager (noscript) -->
 				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<?php
-				$cache_array[ $cookie_cat_n ]['body'] .= ob_get_clean();
+				if ( ! defined( 'gdpr_i_gtm_b' ) ) :
+					$cache_array[ $cookie_cat_n ]['body'] .= ob_get_clean();
+					define( 'gdpr_i_gtm_b', true );
+				else :
+					ob_end_clean();
+				endif;					
 			endif;
 		endif;
 		return $cache_array;
@@ -327,8 +348,12 @@ class Moove_GDPR_Content {
 				</script>	
 				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<?php
-				$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
-				ob_start();
+				if ( ! defined( 'gdpr_i_gtmc2_h' ) ) :
+					$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
+					define( 'gdpr_i_gtmc2_h', true );
+				else :
+					ob_end_clean();
+				endif;				
 			endif;
 		endif;
 		return $cache_array;
@@ -375,7 +400,12 @@ class Moove_GDPR_Content {
 				<!-- End Google Ads -->
 				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<?php
-				$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
+				if ( ! defined( 'gdpr_i_gadc_h' ) ) :
+					$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
+					define( 'gdpr_i_gadc_h', true );
+				else :
+					ob_end_clean();
+				endif;
 			endif;
 		endif;
 		return $cache_array;
@@ -425,7 +455,12 @@ class Moove_GDPR_Content {
 					fbq('track', 'PageView');
 				</script>
 				<?php
-				$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
+				if ( ! defined( 'gdpr_i_fbp_h' ) ) :
+					$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
+					define( 'gdpr_i_fbp_h', true );
+				else :
+					ob_end_clean();
+				endif;				
 				ob_start();
 				?>
 				<noscript data-type="gdpr-integration">
@@ -433,8 +468,13 @@ class Moove_GDPR_Content {
 				</noscript>
 				<!-- End Facebook Pixel Code -->
 				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
-				<?php
-				$cache_array[ $cookie_cat_n ]['body'] .= ob_get_clean();
+				<?php				
+				if ( ! defined( 'gdpr_i_fbp_b' ) ) :
+					$cache_array[ $cookie_cat_n ]['body'] .= ob_get_clean();
+					define( 'gdpr_i_fbp_b', true );
+				else :
+					ob_end_clean();
+				endif;
 			endif;
 		endif;
 		return $cache_array;
@@ -481,7 +521,12 @@ class Moove_GDPR_Content {
 					})(window,document,'script','dataLayer','<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');</script>
 					<!-- End Google Tag Manager -->
 					<?php
-					$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
+					if ( ! defined( 'gdpr_i_gtm4wp_h' ) ) :
+						$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
+						define( 'gdpr_i_gtm4wp_h', true );
+					else :
+						ob_end_clean();
+					endif;			
 					ob_start();
 					?>
 					<!-- Google Tag Manager (noscript) -->
@@ -490,7 +535,12 @@ class Moove_GDPR_Content {
 					<!-- End Google Tag Manager (noscript) -->
 					<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 					<?php
-					$cache_array[ $cookie_cat_n ]['body'] .= ob_get_clean();
+					if ( ! defined( 'gdpr_i_gtm4wp_b' ) ) :
+						$cache_array[ $cookie_cat_n ]['body'] .= ob_get_clean();
+						define( 'gdpr_i_gtm4wp_b', true );
+					else :
+						ob_end_clean();
+					endif;	
 					$gtm4wp_container_code_written         = true;
 				endif;
 			endif;
