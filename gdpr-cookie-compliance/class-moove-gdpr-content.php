@@ -237,15 +237,6 @@ class Moove_GDPR_Content {
 		return $cache_array;
 	}
 
-	public static function moove_gdpr_after_body_open() {
-		$gdpr_default_content = new Moove_GDPR_Content();
-		$option_name          = $gdpr_default_content->moove_gdpr_get_option_name();
-		$gdpr_options         = get_option( $option_name );
-		if ( isset( $gdpr_options['moove_gdpr_strictly_body_scripts'] ) && $gdpr_options['moove_gdpr_strictly_body_scripts'] ) :
-			echo $gdpr_options['moove_gdpr_strictly_body_scripts'];
-		endif;
-	}
-
 	/**
 	 * Get strict secondary notice [DEPRECATED]
 	 */
@@ -263,9 +254,6 @@ class Moove_GDPR_Content {
 		$gdpr_options         = get_option( $option_name );
 		$gdin_values          = isset( $gdpr_options['gdin_values'] ) ? json_decode( $gdpr_options['gdin_values'], true ) : array();
 		$gdin_modules         = gdpr_get_integration_modules( $gdpr_options, $gdin_values );
-		if ( isset( $gdpr_options['moove_gdpr_strictly_header_scripts'] ) && $gdpr_options['moove_gdpr_strictly_header_scripts'] ) :
-			echo $gdpr_options['moove_gdpr_strictly_header_scripts'];
-		endif;
 		if ( isset( $gdin_modules['gtmc2'] ) && isset( $gdin_modules['gtmc2']['tacking_id'] ) && $gdin_modules['gtmc2']['status'] ) :
 			?>
 				<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
@@ -773,7 +761,11 @@ class Moove_GDPR_Content {
 		$gdpr_options      = get_option( $options_name );
 		$wpml_lang_options = $this->moove_gdpr_get_wpml_lang();
 
-		$strictly_functionality = 2;
+		$strictly_functionality = isset( $gdpr_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) && intval( $gdpr_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) ? intval( $gdpr_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) : 1;
+
+		$strictly_default     = isset( $gdpr_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) && intval( $gdpr_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) ? intval( $gdpr_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) : 0;
+		$strictly_default 		= 4 === $strictly_default || 2 === $strictly_default ? 1 : 0;
+
 		$thirdparty_default     = isset( $gdpr_options['moove_gdpr_third_party_cookies_enable_first_visit'] ) && intval( $gdpr_options['moove_gdpr_third_party_cookies_enable_first_visit'] ) ? intval( $gdpr_options['moove_gdpr_third_party_cookies_enable_first_visit'] ) : 0;
 		$advanced_default       = isset( $gdpr_options['moove_gdpr_advanced_cookies_enable_first_visit'] ) && intval( $gdpr_options['moove_gdpr_advanced_cookies_enable_first_visit'] ) ? intval( $gdpr_options['moove_gdpr_advanced_cookies_enable_first_visit'] ) : 0;
 
@@ -781,11 +773,11 @@ class Moove_GDPR_Content {
 
 		$preference_default = isset( $gdpr_options['moove_gdpr_preference_ccat_enable_first_visit'] ) && intval( $gdpr_options['moove_gdpr_preference_ccat_enable_first_visit'] ) ? intval( $gdpr_options['moove_gdpr_preference_ccat_enable_first_visit'] ) : 0;
 
-		if ( 1 === $strictly_functionality ) :
+		if ( 1 === $strictly_functionality && 1 !== $strictly_default ) :
 			if ( 1 === $thirdparty_default || 1 === $advanced_default || 1 === $performance_default || 1 === $preference_default ) :
 				$strict_default = 1;
 			else :
-				$strict_default = 0;
+				$strict_default = 2 === $strictly_default ? 1 : 0;
 			endif;
 		else :
 			$strict_default = 1;

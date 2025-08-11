@@ -324,14 +324,6 @@ class Moove_GDPR_Controller {
 		if ( ! is_admin() ) :
 			$content = gdpr_get_module( 'infobar-base' );
 			apply_filters( 'gdpr_cc_keephtml', $content, true );
-
-			$gdpr_default_content = new Moove_GDPR_Content();
-			$option_name          = $gdpr_default_content->moove_gdpr_get_option_name();
-			$gdpr_options         = get_option( $option_name );
-		
-			if ( isset( $gdpr_options['moove_gdpr_strictly_footer_scripts'] ) && $gdpr_options['moove_gdpr_strictly_footer_scripts'] ) :
-				echo $gdpr_options['moove_gdpr_strictly_footer_scripts'];
-			endif;
 		endif;
 	}
 
@@ -355,6 +347,11 @@ class Moove_GDPR_Controller {
 			$modal_options = get_option( $option_name );
 
 			$cache_array = array(
+				'strict'  => array(
+					'header' => '',
+					'body'   => '',
+					'footer' => '',
+				),
 				'thirdparty'  => array(
 					'header' => '',
 					'body'   => '',
@@ -376,6 +373,33 @@ class Moove_GDPR_Controller {
 					'footer' => '',
 				),
 			);
+
+			// STRICTLY NECESSARY - SCRIPT CACHE.
+
+
+			ob_start();
+			if ( isset( $modal_options['moove_gdpr_strictly_ccat_enable'] ) && intval( $modal_options['moove_gdpr_strictly_ccat_enable'] ) === 1 ) :
+				$strict_scripts = isset( $modal_options['moove_gdpr_strictly_header_scripts'] ) && $modal_options['moove_gdpr_strictly_header_scripts'] ? maybe_unserialize( $modal_options['moove_gdpr_strictly_header_scripts'] ) : '';
+				$strict_scripts = apply_filters( 'moove_gdpr_strictly_header_assets', $strict_scripts );
+				apply_filters( 'gdpr_cc_keephtml', $strict_scripts, true );
+			endif;
+			$cache_array['strict']['header'] .= ob_get_clean();
+
+			ob_start();
+			if ( isset( $modal_options['moove_gdpr_strictly_ccat_enable'] ) && intval( $modal_options['moove_gdpr_strictly_ccat_enable'] ) === 1 ) :
+				$strict_scripts = isset( $modal_options['moove_gdpr_strictly_body_scripts'] ) && $modal_options['moove_gdpr_strictly_body_scripts'] ? maybe_unserialize( $modal_options['moove_gdpr_strictly_body_scripts'] ) : '';
+				$strict_scripts = apply_filters( 'moove_gdpr_strictly_body_assets', $strict_scripts );
+				apply_filters( 'gdpr_cc_keephtml', $strict_scripts, true );
+			endif;
+			$cache_array['strict']['body'] .= ob_get_clean();
+
+			ob_start();
+			if ( isset( $modal_options['moove_gdpr_strictly_ccat_enable'] ) && intval( $modal_options['moove_gdpr_strictly_ccat_enable'] ) === 1 ) :
+				$strict_scripts = isset( $modal_options['moove_gdpr_strictly_footer_scripts'] ) && $modal_options['moove_gdpr_strictly_footer_scripts'] ? maybe_unserialize( $modal_options['moove_gdpr_strictly_footer_scripts'] ) : '';
+				$strict_scripts = apply_filters( 'moove_gdpr_strictly_footer_assets', $strict_scripts );
+				apply_filters( 'gdpr_cc_keephtml', $strict_scripts, true );
+			endif;
+			$cache_array['strict']['footer'] .= ob_get_clean();
 
 			// THIRD PARTY - SCRIPT CACHE.
 			ob_start();
@@ -452,6 +476,14 @@ class Moove_GDPR_Controller {
 				endif;
 			endif;
 
+			if ( $strict ) :
+				if ( isset( $transient_from_cache['strict'] ) ) :
+					$scripts_array['strict']['header'] = $transient_from_cache['strict']['header'];
+					$scripts_array['strict']['body']   = $transient_from_cache['strict']['body'];
+					$scripts_array['strict']['footer'] = $transient_from_cache['strict']['footer'];
+				endif;
+			endif;
+
 			if ( $advanced ) :
 				if ( isset( $transient_from_cache['advanced'] ) ) :
 					$scripts_array['advanced']['header'] = $transient_from_cache['advanced']['header'];
@@ -463,6 +495,8 @@ class Moove_GDPR_Controller {
 		$scripts_array 	= apply_filters( 'gdpr_additional_cookie_cat_extension', $scripts_array, $transient_from_cache );
 
 		$scripts_json 	= apply_filters( 'gdpr_filter_scripts_before_insert', json_encode( $scripts_array ) ); // phpcs:ignore
+
+
 		return str_replace( '<script', '<script data-gdpr', $scripts_json );
 	}
 
@@ -490,6 +524,11 @@ class Moove_GDPR_Controller {
 			$modal_options        = get_option( $option_name );
 
 			$cache_array = array(
+				'strict' => array(
+					'header' => '',
+					'body'   => '',
+					'footer' => '',
+				),
 				'thirdparty' => array(
 					'header' => '',
 					'body'   => '',
@@ -501,6 +540,31 @@ class Moove_GDPR_Controller {
 					'footer' => '',
 				),
 			);
+
+			// STRICTLY NECESSARY - SCRIPT CACHE.
+			ob_start();
+			if ( isset( $modal_options['moove_gdpr_strictly_ccat_enable'] ) && intval( $modal_options['moove_gdpr_strictly_ccat_enable'] ) === 1 ) :
+				$third_party_scripts = isset( $modal_options['moove_gdpr_strictly_header_scripts'] ) && $modal_options['moove_gdpr_strictly_header_scripts'] ? maybe_unserialize( $modal_options['moove_gdpr_strictly_header_scripts'] ) : '';
+				$third_party_scripts = apply_filters( 'moove_gdpr_strictly_header_assets', $third_party_scripts );
+				apply_filters( 'gdpr_cc_keephtml', $third_party_scripts, true );
+			endif;
+			$cache_array['strict']['header'] .= ob_get_clean();
+
+			ob_start();
+			if ( isset( $modal_options['moove_gdpr_strictly_ccat_enable'] ) && intval( $modal_options['moove_gdpr_strictly_ccat_enable'] ) === 1 ) :
+				$third_party_scripts = isset( $modal_options['moove_gdpr_strictly_body_scripts'] ) && $modal_options['moove_gdpr_strictly_body_scripts'] ? maybe_unserialize( $modal_options['moove_gdpr_strictly_body_scripts'] ) : '';
+				$third_party_scripts = apply_filters( 'moove_gdpr_strictly_body_assets', $third_party_scripts );
+				apply_filters( 'gdpr_cc_keephtml', $third_party_scripts, true );
+			endif;
+			$cache_array['strict']['body'] .= ob_get_clean();
+
+			ob_start();
+			if ( isset( $modal_options['moove_gdpr_strictly_ccat_enable'] ) && intval( $modal_options['moove_gdpr_strictly_ccat_enable'] ) === 1 ) :
+				$third_party_scripts = isset( $modal_options['moove_gdpr_strictly_footer_scripts'] ) && $modal_options['moove_gdpr_strictly_footer_scripts'] ? maybe_unserialize( $modal_options['moove_gdpr_strictly_footer_scripts'] ) : '';
+				$third_party_scripts = apply_filters( 'moove_gdpr_strictly_footer_assets', $third_party_scripts );
+				apply_filters( 'gdpr_cc_keephtml', $third_party_scripts, true );
+			endif;
+			$cache_array['strict']['footer'] .= ob_get_clean();
 
 			// THIRD PARTY - SCRIPT CACHE.
 			ob_start();

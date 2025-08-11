@@ -267,19 +267,27 @@ class GDPR_Modules {
 		$layout                       = isset( $modal_options['moove_gdpr_plugin_layout'] ) ? $modal_options['moove_gdpr_plugin_layout'] : 'v1';
 		$tab_title                    = isset( $modal_options[ 'moove_gdpr_strictly_necessary_cookies_tab_title' . $wpml_lang ] ) && $modal_options[ 'moove_gdpr_strictly_necessary_cookies_tab_title' . $wpml_lang ] ? $modal_options[ 'moove_gdpr_strictly_necessary_cookies_tab_title' . $wpml_lang ] : __( 'Strictly Necessary Cookies', 'gdpr-cookie-compliance' );
 		$tab_content                  = isset( $modal_options[ 'moove_gdpr_strict_necessary_cookies_tab_content' . $wpml_lang ] ) && $modal_options[ 'moove_gdpr_strict_necessary_cookies_tab_content' . $wpml_lang ] ? $modal_options[ 'moove_gdpr_strict_necessary_cookies_tab_content' . $wpml_lang ] : $gdpr_default_content->moove_gdpr_get_strict_necessary_content();
-		$strictly                     = 2;
+		$strictly                     = isset( $modal_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) && intval( $modal_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) ? intval( $modal_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) : 1;
+		$strictly 										= $strictly && 3 === intval( $strictly ) ? 2 : $strictly;
+
+		$strictly_ccat_enable 				= isset( $modal_options['moove_gdpr_strictly_ccat_enable'] ) ? ( intval( $modal_options['moove_gdpr_strictly_ccat_enable'] ) === 1 ? true : ( ! isset( $modal_options['moove_gdpr_strictly_ccat_enable'] ) ? true : false ) ) : true;
+
 		$data                         = new stdClass();
 		$data->options                = $modal_options;
 		$data->wpml_lang              = $wpml_lang;
 		$data->tab_title              = esc_attr( $tab_title );
 		$data->tab_content            = wp_kses_post( wpautop( $tab_content ) );
 		$data->show                   = 3 !== $strictly;
+		$data->show 									= $strictly_ccat_enable ? $data->show : false;
 		$data->is_checked             = 1 !== $strictly ? 'disabled checked="checked" ' : '';
+		if ( 4 === $strictly )  :
+			$data->is_checked = ' checked="checked" ';
+		endif;
 		$data->text_enable            = isset( $modal_options[ 'moove_gdpr_modal_enabled_checkbox_label' . $wpml_lang ] ) && $modal_options[ 'moove_gdpr_modal_enabled_checkbox_label' . $wpml_lang ] ? $modal_options[ 'moove_gdpr_modal_enabled_checkbox_label' . $wpml_lang ] : __( 'Enabled', 'gdpr-cookie-compliance' );
 		$data->text_disable           = isset( $modal_options[ 'moove_gdpr_modal_disabled_checkbox_label' . $wpml_lang ] ) && $modal_options[ 'moove_gdpr_modal_disabled_checkbox_label' . $wpml_lang ] ? $modal_options[ 'moove_gdpr_modal_disabled_checkbox_label' . $wpml_lang ] : __( 'Disabled', 'gdpr-cookie-compliance' );
 		$data->warning_message_top    = false;
 		$data->warning_message_bottom = false;
-		$data->checkbox_state         = 1 !== $strictly ? 'gdpr-checkbox-disabled checkbox-selected' : '';
+		$data->checkbox_state         = 2 === $strictly ? 'gdpr-checkbox-disabled checkbox-selected' : '';
 		$data->visibility             = 'v1' === $layout ? 'style="display:none"' : '';
 		return $view_controller->load( 'modal.content-sections.strictly', $data );
 	}
@@ -296,7 +304,8 @@ class GDPR_Modules {
 		$layout                = isset( $modal_options['moove_gdpr_plugin_layout'] ) ? $modal_options['moove_gdpr_plugin_layout'] : 'v1';
 		$tab_title             = isset( $modal_options[ 'moove_gdpr_advanced_cookies_tab_title' . $wpml_lang ] ) && $modal_options[ 'moove_gdpr_advanced_cookies_tab_title' . $wpml_lang ] ? $modal_options[ 'moove_gdpr_advanced_cookies_tab_title' . $wpml_lang ] : __( 'Marketing', 'gdpr-cookie-compliance' );
 		$tab_content           = isset( $modal_options[ 'moove_gdpr_advanced_cookies_tab_content' . $wpml_lang ] ) && $modal_options[ 'moove_gdpr_advanced_cookies_tab_content' . $wpml_lang ] ? $modal_options[ 'moove_gdpr_advanced_cookies_tab_content' . $wpml_lang ] : $gdpr_default_content->moove_gdpr_get_advanced_cookies_content();
-		$strictly              = 2;
+		$strictly              = isset( $modal_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) && intval( $modal_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) ? intval( $modal_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) : 1;
+		$strictly 						 = $strictly && 3 === intval( $strictly ) ? 2 : $strictly;
 		$data                  = new stdClass();
 		$data->options         = $modal_options;
 		$data->wpml_lang       = $wpml_lang;
@@ -325,7 +334,8 @@ class GDPR_Modules {
 		$layout                = isset( $modal_options['moove_gdpr_plugin_layout'] ) ? $modal_options['moove_gdpr_plugin_layout'] : 'v1';
 		$tab_title             = isset( $modal_options[ 'moove_gdpr_performance_cookies_tab_title' . $wpml_lang ] ) && $modal_options[ 'moove_gdpr_performance_cookies_tab_title' . $wpml_lang ] ? $modal_options[ 'moove_gdpr_performance_cookies_tab_title' . $wpml_lang ] : __( 'Analytics', 'gdpr-cookie-compliance' );
 		$tab_content           = isset( $modal_options[ 'moove_gdpr_performance_cookies_tab_content' . $wpml_lang ] ) && $modal_options[ 'moove_gdpr_performance_cookies_tab_content' . $wpml_lang ] ? $modal_options[ 'moove_gdpr_performance_cookies_tab_content' . $wpml_lang ] : $gdpr_default_content->moove_gdpr_get_third_party_content();
-		$strictly              = 2;
+		$strictly              = isset( $modal_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) && intval( $modal_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) ? intval( $modal_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) : 1;
+		$strictly 						 = $strictly && 3 === intval( $strictly ) ? 2 : $strictly;
 		$data                  = new stdClass();
 		$data->options         = $modal_options;
 		$data->wpml_lang       = $wpml_lang;
@@ -425,7 +435,8 @@ class GDPR_Modules {
 		$view_controller    = new GDPR_Modules_View();
 		$modal_options      = $this->gdpr_options;
 		$wpml_lang          = $this->wpml_lang;
-		$strictly           = 2;
+		$strictly           = isset( $modal_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) && intval( $modal_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) ? intval( $modal_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) : 1;
+		$strictly 					= $strictly && 3 === intval( $strictly ) ? 2 : $strictly;
 		$data               = new stdClass();
 		$data->overview     = new stdClass();
 		$data->strictly     = new stdClass();
@@ -438,7 +449,11 @@ class GDPR_Modules {
 		$data->overview->nav_label = esc_attr( $data->overview->nav_label );
 
 		// STRICTLY.
-		$data->strictly->show      = 3 !== $strictly;
+		$strictly_ccat_enable 				= isset( $modal_options['moove_gdpr_strictly_ccat_enable'] ) ? ( intval( $modal_options['moove_gdpr_strictly_ccat_enable'] ) === 1 ? true : ( ! isset( $modal_options['moove_gdpr_strictly_ccat_enable'] ) ? true : false ) ) : true;
+
+		$data->strictly->show = 3 !== $strictly;
+		$data->strictly->show = $strictly_ccat_enable ? $data->strictly->show : false;
+
 		$data->strictly->nav_label = isset( $modal_options[ 'moove_gdpr_strictly_necessary_cookies_tab_title' . $wpml_lang ] ) && $modal_options[ 'moove_gdpr_strictly_necessary_cookies_tab_title' . $wpml_lang ] ? $modal_options[ 'moove_gdpr_strictly_necessary_cookies_tab_title' . $wpml_lang ] : __( 'Strictly Necessary Cookies', 'gdpr-cookie-compliance' );
 		$data->strictly->nav_label = esc_attr( $data->strictly->nav_label );
 

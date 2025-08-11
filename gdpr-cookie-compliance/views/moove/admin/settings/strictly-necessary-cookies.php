@@ -22,19 +22,31 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 		die( 'Security check' );
 	else :
 		if ( is_array( $_POST ) ) :
+			$value = 1;
+			if ( isset( $_POST['moove_gdpr_strictly_necessary_cookies_functionality'] ) && intval( $_POST['moove_gdpr_strictly_necessary_cookies_functionality'] ) ) :
+				$value = intval( $_POST['moove_gdpr_strictly_necessary_cookies_functionality'] );
+			endif;
+
+			$gdpr_options['moove_gdpr_strictly_necessary_cookies_functionality'] = $value;
+
+			$value = 0;
+			if ( isset( $_POST['moove_gdpr_strictly_ccat_enable'] ) && intval( $_POST['moove_gdpr_strictly_ccat_enable'] ) ) :
+				$value = intval( $_POST['moove_gdpr_strictly_ccat_enable'] );
+			endif;
+
+			$gdpr_options['moove_gdpr_strictly_ccat_enable'] = $value;
+
 			foreach ( $_POST as $form_key => $form_value ) :
 				if ( 'moove_gdpr_strict_necessary_cookies_tab_content' === $form_key ) :
 					$value                                  = wp_unslash( $form_value );
-					$gdpr_options[ $form_key . $wpml_lang ] = $value;
-					update_option( $option_name, $gdpr_options );
-					$gdpr_options = get_option( $option_name );
+					$gdpr_options[ $form_key . $wpml_lang ] = $value;					
 				elseif ( 'moove_gdpr_strictly_header_scripts' === $form_key || 'moove_gdpr_strictly_body_scripts' === $form_key || 'moove_gdpr_strictly_footer_scripts' === $form_key || 'moove_gdpr_strictly_necessary_cookies_tab_title' === $form_key ) :
 					$value                     = wp_unslash( $form_value );
 					$gdpr_options[ $form_key ] = maybe_serialize( $value );
-					update_option( $option_name, $gdpr_options );
-					$gdpr_options = get_option( $option_name );
 				endif;
 			endforeach;
+			update_option( $option_name, $gdpr_options );
+			$gdpr_options = get_option( $option_name );
 		endif;
 		do_action( 'gdpr_cookie_filter_settings' );
 		?>
@@ -45,12 +57,45 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 	endif;
 endif;
 $nav_label = isset( $gdpr_options[ 'moove_gdpr_strictly_necessary_cookies_tab_title' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_strictly_necessary_cookies_tab_title' . $wpml_lang ] ? $gdpr_options[ 'moove_gdpr_strictly_necessary_cookies_tab_title' . $wpml_lang ] : __( 'Necessary', 'gdpr-cookie-compliance' );
+
+$strictly              = isset( $gdpr_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) && intval( $gdpr_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) ? intval( $gdpr_options['moove_gdpr_strictly_necessary_cookies_functionality'] ) : 1;
+$strictly 					= $strictly && 3 === intval( $strictly ) ? 2 : $strictly;
+	
+$moove_gdpr_strictly_ccat_enable = isset( $gdpr_options['moove_gdpr_strictly_ccat_enable'] ) ? ( intval( $gdpr_options['moove_gdpr_strictly_ccat_enable'] ) === 1 ? true : ( ! isset( $gdpr_options['moove_gdpr_strictly_ccat_enable'] ) ? true : false ) ) : true;
 ?>
 <form action="<?php echo esc_url( admin_url( 'admin.php?page=moove-gdpr&tab=strictly-necessary-cookies&gcat=cookie_categories' ) ); ?>" method="post" id="moove_gdpr_tab_strictly_necessary_cookies">
 	<?php wp_nonce_field( 'moove_gdpr_nonce_field', 'moove_gdpr_nonce' ); ?>
 	<table class="form-table">
-		<tbody>
-			
+		<tbody>			
+			<tr>
+				<th scope="row">
+					<label for="moove_gdpr_strictly_ccat_enable">
+						<?php esc_html_e( 'Turn', 'gdpr-cookie-compliance' ); ?>
+					</label>
+				</th>
+				<td>
+					<!-- GDPR Rounded switch -->
+					<label class="gdpr-checkbox-toggle">
+						<input type="checkbox" name="moove_gdpr_strictly_ccat_enable" id="moove_gdpr_strictly_ccat_enable" <?php echo $moove_gdpr_strictly_ccat_enable ? 'checked' : ''; ?> value="1" >
+						<span class="gdpr-checkbox-slider" data-enable="<?php esc_html_e( 'On', 'gdpr-cookie-compliance' ); ?>" data-disable="<?php esc_html_e( 'Off', 'gdpr-cookie-compliance' ); ?>"></span>
+					</label>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row">
+					<label for="moove_gdpr_strictly_necessary_cookies_functionality"><?php esc_html_e( 'Default status', 'gdpr-cookie-compliance' ); ?></label>
+				</th>
+				<td data-fsm="<?php echo isset( $gdpr_options['moove_gdpr_full_screen_enable'] ) && 1 === intval( $gdpr_options['moove_gdpr_full_screen_enable'] ) ? 'true' : 'false'; ?>">
+
+					<input name="moove_gdpr_strictly_necessary_cookies_functionality" type="radio" value="1" id="moove_gdpr_strictly_necessary_cookies_functionality_1" <?php echo $strictly === 1 ? 'checked' : ''; ?> class="on-off"> <label for="moove_gdpr_strictly_necessary_cookies_functionality_1"><?php esc_html_e( 'Disabled', 'gdpr-cookie-compliance' ); ?></label> <span class="separator"></span><br /><br />
+
+					<input name="moove_gdpr_strictly_necessary_cookies_functionality" type="radio" value="4" id="moove_gdpr_strictly_necessary_cookies_functionality_4" <?php echo $strictly === 4 ? 'checked' : ''; ?> class="on-off"> <label for="moove_gdpr_strictly_necessary_cookies_functionality_4"><?php esc_html_e( 'Enabled', 'gdpr-cookie-compliance' ); ?></label><br /><br />
+
+					<input name="moove_gdpr_strictly_necessary_cookies_functionality" type="radio" value="2" id="moove_gdpr_strictly_necessary_cookies_functionality_2" <?php echo $strictly === 2 ? 'checked' : ''; ?> class="on-off"> <label for="moove_gdpr_strictly_necessary_cookies_functionality_2"><?php esc_html_e( 'Always enabled (user cannot disable these cookies)', 'gdpr-cookie-compliance' ); ?></label><br /><br />
+				</td>
+			</tr>
+
 			<tr>
 				<th scope="row">
 					<label for="moove_gdpr_strictly_necessary_cookies_tab_title">
@@ -90,8 +135,7 @@ $nav_label = isset( $gdpr_options[ 'moove_gdpr_strictly_necessary_cookies_tab_ti
 
 	<div class="gdpr-script-tab-content">
 		<hr />
-		<h3><?php esc_html_e( 'The scripts inserted below are considered necessary for the correct functionality of the website and therefore will be loaded on every page load.', 'gdpr-cookie-compliance' ); ?></h3>
-		<h4><?php esc_html_e( 'Users can’t reject them. Leave the script section below empty if you don’t want to load any default scripts on your site.', 'gdpr-cookie-compliance' ); ?></h4>
+		<h3><?php esc_html_e( 'Paste your codes and snippets below. They will be added to all pages if user enables these cookies.', 'gdpr-cookie-compliance' ); ?></h3>
 
 		<div class="gdpr-tab-code-section-nav">
 			<ul>
