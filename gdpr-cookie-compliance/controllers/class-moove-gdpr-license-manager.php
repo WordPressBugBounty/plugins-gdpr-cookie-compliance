@@ -39,7 +39,7 @@ class Moove_GDPR_License_Manager {
 			'message' => $nonce,
 		);
 
-		if ( $blog_id && $licence_key && class_exists( 'Moove_GDPR_License_Manager' ) && wp_verify_nonce( $nonce, 'gdpr_tab_licence_bulk' ) && current_user_can( 'manage_options' ) ) :
+		if ( $blog_id && $licence_key && class_exists( 'Moove_GDPR_License_Manager' ) && wp_verify_nonce( $nonce, 'gdpr_tab_licence_bulk' ) && current_user_can( 'manage_options' ) && function_exists( 'switch_to_blog' ) && is_multisite() && is_admin() ) :
 			switch_to_blog( $blog_id );
 			$licence_manager = new Moove_GDPR_License_Manager();
 

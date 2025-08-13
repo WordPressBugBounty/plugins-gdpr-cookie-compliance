@@ -760,7 +760,7 @@ class Moove_GDPR_Controller {
 		$nonce = isset( $_POST['nonce'] ) ? sanitize_key( wp_unslash( $_POST['nonce'] ) ) : false;
 		if ( wp_verify_nonce( $nonce, 'gdpr_hide_language_nonce' ) ) :
 			wp_verify_nonce( 'gdpr_nonce', 'gdpr_cookie_compliance_nonce' );
-			$user_id = isset( $_POST['user_id'] ) ? intval( $_POST['user_id'] ) : false;
+			$user_id = get_current_user_id();
 			if ( $user_id ) :
 				$gdpr_default_content = new Moove_GDPR_Content();
 				$option_name          = $gdpr_default_content->moove_gdpr_get_option_name();

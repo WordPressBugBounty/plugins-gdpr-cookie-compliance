@@ -172,7 +172,6 @@
             ajax_url,
             {
               action: 'moove_hide_language_notice',
-              user_id: user_id, 
               nonce: nonce,
             },
             function( msg ) {

@@ -121,7 +121,6 @@ class Moove_GDPR_Actions {
 		add_action( 'gdpr_insert_integration_gadc_snippet', array( 'Moove_GDPR_Content', 'gdpr_insert_integration_gadc_snippet' ), 10, 2 );
 
 		add_action( 'wp_ajax_gdpr_msba_bulk_activate', array( 'Moove_GDPR_License_Manager', 'gdpr_msba_bulk_activate_ajx' ) );
-		add_action( 'wp_ajax_nopriv_gdpr_msba_bulk_activate', array( 'Moove_GDPR_License_Manager', 'gdpr_msba_bulk_activate_ajx' ) );
 
 		add_filter( 'wp_consent_api_registered_gdpr-cookie-compliance', '__return_true' );
 		add_action( 'gdpr_admin_top_nav_links', array( 'Moove_GDPR_Content', 'gdpr_admin_top_nav_links_gcat' ), 10, 2 );
