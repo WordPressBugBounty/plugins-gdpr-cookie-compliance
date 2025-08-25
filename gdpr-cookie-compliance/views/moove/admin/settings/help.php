@@ -837,10 +837,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</div>
 			<div class="gdpr-faq-accordion-content" >
 				<?php ob_start(); ?>
-				add_filter('gdpr_cookie_script_cache','gdpr_prevent_script_cache');
-				function gdpr_prevent_script_cache() {
-					return array();
-				}
+				add_filter( 'gdpr_transient_cache_enabled', '__return_false' );
 				<?php $code = trim( ob_get_clean() ); ?>
 				<textarea id="<?php echo esc_attr( uniqid( strtotime( 'now' ) ) ); ?>"><?php apply_filters( 'gdpr_cc_keephtml', $code, true ); ?></textarea>
 				<div class="gdpr-code"></div><!--  .gdpr-code -->
@@ -867,10 +864,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 				<?php ob_start(); ?>
 				// Script caching should be disabled if you have separate scripts / site
-				add_filter('gdpr_cookie_script_cache','gdpr_prevent_script_cache');
-				function gdpr_prevent_script_cache() {
-					return array();
-				}
+				add_filter( 'gdpr_transient_cache_enabled', '__return_false' );
 
 				// Custom scripts based on front-end language
 				add_action('wp_head', 'my_gdpr_script_inject' );

@@ -338,8 +338,10 @@ class Moove_GDPR_Controller {
 		$gdpr_default_content = new Moove_GDPR_Content();
 		$wp_lang              = $gdpr_default_content->moove_gdpr_get_wpml_lang();
 
+		$gdpr_cache_enabled  	= apply_filters( 'gdpr_transient_cache_enabled', true ); 
 		$transient_key = 'gdpr_cookie_cache' . $wp_lang . MOOVE_GDPR_VERSION;
-		$transient     = apply_filters( 'gdpr_cookie_script_cache', get_transient( $transient_key ) );
+		$transient     = $gdpr_cache_enabled ? apply_filters( 'gdpr_cookie_script_cache', get_transient( $transient_key ) ) : array();
+
 		if ( ! empty( $transient ) ) :
 			$transient_from_cache = json_decode( $transient, true );
 		else :
@@ -513,8 +515,9 @@ class Moove_GDPR_Controller {
 
 		$wp_lang = isset( $_POST['wp_lang'] ) ? sanitize_text_field( wp_unslash( urlencode( $_POST['wp_lang'] ) ) ) : ''; // phpcs:ignore
 
+		$gdpr_cache_enabled  	= apply_filters( 'gdpr_transient_cache_enabled', true );
 		$transient_key = 'gdpr_cookie_cache' . $wp_lang . MOOVE_GDPR_VERSION;
-		$transient     = apply_filters( 'gdpr_cookie_script_cache', get_transient( $transient_key ) );
+		$transient     = $gdpr_cache_enabled ? apply_filters( 'gdpr_cookie_script_cache', get_transient( $transient_key ) ) : array();
 
 		if ( ! empty( $transient ) ) :
 			$transient_from_cache = json_decode( $transient, true );
@@ -710,45 +713,49 @@ class Moove_GDPR_Controller {
 	 * Removing all the cookies including www and non-www domains
 	 */
 	public static function moove_gdpr_remove_php_cookies() {
-		$urlparts        = wp_parse_url( site_url( '/' ) );
-		$domain          = preg_replace( '/www\./i', '', $urlparts['host'] );
 		$cookies_removed = array();
-		$d_domains       = array( '_ga', '_fbp', '_gid', '_gat', '__utma', '__utmb', '__utmc', '__utmt', '__utmz' );
-		$d_domains       = apply_filters( 'gdpr_d_domains_filter', $d_domains );
-		if ( isset( $_COOKIE ) && is_array( $_COOKIE ) && $domain ) :
-			foreach ( $_COOKIE as $key => $value ) {
-				if ( 'moove_gdpr_popup' !== $key && strpos( $key, 'woocommerce' ) === false && strpos( $key, 'wc_' ) === false && strpos( $key, 'WordPress' ) === false ) :
-					if ( 'language' === $key || 'currency' === $key ) {
-						setcookie( $key, null, -1, '/', 'www.' . $domain );
-						$cookies_removed[ $key ] = $domain;
-					} elseif ( in_array( $key, $d_domains ) || strpos( $key, '_ga' ) !== false || strpos( $key, '_fbp' ) !== false ) { // phpcs:ignore
-						setcookie( $key, null, -1, '/', '.' . $domain );
-						$cookies_removed[ $key ] = $domain;
-					}
-				endif;
-			}
-		endif;
+		$nonce    = isset( $_POST['security'] ) ? sanitize_key( wp_unslash( $_POST['security'] ) ) : false;
+		$nonce    = $nonce ? $nonce : ( isset( $_GET['security'] ) ? sanitize_key( wp_unslash( $_GET['security'] ) ) : false );
+		if ( $nonce && wp_verify_nonce( $nonce, 'gdpr-cookie-compliance' ) ) :
+			$urlparts        = wp_parse_url( site_url( '/' ) );
+			$domain          = preg_replace( '/www\./i', '', $urlparts['host'] );
+			$d_domains       = array( '_ga', '_fbp', '_gid', '_gat', '__utma', '__utmb', '__utmc', '__utmt', '__utmz' );
+			$d_domains       = apply_filters( 'gdpr_d_domains_filter', $d_domains );
+			if ( isset( $_COOKIE ) && is_array( $_COOKIE ) && $domain ) :
+				foreach ( $_COOKIE as $key => $value ) {
+					if ( 'moove_gdpr_popup' !== $key && strpos( $key, 'woocommerce' ) === false && strpos( $key, 'wc_' ) === false && strpos( $key, 'WordPress' ) === false ) :
+						if ( 'language' === $key || 'currency' === $key ) {
+							setcookie( $key, null, -1, '/', 'www.' . $domain );
+							$cookies_removed[ $key ] = $domain;
+						} elseif ( in_array( $key, $d_domains ) || strpos( $key, '_ga' ) !== false || strpos( $key, '_fbp' ) !== false ) { // phpcs:ignore
+							setcookie( $key, null, -1, '/', '.' . $domain );
+							$cookies_removed[ $key ] = $domain;
+						}
+					endif;
+				}
+			endif;
 
-		$cookies = isset( $_SERVER['HTTP_COOKIE'] ) ? explode( ';', sanitize_text_field( wp_unslash( $_SERVER['HTTP_COOKIE'] ) ) ) : false;
-		if ( is_array( $cookies ) ) :
-			foreach ( $cookies as $cookie ) {
-				$parts = explode( '=', $cookie );
-				$name  = trim( $parts[0] );
-				if ( $name && 'moove_gdpr_popup' !== $name && strpos( $name, 'woocommerce' ) === false && strpos( $name, 'wc_' ) === false && strpos( $name, 'WordPress' ) === false ) :
-					setcookie( $name, '', time() - 1000 );
-					setcookie( $name, '', time() - 1000, '/' );
-					if ( 'language' === $name || 'currency' === $name ) {
-						setcookie( $name, null, -1, '/', 'www.' . $domain );
-						$cookies_removed[ $name ] = $domain;
-					} elseif ( in_array( $key, $d_domains ) || strpos( $name, '_ga' ) !== false || strpos( $name, '_fbp' ) !== false ) { // phpcs:ignore
-						setcookie( $name, null, -1, '/', '.' . $domain );
-						$cookies_removed[ $name ] = '.' . $domain;
-					} else {
-						setcookie( $name, null, -1, '/' );
-						$cookies_removed[ $name ] = $domain;
-					}
-				endif;
-			}
+			$cookies = isset( $_SERVER['HTTP_COOKIE'] ) ? explode( ';', sanitize_text_field( wp_unslash( $_SERVER['HTTP_COOKIE'] ) ) ) : false;
+			if ( is_array( $cookies ) ) :
+				foreach ( $cookies as $cookie ) {
+					$parts = explode( '=', $cookie );
+					$name  = trim( $parts[0] );
+					if ( $name && 'moove_gdpr_popup' !== $name && strpos( $name, 'woocommerce' ) === false && strpos( $name, 'wc_' ) === false && strpos( $name, 'WordPress' ) === false ) :
+						setcookie( $name, '', time() - 1000 );
+						setcookie( $name, '', time() - 1000, '/' );
+						if ( 'language' === $name || 'currency' === $name ) {
+							setcookie( $name, null, -1, '/', 'www.' . $domain );
+							$cookies_removed[ $name ] = $domain;
+						} elseif ( in_array( $key, $d_domains ) || strpos( $name, '_ga' ) !== false || strpos( $name, '_fbp' ) !== false ) { // phpcs:ignore
+							setcookie( $name, null, -1, '/', '.' . $domain );
+							$cookies_removed[ $name ] = '.' . $domain;
+						} else {
+							setcookie( $name, null, -1, '/' );
+							$cookies_removed[ $name ] = $domain;
+						}
+					endif;
+				}
+			endif;
 		endif;
 		echo json_encode( $cookies_removed ); // phpcs:ignore
 	}

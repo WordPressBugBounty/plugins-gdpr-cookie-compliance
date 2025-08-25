@@ -492,17 +492,28 @@
 
         function gdpr_ajax_php_delete_cookies() {
           var ajax_cookie_removal = typeof moove_frontend_gdpr_scripts.ajax_cookie_removal !== 'undefined' ? moove_frontend_gdpr_scripts.ajax_cookie_removal : 'false';
-
+          var security = typeof moove_frontend_gdpr_scripts.gdpr_nonce !== 'undefined' ? moove_frontend_gdpr_scripts.gdpr_nonce : 'false';
           if ( ajax_cookie_removal === 'true' ) {
-            $.post(
-              moove_frontend_gdpr_scripts.ajaxurl,
-              {
-                action: "moove_gdpr_remove_php_cookies",
-              },
-              function( msg ) {
-                gdpr_cc_log('dbg - cookies removed');
-              }
-            );
+            if ( 'function' === typeof navigator.sendBeacon ) {
+              var log_data = new FormData();
+              log_data.append('action', 'moove_gdpr_remove_php_cookies');
+              log_data.append('security', security );
+              log_data.append('type', 'navigatorBeacon' );
+              navigator.sendBeacon( moove_frontend_gdpr_scripts.ajaxurl, log_data );
+              gdpr_cc_log('dbg - cookies removed navigatorBeacon')
+            } else {              
+              $.post(
+                moove_frontend_gdpr_scripts.ajaxurl,
+                {
+                  action: "moove_gdpr_remove_php_cookies",
+                  security: security,
+                  type: 'ajax_b1',
+                },
+                function( msg ) {
+                  gdpr_cc_log('dbg - cookies removed');                
+                }
+              );
+            }
           }
         }
 
@@ -740,11 +751,14 @@
                 });
               }
               var ajax_cookie_removal = typeof moove_frontend_gdpr_scripts.ajax_cookie_removal !== 'undefined' ? moove_frontend_gdpr_scripts.ajax_cookie_removal : 'true';
+              var _security = typeof moove_frontend_gdpr_scripts.gdpr_nonce !== 'undefined' ? moove_frontend_gdpr_scripts.gdpr_nonce : 'false';
 
               if ( 'function' === typeof navigator.sendBeacon ) {
                 if ( ajax_cookie_removal === 'true' ) {
                   var log_data = new FormData();
                   log_data.append('action', 'moove_gdpr_remove_php_cookies');
+                  log_data.append('security', _security );
+                  log_data.append('type', 'navigatorBeacon' );
                   navigator.sendBeacon( moove_frontend_gdpr_scripts.ajaxurl, log_data );
                   location.reload(true);
                 } else {
@@ -756,6 +770,8 @@
                     moove_frontend_gdpr_scripts.ajaxurl,
                     {
                       action: "moove_gdpr_remove_php_cookies",
+                      security: _security,
+                      type: 'ajax_b2',
                     },
                     function( msg ) {
                       location.reload(true);

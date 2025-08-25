@@ -877,6 +877,8 @@ class Moove_GDPR_Actions {
 			wp_add_inline_script( $ascript, 'window.wp_consent_type = "' . apply_filters( 'gdpr_cc_wp_consent_type', 'gdpr_cc' ) . '"' );
 		endif;
 
+		$loc_data['gdpr_nonce'] = wp_create_nonce( "gdpr-cookie-compliance" );
+
 		$this->gdpr_loc_data = apply_filters( 'gdpr_extend_loc_data', $loc_data );
 		wp_localize_script( $ascript, 'moove_frontend_gdpr_scripts', $this->gdpr_loc_data );
 
