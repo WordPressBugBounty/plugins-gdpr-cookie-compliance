@@ -117,6 +117,7 @@ class Moove_GDPR_Actions {
 		add_action( 'gdpr_insert_integration_gtm_snippet', array( 'Moove_GDPR_Content', 'gdpr_insert_integration_gtm_snippet' ), 10, 2 );
 		add_action( 'gdpr_insert_integration_gtmc2_snippet', array( 'Moove_GDPR_Content', 'gdpr_insert_integration_gtmc2_snippet' ), 10, 2 );
 		add_action( 'gdpr_insert_integration_fbp_snippet', array( 'Moove_GDPR_Content', 'gdpr_insert_integration_fbp_snippet' ), 10, 2 );
+		add_action( 'gdpr_insert_integration_muet_snippet', array( 'Moove_GDPR_Content', 'gdpr_insert_integration_muet_snippet' ), 10, 2 );
 		add_action( 'gdpr_insert_integration_gtm4wp_snippet', array( 'Moove_GDPR_Content', 'gdpr_insert_integration_gtm4wp_snippet' ), 10, 2 );
 		add_action( 'gdpr_insert_integration_gadc_snippet', array( 'Moove_GDPR_Content', 'gdpr_insert_integration_gadc_snippet' ), 10, 2 );
 

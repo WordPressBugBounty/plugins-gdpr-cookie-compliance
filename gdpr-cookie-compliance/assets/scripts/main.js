@@ -371,7 +371,7 @@
               e.preventDefault();
               console.warn('fsw-tab');
 
-              var items_to_focus = $('#moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar span.change-settings-button, #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar button.change-settings-button, #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar [data-target="third_party_cookies"] label, #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar [data-target="advanced-cookies"] label, #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar [data-target="performance-cookies"], #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar [data-target="preference-cookies"], label#moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar .mgbutton');
+              var items_to_focus = $('#moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar span.change-settings-button, #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar .moove-gdpr-infobar-allow-all, #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar .moove-gdpr-infobar-reject-btn,  #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar button.change-settings-button, #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar [data-target="third_party_cookies"] label, #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar [data-target="advanced-cookies"] label, #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar [data-target="performance-cookies"], #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar [data-target="preference-cookies"], label#moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar .mgbutton');
 
               if ( items_to_focus.length > 0 ) {
                 var item_to_focus = false;       

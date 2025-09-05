@@ -128,6 +128,19 @@ if ( ! function_exists( 'gdpr_get_integration_modules' ) ) :
 				),
 				'status'     => isset( $gdin_values['fbp'] ),
 			),
+			'muet'   => array(
+				'name'       => 'Microsoft Advertising (UET)',
+				'desc'       => 'Universal Event Tracking',
+				'cookie_cat' => isset( $gdin_values['muet'] ) ? intval( $gdin_values['muet'] ) : 2,
+				'tacking_id' => isset( $gdin_values['muet_id'] ) ? $gdin_values['muet_id'] : '',
+				'id_format'  => 'xxxxxxxx',
+				'atts'       => array(
+					'toggle' => true,
+					'input'  => '',
+				),
+				'status'     => isset( $gdin_values['muet'] ),
+			),
+
 		);
 		return apply_filters( 'gdpr_integration_modules', $integration_modules, $gdpr_options, $gdin_values );
 	}

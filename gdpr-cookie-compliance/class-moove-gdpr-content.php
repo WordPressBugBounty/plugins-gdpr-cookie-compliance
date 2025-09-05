@@ -474,6 +474,64 @@ class Moove_GDPR_Content {
 	 * @param array $cache_array Cache array.
 	 * @param array $_gdin_module Integration Module.
 	 */
+	public static function gdpr_insert_integration_muet_snippet( $cache_array, $_gdin_module ) {
+		if ( isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] && intval( $_gdin_module['cookie_cat'] ) ) :
+			$cookie_cat_n = '';
+			switch ( intval( $_gdin_module['cookie_cat'] ) ) {
+				case 2:
+					$cookie_cat_n = 'thirdparty';
+					break;
+				case 3:
+					$cookie_cat_n = 'advanced';
+					break;
+				case 4:
+					$cookie_cat_n = 'performance';
+					break;
+				case 5:
+					$cookie_cat_n = 'preference';
+					break;
+				default:
+					// code...
+					break;
+			}
+			if ( $cookie_cat_n ) :
+				ob_start();
+				?>
+				<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
+				<!-- Microsoft Advertising UET Code -->
+				<script data-type="gdpr-integration">
+					// Version: 1.0.0  
+					(function(w,d,t,r,u){  
+					    var f,n,i;  
+					    w[u]=w[u]||[],f=function(){  
+					        var o={ti: <?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>, enableAutoSpaTracking: <?php echo apply_filters( 'gdpr_microsoft_uet_autospatracking', 'false' ); ?>, tm:"wpp_1.0.7"};  
+					        o.q=w[u],w[u]=new UET(o),w[u].push("pageLoad")  
+					    },  
+					    n=d.createElement(t),n.src=r,n.async=1,n.onload=n.onreadystatechange=function(){  
+					        var s=this.readyState;  
+					        s&&s!=="loaded"&&s!=="complete"||(f(),n.onload=n.onreadystatechange=null)  
+					    },  
+					    i=d.getElementsByTagName(t)[0],i.parentNode.insertBefore(n,i)  
+					})(window,document,"script","//bat.bing.com/bat.js","uetq");  
+				</script>
+				<?php
+				if ( ! defined( 'gdpr_i_muet_h' ) ) :
+					$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
+					define( 'gdpr_i_muet_h', true );
+				else :
+					ob_end_clean();
+				endif;
+			endif;
+		endif;
+		return $cache_array;
+	}
+
+	/**
+	 * Integration Extensions
+	 *
+	 * @param array $cache_array Cache array.
+	 * @param array $_gdin_module Integration Module.
+	 */
 	public static function gdpr_insert_integration_gtm4wp_snippet( $cache_array, $_gdin_module ) {
 		if ( defined( 'GTM4WP_OPTIONS' ) && defined( 'GTM4WP_OPTION_GTM_PLACEMENT' ) && defined( 'GTM4WP_PLACEMENT_OFF' ) ) :
 			$storedoptions                 = (array) get_option( GTM4WP_OPTIONS );
