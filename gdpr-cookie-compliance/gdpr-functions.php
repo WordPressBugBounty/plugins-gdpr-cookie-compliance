@@ -49,6 +49,17 @@ if ( ! function_exists( 'gdpr_get_admin_submenu_items' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'gdpr_shortcode_settings' ) ) :
+	add_action('init', 'gdpr_shortcode_settings_register' );
+	function gdpr_shortcode_settings_register(){
+		add_shortcode( 'setting', 'gdpr_shortcode_settings' );
+	} 
+	
+	function gdpr_shortcode_settings( $atts ) {
+		return 'setting';
+	}
+endif;
+
 if ( ! function_exists( 'gdpr_get_site_id' ) ) :
 	/**
 	 * Returns the current blog id as site_id

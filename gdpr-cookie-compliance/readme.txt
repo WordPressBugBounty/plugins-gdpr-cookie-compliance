@@ -2,7 +2,7 @@
 Contributors: MooveAgency
 Donate link: https://www.mooveagency.com/wordpress-plugins/gdpr-cookie-compliance/
 Tags: GDPR, CCPA, DSGVO, cookie banner, cookie consent, cookie notice
-Stable tag: 5.0.6
+Stable tag: 5.0.7
 Requires at least: 4.5
 Tested up to: 6.8
 Requires PHP: 6.4
@@ -223,47 +223,46 @@ The Brazilian General Data Protection Law (“Lei Geral de Proteção de Dados�
 
 == Screenshots ==
 
-1. GDPR Cookie Compliance - Front-end - Privacy Overview
-2. GDPR Cookie Compliance - Front-end - Necessary
-3. GDPR Cookie Compliance - Front-end - Analytics
-4. GDPR Cookie Compliance - Front-end - Marketing
-5. GDPR Cookie Compliance - Front-end - Cookie Policy
-6. GDPR Cookie Compliance - Front-end - One Page Layout
-7. GDPR Cookie Compliance - Front-end - Cookie Consent Banner
-8. GDPR Cookie Compliance - Front-end - Full-Screen Mode [Premium]
-9. GDPR Cookie Compliance - Front-end - Full-Screen Mode - Cookie Settings [Premium]
-10. GDPR Cookie Compliance - Front-end - Cookie Declaration - One Page Layout [Premium]
-11. GDPR Cookie Compliance - Front-end - Cookie Declaration - Tabs Layout [Premium]
-12. GDPR Cookie Compliance - Admin - Branding
-13. GDPR Cookie Compliance - Admin - Language Notice
-14. GDPR Cookie Compliance - Admin - Cookie Notice Banner Settings
-15. GDPR Cookie Compliance - Admin - Floating Button
-16. GDPR Cookie Compliance - Admin - General Settings
-17. GDPR Cookie Compliance - Admin - Privacy Overview
-18. GDPR Cookie Compliance - Admin - Necessary
-19. GDPR Cookie Compliance - Admin - Analytics (GA Example Head)
-20. GDPR Cookie Compliance - Admin - Marketing (GTM Example Head)
-21. GDPR Cookie Compliance - Admin - Marketing (GTM Example Body)
-22. GDPR Cookie Compliance - Admin - Cookie Policy
-23. GDPR Cookie Compliance - Admin - Help - FAQ
-24. GDPR Cookie Compliance - Admin - Help - Hooks & Filters
-25. GDPR Cookie Compliance - Admin - Video Tutorial
-26. GDPR Cookie Compliance - Admin - Licence Manager
-27. GDPR Cookie Compliance - Admin - Export/Import Settings [Premium]
-28. GDPR Cookie Compliance - Admin - Multisite Settings [Premium] 
-29. GDPR Cookie Compliance - Admin - Accept on Scroll / Hide timer [Premium] 
-30. GDPR Cookie Compliance - Admin - Full-Screen / Cookiewall [Premium]
-31. GDPR Cookie Compliance - Admin - Analytics [Premium]
-32. GDPR Cookie Compliance - Admin - Geo Location [Premium]
-33. GDPR Cookie Compliance - Admin - Hide Cookie Notice Banner on Selected Posts / Pages [Premium]
-34. GDPR Cookie Compliance - Admin - Iframe Blocker / Pages [Premium]
-35. GDPR Cookie Compliance - Admin - Cookie Declaration [Premium]
-36. GDPR Cookie Compliance - Admin - Consent Log [Premium]
-37. GDPR Cookie Compliance - Admin - Renew Consent [Premium]
-38. GDPR Cookie Compliance - Admin - Language Specific Scripts [Premium]
-39. GDPR Cookie Compliance - Front-end - Cookie Shortcode [Premium]
+1. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+2. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+3. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+4. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+5. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+6. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+7. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+8. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+9. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+10. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+11. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+12. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+13. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+14. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+15. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+16. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+17. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+18. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+19. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+20. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+21. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+22. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+23. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+24. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+25. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+26. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+27. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+28. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+29. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+30. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
+31. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
 
 == Changelog ==
+
+= 5.0.7: 15 October 2025 =
+* Accessibility fixes
+* Shortcodes replaced
+* Admin improvements
+* Minor JS fixes
+
 = 5.0.6: 5 September 2025 =
 * Added Microsoft Advertising (UET) Integration
 * Accessibility improvements

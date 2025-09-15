@@ -15,13 +15,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 <h2><?php esc_html_e( 'Documentation', 'gdpr-cookie-compliance' ); ?></h2>
 <hr />
 <ul class="gdpr-disable-posts-nav moove-clearfix">
-	<li></li>
 	<li><a href="#gdpr_cbm_troubleshooting" class="gdpr-help-tab-toggle active"><?php esc_html_e( 'Troubleshooting', 'gdpr-cookie-compliance' ); ?></a></li>
 	<li><a href="#gdpr_cbm_faq" class="gdpr-help-tab-toggle"><?php esc_html_e( 'FAQ', 'gdpr-cookie-compliance' ); ?></a></li>
 	<li><a href="#gdpr_cbm_dh" class="gdpr-help-tab-toggle"><?php esc_html_e( 'Default Hooks', 'gdpr-cookie-compliance' ); ?></a></li>
 	<li><a href="#gdpr_cbm_ph" class="gdpr-help-tab-toggle"><?php esc_html_e( 'Premium Hooks', 'gdpr-cookie-compliance' ); ?></a></li>
 	<li><a href="#gdpr_cbm_ps" class="gdpr-help-tab-toggle"><?php esc_html_e( 'Premium Shortcodes', 'gdpr-cookie-compliance' ); ?></a></li>
 </ul>
+<hr>
 
 <div class="gdpr-help-content-cnt">
 	<div id="gdpr_cbm_troubleshooting" class="gdpr-help-content-block help-block-open">

@@ -696,8 +696,8 @@ class Moove_GDPR_Content {
 		$_content  = '<h2>' . __( 'This content is blocked', 'gdpr-cookie-compliance' );
 		$_content .= '<p>' . __( 'Please enable the cookies to view this content', 'gdpr-cookie-compliance' );
 		$_content .= '<br><br>';
-		$_content .= '[accept]' . esc_html__( 'Accept', 'gdpr-cookie-compliance' ) . '[/accept] ';
-		$_content .= '[setting]' . esc_html__( 'Adjust your settings', 'gdpr-cookie-compliance' ) . '[/setting] ';
+		$_content .= '{accept}' . esc_html__( 'Accept', 'gdpr-cookie-compliance' ) . '{/accept} ';
+		$_content .= '{setting}' . esc_html__( 'Adjust your settings', 'gdpr-cookie-compliance' ) . '{/setting}';
 		return $_content;
 	}
 

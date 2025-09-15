@@ -259,7 +259,7 @@
             if ( e.keyCode == 9 ) {
               e.preventDefault();
 
-              var items_to_focus = $('#moove_gdpr_cookie_modal .cookie-switch, #moove_gdpr_cookie_modal .mgbutton, #moove_gdpr_cookie_modal a:not(.moove-gdpr-branding), #moove_gdpr_cookie_modal .moove-gdpr-modal-close, #moove_gdpr_cookie_modal .moove-gdpr-branding');
+              var items_to_focus = $('#moove_gdpr_cookie_modal .cookie-switch, #moove_gdpr_cookie_modal .gdpr-cd-details-toggle, #moove_gdpr_cookie_modal .mgbutton, #moove_gdpr_cookie_modal a:not(.moove-gdpr-branding), #moove_gdpr_cookie_modal .moove-gdpr-modal-close, #moove_gdpr_cookie_modal .moove-gdpr-branding');
 
               if ( items_to_focus.length > 0 ) {
                 var item_to_focus = false;       
@@ -1584,7 +1584,7 @@
 
           if ( ( typeof moove_frontend_gdpr_scripts.enable_on_scroll !== 'undefined' ) && moove_frontend_gdpr_scripts.enable_on_scroll === 'true' ) {
             
-            if ( parseInt( default_trirdparty ) !== 1 && parseInt( default_advanced ) !== 1 && parseInt( default_performance ) !== 1 && parseInt( default_preference ) !== 1 && parseInt( default_strict ) !== 1 ) {
+            if ( parseInt( default_trirdparty ) !== 1 && parseInt( default_advanced ) !== 1 && parseInt( default_performance ) !== 1 && parseInt( default_preference ) !== 1 ) {
               default_strict = 1;
               default_trirdparty = 1;
               default_advanced = 1;

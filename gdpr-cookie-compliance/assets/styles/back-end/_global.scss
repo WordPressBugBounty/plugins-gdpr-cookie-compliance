@@ -10,14 +10,20 @@
   }
 }
 
-.gdpr-top-menu-links {
+.gdpr-top-menu-links,
+.gdpr-disable-posts-nav {
   display: inline-flex;
   flex-wrap: wrap;
   margin: 0 -5px;
   margin: 10px 0 0;
   padding-left: 1px;
 
-  .nav-tab {
+  li {
+    margin-bottom: 0;
+  }
+
+  .nav-tab,
+  li > a {
     margin: 0;
     border: 1px solid #dcdcde;
     background-color: #fff;
@@ -25,10 +31,18 @@
     padding: 5px 15px;
     outline: none;
     box-shadow: none;
+    font-size: 14px;
+    line-height: 1.71428571;
+    font-weight: 600;
+    color: #50575e;
+    text-decoration: none;
+    white-space: nowrap;
+    display: block;
 
-    &.nav-tab-active {
+    &.nav-tab-active,
+    &.active {
       background-color: #f79322;
-      border: #f79322;
+      border: 1px solid #f79322;
       pointer-events: none;
       color: #fff;
     }
@@ -39,7 +53,8 @@
   }
 }
 
-.gdpr-top-menu-links + hr {
+.gdpr-top-menu-links + hr,
+.gdpr-disable-posts-nav + hr {
   margin-top: 0;
 }
 
@@ -735,53 +750,6 @@ body.toplevel_page_moove-gdpr  {
             }
         }
     }
-}
-
-.gdpr-disable-posts-nav {
-  list-style-type: none;
-  padding: 5px 10px;
-  margin: 20px 0;
-  background-color: #fff;
-  box-shadow: 0 3px 51px 0 rgba(0,0,0,.05);
-  border: 1px solid #ccc;
-}
-.gdpr-disable-posts-nav li:first-child a {
-  padding-left: 0;
-}
-.gdpr-disable-posts-nav li:last-child a {
-  padding-right: 0;
-}
-.gdpr-disable-posts-nav li:after {
-  content: "|";
-  display: inline-block;
-  position: absolute;
-  right: -2px;
-  top: 10px;
-}
-.gdpr-disable-posts-nav li:last-child:after,
-.gdpr-disable-posts-nav li:first-child:after {
-  display: none;
-}
-.gdpr-disable-posts-nav li {
-  list-style: none;
-  display: inline-block;
-  float: left;
-  position: relative;
-  margin: 0;
-}
-.gdpr-disable-posts-nav li a.active {
-  color: #f79322;
-}
-
-.gdpr-disable-posts-nav li a,
-.gdpr-disable-posts-nav li strong {
-  display: block;
-  padding: 10px 10px;
-  outline: none;
-  box-shadow: none;
-}
-.gdpr-disable-posts-nav li strong {
-  padding-left: 0;
 }
 
 body[class*="toplevel_page_moove-gdpr"],

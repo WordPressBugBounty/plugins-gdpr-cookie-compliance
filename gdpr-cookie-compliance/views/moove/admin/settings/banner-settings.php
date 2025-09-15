@@ -183,10 +183,14 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 					$content = isset( $gdpr_options[ 'moove_gdpr_info_bar_content' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_info_bar_content' . $wpml_lang ] ? maybe_unserialize( $gdpr_options[ 'moove_gdpr_info_bar_content' . $wpml_lang ] ) : false;
 					if ( ! $content ) :
 						$_content  = '<p>' . esc_html__( 'We are using cookies to give you the best experience on our website.', 'gdpr-cookie-compliance' ) . '</p>';
-						$_content .= '<p>' . sprintf( esc_html__( 'You can find out more about which cookies we are using or switch them off in [%1$s]settings[/%2$s].', 'gdpr-cookie-compliance' ), 'setting', 'setting' ) . '</p>'; // phpcs:ignore
+						$_content .= '<p>' . sprintf( esc_html__( 'You can find out more about which cookies we are using or switch them off in {%1$s}settings{/%2$s}.', 'gdpr-cookie-compliance' ), 'setting', 'setting' ) . '</p>'; // phpcs:ignore
 						$content   = $_content;
+						$content   = str_replace( '[', '{', $content );
+						$content   = str_replace( '}', ']', $content );
 					endif;
-					$content = wp_kses_post( $content );
+					$content 						= wp_kses_post( $content );
+					$content            = str_replace( '[setting]', '{setting}', $content );
+					$content            = str_replace( '[/setting]', '{/setting}', $content );
 					?>
 					<?php
 					$settings = array(
@@ -199,9 +203,9 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 					<p class="description">
 					<?php
 						$content  = __( 'You can use the following shortcut to link the Cookie Settings Screen:', 'gdpr-cookie-compliance' );
-						$content .= '<br><span><strong>[setting]</strong>';
+						$content .= '<br><span><strong>{setting}</strong>';
 						$content .= __( 'settings', 'gdpr-cookie-compliance' );
-						$content .= '<strong>[/setting]</strong></span>';
+						$content .= '<strong>{/setting}</strong></span>';
 						apply_filters( 'gdpr_cc_keephtml', $content, true );
 					?>
 					</p>
