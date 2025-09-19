@@ -284,7 +284,8 @@ class Moove_GDPR_Controller {
 		}
 
 		#moove_gdpr_cookie_modal .moove-gdpr-branding.focus-g span,
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main a.focus-g {
+		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main a.focus-g,
+		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main .gdpr-cd-details-toggle.focus-g {
 			color: <?php echo esc_attr( $primary_colour ); ?>;
 		}
 

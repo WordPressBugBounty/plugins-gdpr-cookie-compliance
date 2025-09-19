@@ -40,10 +40,10 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 				if ( 'moove_gdpr_strict_necessary_cookies_tab_content' === $form_key ) :
 					$value                                  = wp_unslash( $form_value );
 					$gdpr_options[ $form_key . $wpml_lang ] = $value;					
-				elseif ( 'moove_gdpr_strictly_header_scripts' === $form_key || 'moove_gdpr_strictly_body_scripts' === $form_key || 'moove_gdpr_strictly_footer_scripts' === $form_key || 'moove_gdpr_strictly_necessary_cookies_tab_title' === $form_key ) :
+				elseif ( 'moove_gdpr_strictly_header_scripts' === $form_key || 'moove_gdpr_strictly_body_scripts' === $form_key || 'moove_gdpr_strictly_footer_scripts' === $form_key || 'moove_gdpr_strictly_necessary_cookies_tab_title' . $wpml_lang === $form_key ) :
 					$value                     = wp_unslash( $form_value );
 					$gdpr_options[ $form_key ] = maybe_serialize( $value );
-				endif;
+				endif;				
 			endforeach;
 			update_option( $option_name, $gdpr_options );
 			$gdpr_options = get_option( $option_name );

@@ -172,7 +172,7 @@
                   $(item_to_focus).find('button').trigger('click');
                 }
 
-                if ( $(item_to_focus).length > 0 ) {
+                if ( $(item_to_focus).length > 0 && 'undefined' !== typeof document.body.scrollIntoViewIfNeeded ) {
                   try {
                     $(item_to_focus)[0].scrollIntoViewIfNeeded();
                   } catch (error) {
@@ -194,7 +194,7 @@
                 }               
                 // next.find('.cookie-switch:visible').trigger('click');
                 next.find('.cookie-switch').trigger('focus').addClass('focus-g');
-                if ( next.find('.cookie-switch').length > 0 ) {
+                if ( next.find('.cookie-switch').length > 0 && 'undefined' !== typeof document.body.scrollIntoViewIfNeeded ) {
                   try {
                     next.find('.cookie-switch')[0].scrollIntoViewIfNeeded();
                   } catch (error) {
@@ -297,7 +297,7 @@
 
                 $(item_to_focus).addClass('focus-g').trigger('focus');
 
-                if ( $(item_to_focus).length > 0 ) {
+                if ( $(item_to_focus).length > 0 && 'undefined' !== typeof document.body.scrollIntoViewIfNeeded ) {
                   try {
                     $(item_to_focus)[0].scrollIntoViewIfNeeded();
                   } catch (error) {
@@ -319,7 +319,7 @@
                 }               
                 // next.find('.cookie-switch:visible').trigger('click');
                 next.find('.cookie-switch').trigger('focus').addClass('focus-g');
-                if ( next.find('.cookie-switch').length > 0 ) {
+                if ( next.find('.cookie-switch').length > 0 && 'undefined' !== typeof document.body.scrollIntoViewIfNeeded ) {
                   try {
                     next.find('.cookie-switch')[0].scrollIntoViewIfNeeded();
                   } catch (error) {
@@ -409,7 +409,7 @@
                 $(document).find('*').blur();
                 $(item_to_focus).addClass('focus-g').trigger('focus');
 
-                if ( $(item_to_focus).length > 0 ) {
+                if ( $(item_to_focus).length > 0 && 'undefined' !== typeof document.body.scrollIntoViewIfNeeded ) {
                   try {
                     $(item_to_focus)[0].scrollIntoViewIfNeeded();
                   } catch (error) {
@@ -431,7 +431,7 @@
                 }               
                 // next.find('.cookie-switch:visible').trigger('click');
                 next.find('.cookie-switch').trigger('focus').addClass('focus-g');
-                if ( next.find('.cookie-switch').length > 0 ) {
+                if ( next.find('.cookie-switch').length > 0 && 'undefined' !== typeof document.body.scrollIntoViewIfNeeded ) {
                   try {
                     next.find('.cookie-switch')[0].scrollIntoViewIfNeeded();
                   } catch (error) {
