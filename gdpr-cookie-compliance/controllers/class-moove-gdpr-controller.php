@@ -220,6 +220,14 @@ class Moove_GDPR_Controller {
 		border: 1px solid <?php echo esc_attr( $primary_colour ); ?>;
 		}
 
+		#moove_gdpr_cookie_info_bar span.moove-gdpr-infobar-allow-all.focus-g,
+		#moove_gdpr_cookie_info_bar span.moove-gdpr-infobar-allow-all:focus,
+		#moove_gdpr_cookie_info_bar button.moove-gdpr-infobar-allow-all.focus-g,
+		#moove_gdpr_cookie_info_bar button.moove-gdpr-infobar-allow-all:focus,
+		#moove_gdpr_cookie_info_bar span.moove-gdpr-infobar-reject-btn.focus-g,
+		#moove_gdpr_cookie_info_bar span.moove-gdpr-infobar-reject-btn:focus,
+		#moove_gdpr_cookie_info_bar button.moove-gdpr-infobar-reject-btn.focus-g,
+		#moove_gdpr_cookie_info_bar button.moove-gdpr-infobar-reject-btn:focus,				
 		#moove_gdpr_cookie_info_bar span.change-settings-button.focus-g,
 		#moove_gdpr_cookie_info_bar span.change-settings-button:focus,
 		#moove_gdpr_cookie_info_bar button.change-settings-button.focus-g,
