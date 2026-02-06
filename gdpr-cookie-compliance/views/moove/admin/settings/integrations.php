@@ -74,9 +74,9 @@ $nav_label_2 = isset( $gdpr_options[ 'moove_gdpr_performance_cookies_tab_title' 
 
 $nav_label_3 = isset( $gdpr_options[ 'moove_gdpr_advanced_cookies_tab_title' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_advanced_cookies_tab_title' . $wpml_lang ] ? $gdpr_options[ 'moove_gdpr_advanced_cookies_tab_title' . $wpml_lang ] : __( 'Marketing', 'gdpr-cookie-compliance' );
 
-$nav_label_4 = isset( $gdpr_options[ 'moove_gdpr_performance_cookies_tab_title' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_performance_cookies_tab_title' . $wpml_lang ] ? $gdpr_options[ 'moove_gdpr_performance_cookies_tab_title' . $wpml_lang ] : __( 'Performance', 'gdpr-cookie-compliance' );
+$nav_label_4 = isset( $gdpr_options[ 'moove_gdpr_performance_ccat_tab_title' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_performance_ccat_tab_title' . $wpml_lang ] ? $gdpr_options[ 'moove_gdpr_performance_ccat_tab_title' . $wpml_lang ] : __( 'Performance', 'gdpr-cookie-compliance' );
 
-$nav_label_5 = isset( $gdpr_options[ 'moove_gdpr_preferences_cookies_tab_title' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_preferences_cookies_tab_title' . $wpml_lang ] ? $gdpr_options[ 'moove_gdpr_preferences_cookies_tab_title' . $wpml_lang ] : __( 'Preferences', 'gdpr-cookie-compliance' );
+$nav_label_5 = isset( $gdpr_options[ 'moove_gdpr_preference_ccat_tab_title' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_preference_ccat_tab_title' . $wpml_lang ] ? $gdpr_options[ 'moove_gdpr_preference_ccat_tab_title' . $wpml_lang ] : __( 'Preferences', 'gdpr-cookie-compliance' );
 ?>
 	<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>?page=moove-gdpr&tab=integrations&gcat=integrations" method="post">
 	<?php wp_nonce_field( 'moove_gdpr_nonce_field', 'moove_gdpr_nonce' ); ?>

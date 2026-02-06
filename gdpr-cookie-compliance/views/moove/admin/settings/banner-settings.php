@@ -186,7 +186,7 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 						$_content .= '<p>' . sprintf( esc_html__( 'You can find out more about which cookies we are using or switch them off in {%1$s}settings{/%2$s}.', 'gdpr-cookie-compliance' ), 'setting', 'setting' ) . '</p>'; // phpcs:ignore
 						$content   = $_content;
 						$content   = str_replace( '[', '{', $content );
-						$content   = str_replace( '}', ']', $content );
+						$content   = str_replace( ']', '}', $content );
 					endif;
 					$content 						= wp_kses_post( $content );
 					$content            = str_replace( '[setting]', '{setting}', $content );
