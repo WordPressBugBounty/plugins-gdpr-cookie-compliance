@@ -255,24 +255,56 @@ class Moove_GDPR_Content {
 		$gdin_values          = isset( $gdpr_options['gdin_values'] ) ? json_decode( $gdpr_options['gdin_values'], true ) : array();
 		$gdin_modules         = gdpr_get_integration_modules( $gdpr_options, $gdin_values );
 		if ( isset( $gdin_modules['gtmc2'] ) && isset( $gdin_modules['gtmc2']['tacking_id'] ) && $gdin_modules['gtmc2']['status'] ) :
+
+			/*
+			 * Read the user's stored consent before GTM loads so that returning visitors
+			 * who have already accepted cookies receive 'granted' defaults from the very
+			 * first gtag() call.  Without this, the Consent Update fires after GTM has
+			 * already initialised, which is too late for ecommerce events
+			 * (view_item_list, view_item, add_to_cart) triggered on page load — those
+			 * events are blocked and never retro-fired by GTM.
+			 *
+			 * Consent type mapping:
+			 *   strict      → functionality_storage, security_storage
+			 *   thirdparty  → analytics_storage  (GA4 / GTM analytics tags)
+			 *   advanced    → ad_storage, ad_user_data, ad_personalization
+			 *   preference  → personalization_storage
+			 */
+			$has_stored_consent = isset( $_COOKIE['moove_gdpr_popup'] );
+			$php_cookies        = $gdpr_default_content->gdpr_get_php_cookies();
+
+			$strict_state  = ( $has_stored_consent && ! empty( $php_cookies['strict'] ) ) ? 'granted' : 'denied';
+			$analytics     = ( $has_stored_consent && ! empty( $php_cookies['thirdparty'] ) ) ? 'granted' : 'denied';
+			$ads           = ( $has_stored_consent && ! empty( $php_cookies['advanced'] ) ) ? 'granted' : 'denied';
+			$personaliz    = ( $has_stored_consent && ! empty( $php_cookies['preference'] ) ) ? 'granted' : 'denied';
+
+			// Only apply wait_for_update on first-visit (no stored consent).  For
+			// returning users the values are final; the delay would only defer GTM.
+			$wait_for_update_ms = esc_attr( apply_filters( 'gdpr_cc_gtm2_wait_for_update', '2000' ) );
+
+			// Set default consent based on stored cookie preference (if any).
+			// First-time visitors get all-denied + wait_for_update so the banner
+			// can grant before any tags fire.  Returning visitors who have already
+			// accepted get the correct granted state immediately, preventing
+			// ecommerce events from being blocked on page load.
+			
 			?>
 				<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<script>
 					// Define dataLayer and the gtag function.
 					window.dataLayer = window.dataLayer || [];
 					function gtag(){dataLayer.push(arguments);}
-
-					// Set default consent to 'denied' as a placeholder
-					// Determine actual values based on your own requirements
 					gtag('consent', 'default', {
-						'ad_storage': 'denied',
-						'ad_user_data': 'denied',
-						'ad_personalization': 'denied',
-						'analytics_storage': 'denied',
-						'personalization_storage': 'denied',
-						'security_storage': 'denied',
-						'functionality_storage': 'denied',
-						'wait_for_update': '<?php echo esc_attr( apply_filters( 'gdpr_cc_gtm2_wait_for_update', '2000' ) ); ?>'
+						'ad_storage': '<?php echo esc_js( $ads ); ?>',
+						'ad_user_data': '<?php echo esc_js( $ads ); ?>',
+						'ad_personalization': '<?php echo esc_js( $ads ); ?>',
+						'analytics_storage': '<?php echo esc_js( $analytics ); ?>',
+						'personalization_storage': '<?php echo esc_js( $personaliz ); ?>',
+						'security_storage': '<?php echo esc_js( $strict_state ); ?>',
+						'functionality_storage': '<?php echo esc_js( $strict_state ); ?>'
+						<?php if ( ! $has_stored_consent ) : ?>,
+						'wait_for_update': '<?php echo $wait_for_update_ms; ?>'
+						<?php endif; ?>
 					});
 				</script>
 

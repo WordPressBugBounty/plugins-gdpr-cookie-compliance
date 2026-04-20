@@ -48,8 +48,23 @@ class Moove_GDPR_Controller {
 	 * JavaScript localization script
 	 */
 	public static function moove_gdpr_localize_scripts() {
+		// Cache per anonymised IP to avoid repeated geo-lookup API calls.
+		// wp_privacy_anonymize_ip() masks the last octet (IPv4) or last 80 bits (IPv6)
+		// so the key never stores a full identifiable IP address.
+		$remote_ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+		$ip_anon   = function_exists( 'wp_privacy_anonymize_ip' ) ? wp_privacy_anonymize_ip( $remote_ip ) : '';
+		$cache_key = 'gdpr_geo_' . md5( $ip_anon );
+
+		$cached = get_transient( $cache_key );
+		if ( false !== $cached ) {
+			echo $cached; // phpcs:ignore
+			die();
+		}
+
 		$content_cnt = new Moove_GDPR_Content();
-		echo json_encode( $content_cnt->moove_gdpr_get_localize_scripts() ); // phpcs:ignore
+		$data        = json_encode( $content_cnt->moove_gdpr_get_localize_scripts() ); // phpcs:ignore
+		set_transient( $cache_key, $data, HOUR_IN_SECONDS );
+		echo $data; // phpcs:ignore
 		die();
 	}
 

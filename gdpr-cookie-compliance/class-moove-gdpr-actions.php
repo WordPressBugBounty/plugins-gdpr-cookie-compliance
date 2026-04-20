@@ -950,6 +950,11 @@ class Moove_GDPR_Actions {
 					$css_file = isset( $modal_options['moove_gdpr_plugin_font_family'] ) && $modal_options['moove_gdpr_plugin_font_family'] && false === strpos( strtolower( $modal_options['moove_gdpr_plugin_font_family'] ), 'nunito' ) ? 'gdpr-main-nf.css' : 'gdpr-main.css';
 				endif;
 			endif;
+			// Allow disabling the bundled Nunito web-font without touching the DB.
+			// Usage: add_filter( 'gdpr_cc_load_nunito', '__return_false' );
+			if ( ! apply_filters( 'gdpr_cc_load_nunito', 'gdpr-main-nf.css' !== $css_file ) ) :
+				$css_file = 'gdpr-main-nf.css';
+			endif;
 			wp_enqueue_style( 'moove_gdpr_frontend', plugins_url( basename( dirname( __FILE__ ) ) ) . '/dist/styles/' . $css_file, '', MOOVE_GDPR_VERSION );
 			$this->moove_localize_script( 'moove_gdpr_frontend' );
 		endif;

@@ -2241,25 +2241,62 @@
 
       if ( ! gpc_blocked ) {
         if ( typeof moove_frontend_gdpr_scripts.geo_location !== 'undefined' && moove_frontend_gdpr_scripts.geo_location === 'true' ) {
-          jQuery.post(
-            moove_frontend_gdpr_scripts.ajaxurl,
-            {
-              action: 'moove_gdpr_localize_scripts',
-            },
-            function( msg ) {
-              var object = JSON.parse( msg );
-              if ( typeof object.display_cookie_banner !== 'undefined' ) {
-                moove_frontend_gdpr_scripts.display_cookie_banner = object.display_cookie_banner;
-              }
-              if ( typeof object.enabled_default !== 'undefined' ) {
-                moove_frontend_gdpr_scripts.enabled_default = object.enabled_default;
-              }
-              if ( ! gdpr_js_init ) {
-                gdpr_js_init = true;
-                GDPR_UTIL_FE.fire('common');
+          var gdpr_geo_cache_name = 'moove_gdpr_geo_cache';
+
+          function gdpr_geo_cache_read() {
+            var nameEQ = encodeURIComponent( gdpr_geo_cache_name ) + '=';
+            var ca = document.cookie.split(';');
+            for ( var i = 0; i < ca.length; i++ ) {
+              var c = ca[i];
+              while ( c.charAt(0) === ' ' ) { c = c.substring(1, c.length); }
+              if ( c.indexOf( nameEQ ) === 0 ) {
+                try {
+                  return JSON.parse( decodeURIComponent( c.substring( nameEQ.length, c.length ) ) );
+                } catch(e) { return null; }
               }
             }
-          );
+            return null;
+          }
+
+          function gdpr_geo_cache_write( data ) {
+            // Session cookie (no expires) — geo result is per-session, avoids stale risk
+            document.cookie = encodeURIComponent( gdpr_geo_cache_name ) + '=' + encodeURIComponent( JSON.stringify( data ) ) + '; path=/; SameSite=Lax';
+          }
+
+          var geoCached = gdpr_geo_cache_read();
+          if ( geoCached !== null ) {
+            if ( typeof geoCached.display_cookie_banner !== 'undefined' ) {
+              moove_frontend_gdpr_scripts.display_cookie_banner = geoCached.display_cookie_banner;
+            }
+            if ( typeof geoCached.enabled_default !== 'undefined' ) {
+              moove_frontend_gdpr_scripts.enabled_default = geoCached.enabled_default;
+            }
+            if ( ! gdpr_js_init ) {
+              gdpr_js_init = true;
+              GDPR_UTIL_FE.fire('common');
+            }
+          } else {
+            jQuery.post(
+              moove_frontend_gdpr_scripts.ajaxurl,
+              {
+                action: 'moove_gdpr_localize_scripts',
+              },
+              function( msg ) {
+                var object = JSON.parse( msg );
+                if ( typeof object.display_cookie_banner !== 'undefined' ) {
+                  moove_frontend_gdpr_scripts.display_cookie_banner = object.display_cookie_banner;
+                }
+                if ( typeof object.enabled_default !== 'undefined' ) {
+                  moove_frontend_gdpr_scripts.enabled_default = object.enabled_default;
+                }
+                gdpr_geo_cache_write( object );
+                if ( ! gdpr_js_init ) {
+                  gdpr_js_init = true;
+                  GDPR_UTIL_FE.fire('common');
+                }
+              }
+            );
+          }
         } else {
           var gdpr_script_delay = typeof moove_frontend_gdpr_scripts.script_delay !== undefined && parseInt( moove_frontend_gdpr_scripts.script_delay ) >= 0 ? parseInt( moove_frontend_gdpr_scripts.script_delay ) : 0;
           if ( gdpr_script_delay > 0 ) {
