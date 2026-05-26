@@ -1337,7 +1337,7 @@
 
                     gdpr_save_analytics( 'script_inject', cookies );
 
-                    var obj = JSON.parse( msg );
+                    var obj = typeof msg === 'string' ? JSON.parse( msg ) : msg;
                     if ( obj.header ) {
                       postscribe(document.head, obj.header);
                     }
@@ -1564,7 +1564,7 @@
                       injected_scripts = cookie_input;
 
                       gdpr_save_analytics( 'script_inject', cookies );
-                      var obj = JSON.parse( msg );
+                      var obj = typeof msg === 'string' ? JSON.parse( msg ) : msg;
                       if ( obj.header ) {
                         postscribe(document.head, obj.header);
                       }
@@ -2298,7 +2298,7 @@
                 action: 'moove_gdpr_localize_scripts',
               },
               function( msg ) {
-                var object = JSON.parse( msg );
+                var object = typeof msg === 'string' ? JSON.parse( msg ) : msg;
                 if ( typeof object.display_cookie_banner !== 'undefined' ) {
                   moove_frontend_gdpr_scripts.display_cookie_banner = object.display_cookie_banner;
                 }

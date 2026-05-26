@@ -137,7 +137,7 @@ class Moove_GDPR_DB_Controller {
 			$result = $wpdb->insert( self::gdpr_table(), $data ); // db call ok; no-cache ok.
 		endif;
 		// Invalidate the options cache so subsequent reads see fresh data.
-		wp_cache_delete( 'gdpr_cc_options_1' );
+		wp_cache_delete( 'gdpr_cc_options_' . gdpr_get_site_id() );
 		return $result;
 	}
 
