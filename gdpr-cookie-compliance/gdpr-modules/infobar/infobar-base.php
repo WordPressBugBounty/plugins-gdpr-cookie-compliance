@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( $content->show ) :
 	?>
 	<!--copyscapeskip-->
-	<aside id="moove_gdpr_cookie_info_bar" class="<?php echo esc_attr( $content->class ); ?>" aria-label="<?php esc_html_e( 'GDPR Cookie Banner', 'gdpr-cookie-compliance' ); ?>" style="display: none;">
+	<aside id="moove_gdpr_cookie_info_bar" class="<?php echo esc_attr( $content->class ); ?>" aria-label="<?php esc_html_e( 'GDPR Cookie Banner', 'gdpr-cookie-compliance' ); ?>" aria-hidden="true" style="display: none;">
 	<div class="moove-gdpr-info-bar-container">
 		<div class="moove-gdpr-info-bar-content">
 		<?php echo gdpr_get_module( 'infobar-content' ); // phpcs:ignore ?>

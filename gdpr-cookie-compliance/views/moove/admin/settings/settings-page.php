@@ -13,7 +13,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 $plugin_tabs = gdpr_get_admin_submenu_items();
 
 $gdpr_default_content = new Moove_GDPR_Content();
-wp_verify_nonce( 'gdpr_nonce', 'gdpr_cookie_compliance_nonce' );
 $current_tab  	= isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : '';
 $current_gcat  	= isset( $_GET['gcat'] ) ? sanitize_text_field( wp_unslash( $_GET['gcat'] ) ) : ( ! isset( $_GET['tab'] ) && isset( $_GET['page'] ) && esc_attr( $_GET['page'] ) === 'moove-gdpr' ? 'settings' : '' );
 

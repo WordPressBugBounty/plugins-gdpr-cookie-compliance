@@ -43,7 +43,8 @@ class Moove_GDPR_DB_Controller {
           option_value LONGTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
           site_id INTEGER DEFAULT NULL,
           extras LONGTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-          PRIMARY KEY (id)
+          PRIMARY KEY (id),
+          UNIQUE KEY option_key_unique (option_key)
         );"
 			); // phpcs:ignore
 			if ( $gdpr_db_init && ! is_wp_error( $gdpr_db_init ) ) :
@@ -61,6 +62,18 @@ class Moove_GDPR_DB_Controller {
 					}
 				);
 				update_option( 'gdpr_cc_db_created', true );
+			endif;
+		endif;
+
+		// One-time migration: add unique index if missing (upgrades from older versions).
+		if ( ! get_option( 'gdpr_cc_db_unique_index' ) ) :
+			global $wpdb;
+			$table = $wpdb->prefix . 'gdpr_cc_options';
+			if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) === $table ) :
+				// Remove any existing duplicates before adding the constraint.
+				$wpdb->query( "DELETE c1 FROM {$table} c1 INNER JOIN {$table} c2 WHERE c1.id > c2.id AND c1.option_key = c2.option_key" ); // phpcs:ignore
+				$wpdb->query( "ALTER TABLE {$table} ADD UNIQUE KEY option_key_unique (option_key)" ); // phpcs:ignore
+				update_option( 'gdpr_cc_db_unique_index', true );
 			endif;
 		endif;
 	}
@@ -93,7 +106,7 @@ class Moove_GDPR_DB_Controller {
 	public static function get_options( $site_id = '1' ) {
 		global $wpdb;
 		$option_cache = wp_cache_get( 'gdpr_cc_options_' . $site_id );
-		if ( false === $option_cache || is_admin() ) :
+		if ( false === $option_cache ) :
 			$row = $wpdb->get_results( "SELECT option_key, option_value FROM {$wpdb->prefix}gdpr_cc_options", OBJECT_K ); // db call ok; no-cache ok.
 			if ( is_array( $row ) ) :
 				wp_cache_set( 'gdpr_cc_options_' . $site_id, $row );
@@ -114,19 +127,23 @@ class Moove_GDPR_DB_Controller {
 	 */
 	public static function update( $data ) {
 		global $wpdb;
-		self::remove_duplicate_entries();
+		$result = false;
 		if ( self::get( $data['option_key'] ) ) :
 			// Update.
-			$where = array( 'option_key' => $data['option_key'] );
-			return $wpdb->update( self::gdpr_table(), $data, $where ); // db call ok; no-cache ok.
+			$where  = array( 'option_key' => $data['option_key'] );
+			$result = $wpdb->update( self::gdpr_table(), $data, $where ); // db call ok; no-cache ok.
 		else :
 			// Insert.
-			return $wpdb->insert( self::gdpr_table(), $data ); // db call ok; no-cache ok.
+			$result = $wpdb->insert( self::gdpr_table(), $data ); // db call ok; no-cache ok.
 		endif;
+		// Invalidate the options cache so subsequent reads see fresh data.
+		wp_cache_delete( 'gdpr_cc_options_1' );
+		return $result;
 	}
 
 	/**
 	 * Removing duplicate entries from table if found
+	 * @deprecated No longer called on every update — UNIQUE index prevents duplicates.
 	 */
 	private static function remove_duplicate_entries() {
 		global $wpdb;

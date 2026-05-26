@@ -55,6 +55,8 @@ class Moove_GDPR_Controller {
 		$ip_anon   = function_exists( 'wp_privacy_anonymize_ip' ) ? wp_privacy_anonymize_ip( $remote_ip ) : '';
 		$cache_key = 'gdpr_geo_' . md5( $ip_anon );
 
+		header( 'Content-Type: application/json; charset=utf-8' );
+
 		$cached = get_transient( $cache_key );
 		if ( false !== $cached ) {
 			echo $cached; // phpcs:ignore
@@ -529,10 +531,19 @@ class Moove_GDPR_Controller {
 	/**
 	 * AJAX function to display the allowed scripts from the plugin settings page
 	 *
+	 * This endpoint is intentionally nonce-free for full-page cache compatibility
+	 * (WP Rocket, WPEngine, etc.). It is a read-only endpoint returning admin-configured
+	 * scripts — no privilege escalation or state mutation is possible via CSRF.
+	 * Origin is validated via Referer header as a defence-in-depth measure.
+	 *
 	 * @return void
 	 */
 	public static function moove_gdpr_get_scripts() {
-		wp_verify_nonce( 'gdpr_nonce', 'gdpr_cookie_compliance_nonce' );
+		// Lightweight origin check — compatible with full-page caching.
+		$referer = isset( $_SERVER['HTTP_REFERER'] ) ? $_SERVER['HTTP_REFERER'] : '';
+		if ( $referer && wp_parse_url( $referer, PHP_URL_HOST ) !== wp_parse_url( home_url(), PHP_URL_HOST ) ) :
+			wp_send_json_error( 'Invalid origin', 403 );
+		endif;
 		$strict     = isset( $_POST['strict'] ) && intval( $_POST['strict'] ) && 1 === intval( $_POST['strict'] ) ? true : false;
 		$thirdparty = isset( $_POST['thirdparty'] ) && intval( $_POST['thirdparty'] ) && 1 === intval( $_POST['thirdparty'] ) ? true : false;
 		$advanced   = isset( $_POST['advanced'] ) && intval( $_POST['advanced'] ) && 1 === intval( $_POST['advanced'] ) ? true : false;
@@ -694,9 +705,9 @@ class Moove_GDPR_Controller {
 					endif;
 					if ( 'moove_gdpr_popup' !== $name && strpos( $name, 'woocommerce' ) === false && strpos( $name, 'wc_' ) === false && strpos( $name, 'WordPress' ) === false ) :
 						if ( 'language' === $name || 'currency' === $name ) {
-							setcookie( $name, null, -1, '/', 'www.' . $domain );
+							setcookie( $name, '', -1, '/', 'www.' . $domain );
 						} elseif ( in_array( $name, $d_domains ) || strpos( $name, '_ga' ) !== false || strpos( $name, '_fbp' ) !== false ) { // phpcs:ignore
-							setcookie( $name, null, -1, '/', '.' . $domain );
+							setcookie( $name, '', -1, '/', '.' . $domain );
 						} else {
 							setcookie( $name, '', time() - 1000 );
 							setcookie( $name, '', time() - 1000, '/' );
@@ -711,23 +722,24 @@ class Moove_GDPR_Controller {
 				$store_cookie_on_reject = apply_filters( 'gdpr_cc_store_cookie_on_reject', true );
 				foreach ( $_COOKIE as $key => $value ) {
 					if ( false === $strict && 'moove_gdpr_popup' === $key && ! $store_cookie_on_reject ) :
-						setcookie( $key, null, -1, '/', 'www.' . $domain );
-						setcookie( $key, null, -1, '/', '.' . $domain );
+						setcookie( $key, '', -1, '/', 'www.' . $domain );
+						setcookie( $key, '', -1, '/', '.' . $domain );
 						$cookies_removed[ $key ] = $domain;
 					endif;
 
 					if ( 'moove_gdpr_popup' !== $key && strpos( $key, 'woocommerce' ) === false && strpos( $key, 'wc_' ) === false && strpos( $key, 'WordPress' ) === false ) :
 						if ( 'language' === $key || 'currency' === $key ) {
-							setcookie( $key, null, -1, '/', 'www.' . $domain );
+							setcookie( $key, '', -1, '/', 'www.' . $domain );
 							$cookies_removed[ $key ] = $domain;
 						} elseif ( in_array( $key, $d_domains ) || strpos( $key, '_ga' ) !== false || strpos( $key, '_fbp' ) !== false ) { // phpcs:ignore
-							setcookie( $key, null, -1, '/', '.' . $domain );
+							setcookie( $key, '', -1, '/', '.' . $domain );
 							$cookies_removed[ $key ] = $domain;
 						}
 					endif;
 				}
 			endif;
 		endif;
+		header( 'Content-Type: application/json; charset=utf-8' );
 		$scripts_json = apply_filters( 'gdpr_filter_scripts_before_insert', json_encode( $scripts_array ) ); // phpcs:ignore
 		echo str_replace( '<script', '<script data-gdpr', $scripts_json ); // phpcs:ignore
 		die();
@@ -749,10 +761,10 @@ class Moove_GDPR_Controller {
 				foreach ( $_COOKIE as $key => $value ) {
 					if ( 'moove_gdpr_popup' !== $key && strpos( $key, 'woocommerce' ) === false && strpos( $key, 'wc_' ) === false && strpos( $key, 'WordPress' ) === false ) :
 						if ( 'language' === $key || 'currency' === $key ) {
-							setcookie( $key, null, -1, '/', 'www.' . $domain );
+							setcookie( $key, '', -1, '/', 'www.' . $domain );
 							$cookies_removed[ $key ] = $domain;
 						} elseif ( in_array( $key, $d_domains ) || strpos( $key, '_ga' ) !== false || strpos( $key, '_fbp' ) !== false ) { // phpcs:ignore
-							setcookie( $key, null, -1, '/', '.' . $domain );
+							setcookie( $key, '', -1, '/', '.' . $domain );
 							$cookies_removed[ $key ] = $domain;
 						}
 					endif;
@@ -768,13 +780,13 @@ class Moove_GDPR_Controller {
 						setcookie( $name, '', time() - 1000 );
 						setcookie( $name, '', time() - 1000, '/' );
 						if ( 'language' === $name || 'currency' === $name ) {
-							setcookie( $name, null, -1, '/', 'www.' . $domain );
+							setcookie( $name, '', -1, '/', 'www.' . $domain );
 							$cookies_removed[ $name ] = $domain;
 						} elseif ( in_array( $key, $d_domains ) || strpos( $name, '_ga' ) !== false || strpos( $name, '_fbp' ) !== false ) { // phpcs:ignore
-							setcookie( $name, null, -1, '/', '.' . $domain );
+							setcookie( $name, '', -1, '/', '.' . $domain );
 							$cookies_removed[ $name ] = '.' . $domain;
 						} else {
-							setcookie( $name, null, -1, '/' );
+							setcookie( $name, '', -1, '/' );
 							$cookies_removed[ $name ] = $domain;
 						}
 					endif;
@@ -789,17 +801,18 @@ class Moove_GDPR_Controller {
 	 */
 	public static function moove_hide_language_notice() {
 		$nonce = isset( $_POST['nonce'] ) ? sanitize_key( wp_unslash( $_POST['nonce'] ) ) : false;
-		if ( wp_verify_nonce( $nonce, 'gdpr_hide_language_nonce' ) ) :
-			wp_verify_nonce( 'gdpr_nonce', 'gdpr_cookie_compliance_nonce' );
-			$user_id = get_current_user_id();
-			if ( $user_id ) :
-				$gdpr_default_content = new Moove_GDPR_Content();
-				$option_name          = $gdpr_default_content->moove_gdpr_get_option_name();
-				$modal_options        = get_option( $option_name );
-				$modal_options[ 'gdpr_hide_language_notice_' . $user_id ] = 1;
-				update_option( $option_name, $modal_options );
-			endif;
+		if ( ! wp_verify_nonce( $nonce, 'gdpr_hide_language_nonce' ) || ! current_user_can( 'manage_options' ) ) :
+			wp_send_json_error( 'Unauthorized', 403 );
 		endif;
+		$user_id = get_current_user_id();
+		if ( $user_id ) :
+			$gdpr_default_content = new Moove_GDPR_Content();
+			$option_name          = $gdpr_default_content->moove_gdpr_get_option_name();
+			$modal_options        = get_option( $option_name );
+			$modal_options[ 'gdpr_hide_language_notice_' . $user_id ] = 1;
+			update_option( $option_name, $modal_options );
+		endif;
+		wp_die();
 	}
 
 }
