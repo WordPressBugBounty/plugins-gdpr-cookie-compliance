@@ -560,6 +560,76 @@ class Moove_GDPR_Actions {
 			<?php
 		endif;
 
+		// Settings Button - Cookie Banner.
+		$gdpr_settings_button_bhv = isset( $gdpr_options['gdpr_settings_button_bhv'] ) && intval( $gdpr_options['gdpr_settings_button_bhv'] ) ? intval( $gdpr_options['gdpr_settings_button_bhv'] ) : 2;
+		if ( 1 === $gdpr_settings_button_bhv ) :
+			?>
+				#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.moove-gdpr-infobar-settings-btn,
+				#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.moove-gdpr-infobar-settings-btn {
+					background-color: <?php echo esc_attr( $primary ); ?>;
+					box-shadow: none;
+					opacity: 1;
+					color: #fff;
+				}
+
+				#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.moove-gdpr-infobar-settings-btn:hover,
+				#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.moove-gdpr-infobar-settings-btn:hover {
+					background-color: #202020;
+					color: #fff;
+					box-shadow: none;
+					opacity: 1;
+				}
+
+				#moove_gdpr_cookie_info_bar:not(.gdpr-full-screen-infobar).moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.moove-gdpr-infobar-settings-btn,
+				#moove_gdpr_cookie_info_bar:not(.gdpr-full-screen-infobar).moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.moove-gdpr-infobar-settings-btn {
+					background-color: <?php echo esc_attr( $primary ); ?>;
+					box-shadow: none;
+					opacity: 1;
+					color: #fff;
+				}
+
+				#moove_gdpr_cookie_info_bar:not(.gdpr-full-screen-infobar).moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.moove-gdpr-infobar-settings-btn:hover,
+				#moove_gdpr_cookie_info_bar:not(.gdpr-full-screen-infobar).moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.moove-gdpr-infobar-settings-btn:hover {
+					background-color: #fff;
+					color: <?php echo esc_attr( $primary ); ?>;
+					box-shadow: none;
+					opacity: 1;
+				}
+			<?php
+		elseif ( 2 === $gdpr_settings_button_bhv ) :
+			?>
+				#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.moove-gdpr-infobar-settings-btn,
+				#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.moove-gdpr-infobar-settings-btn {
+					background-color: transparent;
+					box-shadow: inset 0 0 0 1px currentColor;
+					opacity: .7;
+					color: #202020;
+				}
+
+				#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.moove-gdpr-infobar-settings-btn:hover,
+				#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.moove-gdpr-infobar-settings-btn:hover {
+					background-color: #202020;
+					box-shadow: none;
+					color: #fff;
+					opacity: 1;
+				}
+
+				#moove_gdpr_cookie_info_bar:not(.gdpr-full-screen-infobar).moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.moove-gdpr-infobar-settings-btn, #moove_gdpr_cookie_info_bar:not(.gdpr-full-screen-infobar).moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.moove-gdpr-infobar-settings-btn {
+					background-color: transparent;
+					box-shadow: inset 0 0 0 1px currentColor;
+					opacity: .7;
+					color: #fff;
+				}
+
+				#moove_gdpr_cookie_info_bar:not(.gdpr-full-screen-infobar).moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.moove-gdpr-infobar-settings-btn:hover, #moove_gdpr_cookie_info_bar:not(.gdpr-full-screen-infobar).moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.moove-gdpr-infobar-settings-btn:hover {
+					box-shadow: none;
+					opacity: 1;
+					color: #202020;
+					background-color: #fff;
+				}
+			<?php
+		endif;
+
 		$custom_font_weight = apply_filters( 'gdpr_font_wieght_title', 'inherit' );
 		// Custom Font Weights.
 		if ( isset( $gdpr_options['moove_gdpr_plugin_font_type'] ) && '1' !== $gdpr_options['moove_gdpr_plugin_font_type'] || 'inherit' !== $custom_font_weight ) :
@@ -632,8 +702,10 @@ class Moove_GDPR_Actions {
 		if ( isset( $modal_options['moove_gdpr_settings_button_enable'] ) && intval( $modal_options['moove_gdpr_settings_button_enable'] ) === 1 ) :
 			$button_order = in_array( 'settings', $buttons_order ) ? array_search( 'settings', $buttons_order ) : 'auto'; // phpcs:ignore
 			$button_label = isset( $modal_options[ 'moove_gdpr_infobar_settings_button_label' . $wpml_lang ] ) && $modal_options[ 'moove_gdpr_infobar_settings_button_label' . $wpml_lang ] ? $modal_options[ 'moove_gdpr_infobar_settings_button_label' . $wpml_lang ] : __( 'Settings', 'gdpr-cookie-compliance' );
+			$settings_btn_bhv   = isset( $modal_options['gdpr_settings_button_bhv'] ) && intval( $modal_options['gdpr_settings_button_bhv'] ) ? intval( $modal_options['gdpr_settings_button_bhv'] ) : 2;
+			$settings_btn_class = 'gdpr-settings-btn-style-' . $settings_btn_bhv;
 			?>
-				<button class="mgbutton moove-gdpr-infobar-settings-btn change-settings-button gdpr-fbo-<?php echo esc_attr( $button_order ); ?>" aria-haspopup="true" data-href="#moove_gdpr_cookie_modal" <?php echo apply_filters( 'gdpr_tabindex_attribute', '', $button_order ); // phpcs:ignore ?> aria-label="<?php echo esc_attr( $button_label ); ?>"><?php echo esc_attr( $button_label ); ?></button>
+				<button class="mgbutton moove-gdpr-infobar-settings-btn change-settings-button gdpr-fbo-<?php echo esc_attr( $button_order ); ?> <?php echo esc_attr( $settings_btn_class ); ?>" aria-haspopup="true" data-href="#moove_gdpr_cookie_modal" <?php echo apply_filters( 'gdpr_tabindex_attribute', '', $button_order ); // phpcs:ignore ?> aria-label="<?php echo esc_attr( $button_label ); ?>"><?php echo esc_attr( $button_label ); ?></button>
 			<?php
 		endif;
 	}
@@ -992,6 +1064,11 @@ class Moove_GDPR_Actions {
 	 */
 	public function gdpr_settings_tab_nav_extensions( $active_tab ) {
 		$tab_data = array(
+			array(
+				'name' => __( 'Global Policy Control (GPC)', 'gdpr-cookie-compliance' ),
+				'slug' => 'global-policy-control',
+			),
+
 			array(
 				'name' => __( 'Export/Import Settings', 'gdpr-cookie-compliance' ),
 				'slug' => 'export-import',

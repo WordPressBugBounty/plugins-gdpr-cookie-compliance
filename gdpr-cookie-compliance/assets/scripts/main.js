@@ -54,7 +54,7 @@
           if ( $('#moove_gdpr_cookie_info_bar').length > 0 ) {
             $('#moove_gdpr_cookie_info_bar').addClass('moove-gdpr-info-bar-hidden');
             $('body').removeClass('gdpr-infobar-visible');
-            $('#moove_gdpr_cookie_info_bar').hide();
+            $('#moove_gdpr_cookie_info_bar').attr('inert', '').hide();
             $('#moove_gdpr_save_popup_settings_button').show();
           }
 
@@ -940,14 +940,14 @@
                 $('#moove_gdpr_cookie_info_bar').removeClass('moove-gdpr-info-bar-hidden');
                 $('#moove_gdpr_save_popup_settings_button:not(.button-visible)').hide();
                 $('body').addClass('gdpr-infobar-visible');
-                $('#moove_gdpr_cookie_info_bar').attr('aria-hidden', 'false').show();
+                $('#moove_gdpr_cookie_info_bar').removeAttr('inert').show();
                 gdpr_save_analytics( 'show_infobar', '' );
               }
             } else {
               if ( $('#moove_gdpr_cookie_info_bar').length > 0 ) {
                 $('#moove_gdpr_cookie_info_bar').addClass('moove-gdpr-info-bar-hidden');
                 $('body').removeClass('gdpr-infobar-visible');
-                $('#moove_gdpr_cookie_info_bar').attr('aria-hidden', 'true').hide();
+                $('#moove_gdpr_cookie_info_bar').attr('inert', '').hide();
                 var load_cookies = {
                   "strict" : 1,
                   "thirdparty" : 1,
@@ -964,7 +964,7 @@
               $('#moove_gdpr_cookie_info_bar').removeClass('moove-gdpr-info-bar-hidden');
               $('#moove_gdpr_save_popup_settings_button:not(.button-visible)').hide();
               $('body').addClass('gdpr-infobar-visible');
-              $('#moove_gdpr_cookie_info_bar').attr('aria-hidden', 'false').show();
+              $('#moove_gdpr_cookie_info_bar').removeAttr('inert').show();
               gdpr_save_analytics( 'show_infobar', '' );
             }
           }
@@ -991,7 +991,7 @@
               if ( $('#moove_gdpr_cookie_info_bar').length > 0 ) {
                 $('#moove_gdpr_cookie_info_bar').addClass('moove-gdpr-info-bar-hidden');
                 $('body').removeClass('gdpr-infobar-visible');
-                $('#moove_gdpr_cookie_info_bar').hide();
+                $('#moove_gdpr_cookie_info_bar').attr('inert', '').hide();
                 $('#moove_gdpr_save_popup_settings_button').show();
               }
 
@@ -1021,7 +1021,7 @@
               if ( $('#moove_gdpr_cookie_info_bar').length > 0 ) {
                 $('#moove_gdpr_cookie_info_bar').addClass('moove-gdpr-info-bar-hidden');
                 $('body').removeClass('gdpr-infobar-visible');
-                $('#moove_gdpr_cookie_info_bar').hide();
+                $('#moove_gdpr_cookie_info_bar').attr('inert', '').hide();
                 $('#moove_gdpr_save_popup_settings_button').show();
               }
 
@@ -2207,7 +2207,7 @@
             if ( $('#moove_gdpr_cookie_info_bar').length > 0 ) {
               $('#moove_gdpr_cookie_info_bar').addClass('moove-gdpr-info-bar-hidden');
               $('body').removeClass('gdpr-infobar-visible');
-              $('#moove_gdpr_cookie_info_bar').hide();
+              $('#moove_gdpr_cookie_info_bar').attr('inert', '').hide();
               $('#moove_gdpr_save_popup_settings_button').show();
             }
             moove_gdpr_show_infobar();

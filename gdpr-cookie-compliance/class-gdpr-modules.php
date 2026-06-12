@@ -169,6 +169,8 @@ class GDPR_Modules {
 		$content = wp_kses_post( $content );
 
 		$tabindex           = apply_filters( 'gdpr_tabindex_attribute', '', '0' );
+		$settings_btn_bhv   = isset( $modal_options['gdpr_settings_button_bhv'] ) && intval( $modal_options['gdpr_settings_button_bhv'] ) ? intval( $modal_options['gdpr_settings_button_bhv'] ) : 2;
+		$settings_btn_class = 'gdpr-settings-btn-style-' . $settings_btn_bhv;
 		$content            = str_replace( '[setting]', '{setting}', $content );
 		$content            = str_replace( '[/setting]', '{/setting}', $content );
 		$content            = str_replace( '[accept]', '{accept}', $content );
@@ -176,7 +178,7 @@ class GDPR_Modules {
 		$content            = str_replace( '[reject]', '{reject}', $content );
 		$content            = str_replace( '[/reject]', '{/reject}', $content );
 
-		$content            = str_replace( '{setting}', '<button ' . $tabindex . ' aria-haspopup="true" data-href="#moove_gdpr_cookie_modal" class="change-settings-button">', $content );
+		$content            = str_replace( '{setting}', '<button ' . $tabindex . ' aria-haspopup="true" data-href="#moove_gdpr_cookie_modal" class="change-settings-button ' . esc_attr( $settings_btn_class ) . '">', $content );
 		$content            = str_replace( '{/setting}', '</button>', $content );
 		$content            = apply_filters( 'gdpr_info_bar_notice_content', $content );
 		$data               = new stdClass();

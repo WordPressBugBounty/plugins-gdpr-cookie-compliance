@@ -68,7 +68,7 @@
               },
               function( msg ) {                
                 ms_blog.prop( 'checked',false );
-                var obj = JSON.parse( msg );
+                var obj = ( typeof msg === 'string' ) ? JSON.parse( msg ) : msg;
                 var error_label = 'Error';
 
                 if ( obj.type === 'max_activation_reached' ) {
@@ -288,7 +288,6 @@
           }
         });
 
-
         // JavaScript to be fired on all pages
         $(document).on('keyup','input[name=moove_gdpr_company_logo]',function(){
           // console.log('changed');
@@ -301,7 +300,7 @@
           } else {
             $('#moove_gdpr_plugin_font_family').removeClass('moove-not-visible');
           }
-        })
+        });
 
         $('#moove_form_checker_wrap .iris-colorpicker').each(function(){
           $(this).iris({
