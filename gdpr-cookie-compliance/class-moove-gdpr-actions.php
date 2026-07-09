@@ -276,18 +276,22 @@ class Moove_GDPR_Actions {
 	}
 
 	/**
-	 * Tab main section premium class
+	 * Outputs the `tabindex` attribute for the cookie banner buttons when the
+	 * "Improved Accessibility" option is enabled.
 	 *
-	 * @param string $tabindex Custom attribute.
-	 * @param string $index_value Index Value.
+	 * @param string     $tabindex    Current attribute (from filter).
+	 * @param string|int $index_value Legacy hint (kept for BC — no longer emitted).
+	 * @return string
 	 */
 	public static function gdpr_insert_tabindex_attribute( $tabindex, $index_value ) {
+		unset( $index_value ); // Kept in the signature for backward compatibility with third-party filters.
+
 		$gdpr_default_content = new Moove_GDPR_Content();
 		$option_name          = $gdpr_default_content->moove_gdpr_get_option_name();
 		$gdpr_options         = get_option( $option_name );
 
 		if ( isset( $gdpr_options['gdpr_accesibility'] ) && intval( $gdpr_options['gdpr_accesibility'] ) === 1 ) :
-			$tabindex = ' tabindex="' . esc_attr( $index_value ) . '" ';
+			$tabindex = ' tabindex="0" ';
 		else :
 			$tabindex = '';
 		endif;

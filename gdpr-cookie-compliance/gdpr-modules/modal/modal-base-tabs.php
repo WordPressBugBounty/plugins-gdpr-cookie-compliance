@@ -6,7 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 <?php if ( $content->show ) : ?>    
 	<!--copyscapeskip-->
 	<!-- V1 -->
-	<dialog id="moove_gdpr_cookie_modal" class="gdpr_lightbox-hide" aria-modal="true" aria-label="<?php esc_html_e( 'GDPR Settings Screen', 'gdpr-cookie-compliance' ); ?>">
+	<?php // The `open` attribute is required so the dialog subtree is not treated as inert. Visibility is controlled by the `gdpr_lightbox-hide` class. ?>
+	<dialog id="moove_gdpr_cookie_modal" class="gdpr_lightbox-hide" open aria-modal="true" aria-label="<?php esc_html_e( 'GDPR Settings Screen', 'gdpr-cookie-compliance' ); ?>">
 	<div class="moove-gdpr-modal-content moove-clearfix logo-position-<?php echo esc_attr( $content->logo_position ); ?> <?php echo esc_attr( $content->theme ); ?>">
 		<?php if ( $content->close ) : ?>    
 		<button class="moove-gdpr-modal-close" autofocus aria-label="<?php esc_html_e( 'Close GDPR Cookie Settings', 'gdpr-cookie-compliance' ); ?>">

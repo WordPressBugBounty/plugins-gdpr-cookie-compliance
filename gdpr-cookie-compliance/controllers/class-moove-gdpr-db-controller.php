@@ -39,7 +39,7 @@ class Moove_GDPR_DB_Controller {
 			$gdpr_db_init = $wpdb->query(
 				"CREATE TABLE IF NOT EXISTS {$wpdb->prefix}gdpr_cc_options(
           id INTEGER NOT NULL auto_increment,
-          option_key VARCHAR(255) NOT NULL DEFAULT 1,
+          option_key VARCHAR(191) NOT NULL DEFAULT '1',
           option_value LONGTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
           site_id INTEGER DEFAULT NULL,
           extras LONGTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
@@ -47,7 +47,7 @@ class Moove_GDPR_DB_Controller {
           UNIQUE KEY option_key_unique (option_key)
         );"
 			); // phpcs:ignore
-			if ( $gdpr_db_init && ! is_wp_error( $gdpr_db_init ) ) :
+			if ( false !== $gdpr_db_init && ! is_wp_error( $gdpr_db_init ) ) :
 				add_action(
 					'init',
 					function() {
@@ -70,10 +70,20 @@ class Moove_GDPR_DB_Controller {
 			global $wpdb;
 			$table = $wpdb->prefix . 'gdpr_cc_options';
 			if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) === $table ) :
-				// Remove any existing duplicates before adding the constraint.
-				$wpdb->query( "DELETE c1 FROM {$table} c1 INNER JOIN {$table} c2 WHERE c1.id > c2.id AND c1.option_key = c2.option_key" ); // phpcs:ignore
-				$wpdb->query( "ALTER TABLE {$table} ADD UNIQUE KEY option_key_unique (option_key)" ); // phpcs:ignore
-				update_option( 'gdpr_cc_db_unique_index', true );
+				// If the index already exists, we're done — flag it and move on.
+				$existing_index = $wpdb->get_var( $wpdb->prepare( "SHOW INDEX FROM {$table} WHERE Key_name = %s", 'option_key_unique' ) ); // phpcs:ignore
+				if ( $existing_index ) :
+					update_option( 'gdpr_cc_db_unique_index', true );
+				else :
+					// Remove any existing duplicates before adding the constraint.
+					$wpdb->query( "DELETE c1 FROM {$table} c1 INNER JOIN {$table} c2 WHERE c1.id > c2.id AND c1.option_key = c2.option_key" ); // phpcs:ignore
+					// Use a 191-char prefix so the ALTER succeeds on legacy tables where option_key is still VARCHAR(255) under utf8mb4.
+					$alter_result = $wpdb->query( "ALTER TABLE {$table} ADD UNIQUE KEY option_key_unique (option_key(191))" ); // phpcs:ignore
+					// Only mark the migration as done if it actually succeeded; otherwise we retry on the next request without spamming errors indefinitely because the ALTER only runs once per page load and the flag guards it.
+					if ( false !== $alter_result ) :
+						update_option( 'gdpr_cc_db_unique_index', true );
+					endif;
+				endif;
 			endif;
 		endif;
 	}
