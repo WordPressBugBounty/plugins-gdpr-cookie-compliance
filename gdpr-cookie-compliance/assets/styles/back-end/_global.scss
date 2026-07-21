@@ -178,6 +178,42 @@
   margin: 5px 0;
 }
 
+.gdpr-premium-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 9px;
+  background-color: #50575e;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  vertical-align: middle;
+}
+
+.gdpr-premium-badge-locked {
+  background-color: #b8860b;
+}
+
+.form-table .gdpr-gsk-table tr.gdpr-integration-locked td {
+  background-color: #fbfbfb;
+}
+
+.form-table .gdpr-gsk-table tr.gdpr-integration-locked strong,
+.form-table .gdpr-gsk-table tr.gdpr-integration-locked small {
+  opacity: 0.7;
+}
+
+a.gdpr-integration-upgrade {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
 .gdpr_cb_bhv_desc {
   display: block;
   font-size: 12px;
@@ -884,6 +920,8 @@ body[class*="gdpr-cookie-compliance_page_moove-gdpr"] {
 .gdpr-tab-section-cnt {
   max-width: calc(100% - 380px);
   display: inline-block;
+  display: inline-flex;
+  align-items: flex-start;
   width: 100%;
   .regular-text {
       width: 100%;
@@ -1208,6 +1246,7 @@ body[class*="gdpr-cookie-compliance_page_moove-gdpr"] {
     .gdpr-tab-section-cnt {
         max-width: 100%;
         display: block;
+        display: flex;
         width: 100%;
         .form-table th {
             width: 200px;
@@ -1487,6 +1526,7 @@ span.separator {
     .nav-tab-wrapper {
         width: 200px;
         display: inline-block;
+        flex: 0 0 auto;
         padding-right: 17px;
         padding-top: 0;
         position: relative;
@@ -1541,8 +1581,11 @@ span.separator {
         }
     }
     .moove-gdpr-form-container {
+        /* fallback for non-flex browsers; ignored inside the flex parent */
         width: calc( 100% - 279px );
         float: right;
+        flex: 1 1 0%;
+        min-width: 0;
         padding: 5px 30px 30px;
         border: 1px solid #ccc;
     }

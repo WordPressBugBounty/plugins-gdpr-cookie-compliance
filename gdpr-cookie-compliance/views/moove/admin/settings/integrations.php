@@ -22,15 +22,45 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 	if ( ! wp_verify_nonce( $nonce, 'moove_gdpr_nonce_field' ) ) :
 		die( 'Security check' );
 	else :
+		$gdin_saved_values  = isset( $gdpr_options['gdin_values'] ) ? json_decode( $gdpr_options['gdin_values'], true ) : array();
+		$gdin_saved_values  = is_array( $gdin_saved_values ) ? $gdin_saved_values : array();
+		$gdin_known_modules = gdpr_get_integration_modules( $gdpr_options, $gdin_saved_values );
+
+		/**
+		 * Locked rows post nothing, so their stored settings would be wiped on save.
+		 * Carry them over instead - a lapsed licence should not destroy the config.
+		 */
+		$gdin_preserved = array();
+		foreach ( $gdin_known_modules as $_gdin_slug => $_gdin_module ) :
+			if ( ! empty( $_gdin_module['available'] ) ) :
+				continue;
+			endif;
+			if ( isset( $gdin_saved_values[ $_gdin_slug ] ) ) :
+				$gdin_preserved[ $_gdin_slug ] = $gdin_saved_values[ $_gdin_slug ];
+			endif;
+			if ( isset( $gdin_saved_values[ $_gdin_slug . '_id' ] ) ) :
+				$gdin_preserved[ $_gdin_slug . '_id' ] = $gdin_saved_values[ $_gdin_slug . '_id' ];
+			endif;
+		endforeach;
+
 		if ( isset( $_POST['gdpr_integrations'] ) && is_array( $_POST['gdpr_integrations'] ) ) :
-			$gdpr_gdin_values = array();
+			$gdpr_gdin_values = $gdin_preserved;
 
 			$third_party_allowed = isset( $gdpr_options['moove_gdpr_third_party_cookies_enable'] ) && intval( $gdpr_options['moove_gdpr_third_party_cookies_enable'] ) === 1;
 			$advanced_allowed    = isset( $gdpr_options['moove_gdpr_advanced_cookies_enable'] ) && intval( $gdpr_options['moove_gdpr_advanced_cookies_enable'] ) === 1;
 			foreach ( $_POST['gdpr_integrations'] as $_gdin_slug ) : // phpcs:ignore
 				$gdin_slug   = sanitize_text_field( wp_unslash( $_gdin_slug ) );
 				$tracking_id = isset( $_POST[ 'gdpr_integrations_' . $gdin_slug . '_id' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'gdpr_integrations_' . $gdin_slug . '_id' ] ) ) : false;
-				if ( $tracking_id ) :
+
+				// A locked premium teaser must never be persisted, whatever was posted.
+				if ( isset( $gdin_known_modules[ $gdin_slug ] ) && empty( $gdin_known_modules[ $gdin_slug ]['available'] ) ) :
+					continue;
+				endif;
+
+				// Blocker modules suppress a third-party script and have no tracking ID.
+				$gdin_needs_id = isset( $gdin_known_modules[ $gdin_slug ] ) ? gdpr_integration_module_needs_id( $gdin_known_modules[ $gdin_slug ] ) : true;
+
+				if ( $tracking_id || ! $gdin_needs_id ) :
 					$gdin_value = isset( $_POST[ 'gdpr_integrations_' . $gdin_slug ] ) && intval( $_POST[ 'gdpr_integrations_' . $gdin_slug ] ) ? intval( $_POST[ 'gdpr_integrations_' . $gdin_slug ] ) : 2;
 					if ( 2 === $gdin_value && ! $third_party_allowed ) :
 						$gdpr_options['moove_gdpr_third_party_cookies_enable'] = 1;
@@ -40,13 +70,15 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 						$gdpr_options['moove_gdpr_advanced_cookies_enable'] = 1;
 					endif;
 
-					$gdpr_gdin_values[ $gdin_slug ]         = $gdin_value;
-					$gdpr_gdin_values[ $gdin_slug . '_id' ] = $tracking_id;
+					$gdpr_gdin_values[ $gdin_slug ] = $gdin_value;
+					if ( $gdin_needs_id ) :
+						$gdpr_gdin_values[ $gdin_slug . '_id' ] = $tracking_id;
+					endif;
 				endif;
 			endforeach;
 			$gdpr_options['gdin_values'] = json_encode( $gdpr_gdin_values ); // phpcs:ignore
 		else :
-			$gdpr_options['gdin_values'] = json_encode( array() ); // phpcs:ignore
+			$gdpr_options['gdin_values'] = json_encode( $gdin_preserved ); // phpcs:ignore
 		endif;
 
 		update_option( $option_name, $gdpr_options );
@@ -69,6 +101,8 @@ if ( isset( $_POST ) && isset( $_POST['moove_gdpr_nonce'] ) ) :
 		<?php
 	endif;
 endif;
+
+$nav_label_1 = isset( $gdpr_options[ 'moove_gdpr_strictly_necessary_cookies_tab_title' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_strictly_necessary_cookies_tab_title' . $wpml_lang ] ? $gdpr_options[ 'moove_gdpr_strictly_necessary_cookies_tab_title' . $wpml_lang ] : __( 'Necessary', 'gdpr-cookie-compliance' );
 
 $nav_label_2 = isset( $gdpr_options[ 'moove_gdpr_performance_cookies_tab_title' . $wpml_lang ] ) && $gdpr_options[ 'moove_gdpr_performance_cookies_tab_title' . $wpml_lang ] ? $gdpr_options[ 'moove_gdpr_performance_cookies_tab_title' . $wpml_lang ] : __( 'Analytics', 'gdpr-cookie-compliance' );
 
@@ -114,18 +148,23 @@ $nav_label_5 = isset( $gdpr_options[ 'moove_gdpr_preference_ccat_tab_title' . $w
 				if ( ! empty( $gdin_modules ) && is_array( $gdin_modules ) ) :
 					foreach ( $gdin_modules as $_gdin_module_slug => $_gdin_module ) :
 						?>
-						<tr>
+						<?php $gdin_locked = empty( $_gdin_module['available'] ); ?>
+						<tr class="<?php echo $gdin_locked ? 'gdpr-integration-locked' : ''; ?>">
 							<td>
-							<strong><?php echo esc_attr( $_gdin_module['name'] ); ?></strong><br>
+							<strong><?php echo esc_attr( $_gdin_module['name'] ); ?></strong><?php echo gdpr_integration_module_badge( $_gdin_module ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><br>
 							<small><?php echo esc_attr( $_gdin_module['desc'] ); ?></small>
+							<?php if ( $gdin_locked ) : ?>
+							<br><a href="<?php echo esc_url( gdpr_get_premium_upgrade_url() ); ?>" target="_blank" rel="noopener" class="gdpr_admin_link gdpr-integration-upgrade"><?php esc_html_e( 'Upgrade to unlock', 'gdpr-cookie-compliance' ); ?> &rsaquo;</a>
+							<?php endif; ?>
 							</td>
 							<td>
 							<label class="gdpr-checkbox-toggle">
-							<input type="checkbox" id="gdpr_integrations_<?php echo esc_attr( $_gdin_module_slug ); ?>" name="gdpr_integrations[]" <?php echo $_gdin_module['status'] ? 'checked' : ''; ?> id="gdpr_integrations" value="<?php echo esc_attr( $_gdin_module_slug ); ?>" >
+							<input type="checkbox" id="gdpr_integrations_<?php echo esc_attr( $_gdin_module_slug ); ?>" name="gdpr_integrations[]" <?php echo $_gdin_module['status'] ? 'checked' : ''; ?> <?php echo $gdin_locked ? 'disabled' : ''; ?> id="gdpr_integrations" value="<?php echo esc_attr( $_gdin_module_slug ); ?>" >
 							<span class="gdpr-checkbox-slider" data-enable="<?php esc_html_e( 'Enabled', 'gdpr-cookie-compliance' ); ?>" data-disable="<?php esc_html_e( 'Disabled', 'gdpr-cookie-compliance' ); ?>"></span>
 							</label>
 							</td>
 							<td>
+							<?php if ( gdpr_integration_module_needs_id( $_gdin_module ) ) : ?>
 							<div class="gdpr-conditional-field" data-dependency="#gdpr_integrations_<?php echo esc_attr( $_gdin_module_slug ); ?>">
 								<input type="text" class="regular-text" <?php echo isset( $_gdin_module['atts'] ) && isset( $_gdin_module['atts']['input'] ) ? $_gdin_module['atts']['input'] : ''; ?> name="gdpr_integrations_<?php echo esc_attr( $_gdin_module_slug ); ?>_id" placeholder="<?php echo $_gdin_module['id_format']; ?>" value="<?php echo isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] ? esc_attr( $_gdin_module['tacking_id'] ) : ''; ?>">
 								<?php if ( isset( $_gdin_module['atts'] ) && isset( $_gdin_module['atts']['input'] ) && 'disabled' === $_gdin_module['atts']['input'] ) : ?>
@@ -133,10 +172,24 @@ $nav_label_5 = isset( $gdpr_options[ 'moove_gdpr_preference_ccat_tab_title' . $w
 								<?php endif; ?>
 							</div>
 							<!-- .gdpr-conditional-field -->
+							<?php else : ?>
+							<small class="description">&mdash;</small>
+							<?php endif; ?>
 							</td>
 							<td>
+							<?php if ( $gdin_locked ) : ?>
+							<small class="description">&mdash;</small>
+							<?php else : ?>
 							<div class="gdpr-conditional-field" data-dependency="#gdpr_integrations_<?php echo esc_attr( $_gdin_module_slug ); ?>">
+								<?php
+									// Modules may opt into extra categories - e.g. a blocker whose
+									// script the site owner considers strictly necessary.
+									$gdin_cookie_cats = isset( $_gdin_module['cookie_cats'] ) && is_array( $_gdin_module['cookie_cats'] ) ? $_gdin_module['cookie_cats'] : array( 2, 3, 4, 5 );
+								?>
 								<select name="gdpr_integrations_<?php echo esc_attr( $_gdin_module_slug ); ?>" id="gdpr_integrations_<?php echo esc_attr( $_gdin_module_slug ); ?>">
+								<?php if ( in_array( 1, $gdin_cookie_cats, true ) ) : ?>
+								<option value="1" <?php echo isset( $_gdin_module['cookie_cat'] ) && intval( $_gdin_module['cookie_cat'] ) === 1 ? 'selected' : ''; ?> ><?php echo esc_attr( $nav_label_1 ); ?></option>
+								<?php endif; ?>
 								<option value="2" <?php echo isset( $_gdin_module['cookie_cat'] ) && intval( $_gdin_module['cookie_cat'] ) === 2 ? 'selected' : ''; ?> ><?php echo esc_attr( $nav_label_2 ); ?></option>
 								<option value="3" <?php echo isset( $_gdin_module['cookie_cat'] ) && intval( $_gdin_module['cookie_cat'] ) === 3 ? 'selected' : ''; ?>><?php echo esc_attr( $nav_label_3 ); ?></option>
 
@@ -151,6 +204,7 @@ $nav_label_5 = isset( $gdpr_options[ 'moove_gdpr_preference_ccat_tab_title' . $w
 								<!-- # -->
 							</div>
 							<!-- .gdpr-conditional-field -->
+							<?php endif; ?>
 							</td>
 						</tr>
 						<?php

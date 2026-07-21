@@ -219,14 +219,16 @@ class Moove_GDPR_Controller {
 		}
 		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-footer-content .moove-gdpr-button-holder a.mgbutton,
 		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-footer-content .moove-gdpr-button-holder button.mgbutton,
-		.gdpr_cookie_settings_shortcode_content .gdpr-shr-button.button-green {
+		.gdpr_cookie_settings_shortcode_content .gdpr-shr-button.button-green,
+		.gdpr-blocked-recaptcha .gdpr-shr-button.button-green {
 			background-color: <?php echo esc_attr( $primary_colour ); ?>;
 			border-color: <?php echo esc_attr( $primary_colour ); ?>;
 		}
 
 		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-footer-content .moove-gdpr-button-holder a.mgbutton:hover,
 		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-footer-content .moove-gdpr-button-holder button.mgbutton:hover,
-		.gdpr_cookie_settings_shortcode_content .gdpr-shr-button.button-green:hover {
+		.gdpr_cookie_settings_shortcode_content .gdpr-shr-button.button-green:hover,
+		.gdpr-blocked-recaptcha .gdpr-shr-button.button-green:hover {
 			background-color: #fff;
 			color: <?php echo esc_attr( $primary_colour ); ?>;
 		}
@@ -532,18 +534,24 @@ class Moove_GDPR_Controller {
 	 * AJAX function to display the allowed scripts from the plugin settings page
 	 *
 	 * This endpoint is intentionally nonce-free for full-page cache compatibility
-	 * (WP Rocket, WPEngine, etc.). It is a read-only endpoint returning admin-configured
-	 * scripts — no privilege escalation or state mutation is possible via CSRF.
-	 * Origin is validated via Referer header as a defence-in-depth measure.
+	 * (WP Rocket, WPEngine, etc.). Returning the admin-configured scripts is read-only.
+	 * The non-strict branch, however, clears the visitor's tracking cookies, which is a
+	 * state-changing action — it is therefore gated to same-origin POST requests only so
+	 * it cannot be triggered via CSRF (cross-site GET, <img>, or no-Referer navigation).
+	 * Auth/commerce cookies are never in the deletion set (case-insensitive allowlist).
 	 *
 	 * @return void
 	 */
 	public static function moove_gdpr_get_scripts() {
 		// Lightweight origin check — compatible with full-page caching.
-		$referer = isset( $_SERVER['HTTP_REFERER'] ) ? $_SERVER['HTTP_REFERER'] : '';
-		if ( $referer && wp_parse_url( $referer, PHP_URL_HOST ) !== wp_parse_url( home_url(), PHP_URL_HOST ) ) :
+		$referer     = isset( $_SERVER['HTTP_REFERER'] ) ? $_SERVER['HTTP_REFERER'] : '';
+		$same_origin = $referer && wp_parse_url( $referer, PHP_URL_HOST ) === wp_parse_url( home_url(), PHP_URL_HOST );
+		if ( $referer && ! $same_origin ) :
 			wp_send_json_error( 'Invalid origin', 403 );
 		endif;
+		// The cookie-clearing branch below mutates state; only allow it on a same-origin
+		// POST (an empty/cross-site Referer or a bodyless GET must not reach that branch).
+		$is_post = isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) );
 		$strict     = isset( $_POST['strict'] ) && intval( $_POST['strict'] ) && 1 === intval( $_POST['strict'] ) ? true : false;
 		$thirdparty = isset( $_POST['thirdparty'] ) && intval( $_POST['thirdparty'] ) && 1 === intval( $_POST['thirdparty'] ) ? true : false;
 		$advanced   = isset( $_POST['advanced'] ) && intval( $_POST['advanced'] ) && 1 === intval( $_POST['advanced'] ) ? true : false;
@@ -686,7 +694,7 @@ class Moove_GDPR_Controller {
 					$scripts_array['footer'] .= $transient_from_cache['advanced']['footer'];
 				endif;
 			endif;
-		else :
+		elseif ( $is_post && $same_origin ) :
 			$d_domains = array( '_ga', '_fbp', '_gid', '_gat', '__utma', '__utmb', '__utmc', '__utmt', '__utmz' );
 			$d_domains = apply_filters( 'gdpr_d_domains_filter', $d_domains );
 
@@ -703,7 +711,7 @@ class Moove_GDPR_Controller {
 						setcookie( $name, '', time() - 1000 );
 						setcookie( $name, '', time() - 1000, '/' );
 					endif;
-					if ( 'moove_gdpr_popup' !== $name && strpos( $name, 'woocommerce' ) === false && strpos( $name, 'wc_' ) === false && strpos( $name, 'WordPress' ) === false ) :
+					if ( 'moove_gdpr_popup' !== $name && strpos( $name, 'woocommerce' ) === false && strpos( $name, 'wc_' ) === false && stripos( $name, 'wordpress' ) === false ) :
 						if ( 'language' === $name || 'currency' === $name ) {
 							setcookie( $name, '', -1, '/', 'www.' . $domain );
 						} elseif ( in_array( $name, $d_domains ) || strpos( $name, '_ga' ) !== false || strpos( $name, '_fbp' ) !== false ) { // phpcs:ignore
@@ -727,7 +735,7 @@ class Moove_GDPR_Controller {
 						$cookies_removed[ $key ] = $domain;
 					endif;
 
-					if ( 'moove_gdpr_popup' !== $key && strpos( $key, 'woocommerce' ) === false && strpos( $key, 'wc_' ) === false && strpos( $key, 'WordPress' ) === false ) :
+					if ( 'moove_gdpr_popup' !== $key && strpos( $key, 'woocommerce' ) === false && strpos( $key, 'wc_' ) === false && stripos( $key, 'wordpress' ) === false ) :
 						if ( 'language' === $key || 'currency' === $key ) {
 							setcookie( $key, '', -1, '/', 'www.' . $domain );
 							$cookies_removed[ $key ] = $domain;
@@ -759,7 +767,7 @@ class Moove_GDPR_Controller {
 			$d_domains       = apply_filters( 'gdpr_d_domains_filter', $d_domains );
 			if ( isset( $_COOKIE ) && is_array( $_COOKIE ) && $domain ) :
 				foreach ( $_COOKIE as $key => $value ) {
-					if ( 'moove_gdpr_popup' !== $key && strpos( $key, 'woocommerce' ) === false && strpos( $key, 'wc_' ) === false && strpos( $key, 'WordPress' ) === false ) :
+					if ( 'moove_gdpr_popup' !== $key && strpos( $key, 'woocommerce' ) === false && strpos( $key, 'wc_' ) === false && stripos( $key, 'wordpress' ) === false ) :
 						if ( 'language' === $key || 'currency' === $key ) {
 							setcookie( $key, '', -1, '/', 'www.' . $domain );
 							$cookies_removed[ $key ] = $domain;
@@ -776,7 +784,7 @@ class Moove_GDPR_Controller {
 				foreach ( $cookies as $cookie ) {
 					$parts = explode( '=', $cookie );
 					$name  = trim( $parts[0] );
-					if ( $name && 'moove_gdpr_popup' !== $name && strpos( $name, 'woocommerce' ) === false && strpos( $name, 'wc_' ) === false && strpos( $name, 'WordPress' ) === false ) :
+					if ( $name && 'moove_gdpr_popup' !== $name && strpos( $name, 'woocommerce' ) === false && strpos( $name, 'wc_' ) === false && stripos( $name, 'wordpress' ) === false ) :
 						setcookie( $name, '', time() - 1000 );
 						setcookie( $name, '', time() - 1000, '/' );
 						if ( 'language' === $name || 'currency' === $name ) {

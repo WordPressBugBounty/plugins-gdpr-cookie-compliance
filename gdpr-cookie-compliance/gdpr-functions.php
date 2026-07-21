@@ -151,9 +151,166 @@ if ( ! function_exists( 'gdpr_get_integration_modules' ) ) :
 				),
 				'status'     => isset( $gdin_values['muet'] ),
 			),
+			'clarity' => array(
+				'name'       => 'Microsoft Clarity',
+				'desc'       => 'Consent API v2 [requires Consent Mode enabled in the Clarity project]',
+				'cookie_cat' => isset( $gdin_values['clarity'] ) ? intval( $gdin_values['clarity'] ) : 2,
+				'tacking_id' => isset( $gdin_values['clarity_id'] ) ? $gdin_values['clarity_id'] : '',
+				'id_format'  => '[10 character project ID]',
+				'atts'       => array(
+					'toggle' => true,
+					'input'  => '',
+				),
+				'status'     => isset( $gdin_values['clarity'] ),
+			),
 
 		);
-		return apply_filters( 'gdpr_integration_modules', $integration_modules, $gdpr_options, $gdin_values );
+
+		$integration_modules = apply_filters( 'gdpr_integration_modules', $integration_modules, $gdpr_options, $gdin_values );
+		$integration_modules = is_array( $integration_modules ) ? $integration_modules : array();
+
+		/**
+		 * Normalise the module type.
+		 *
+		 * 'snippet' modules inject a tracking script once the visitor accepts the
+		 * mapped cookie category. 'blocker' modules do the opposite: the script is
+		 * emitted by another plugin or the theme, and we suppress it until consent
+		 * is given. Blocker modules have no tracking ID.
+		 */
+		foreach ( $integration_modules as $_gdin_slug => $_gdin_module ) :
+			if ( ! isset( $integration_modules[ $_gdin_slug ]['type'] ) ) :
+				$integration_modules[ $_gdin_slug ]['type'] = 'snippet';
+			endif;
+			if ( ! isset( $integration_modules[ $_gdin_slug ]['premium'] ) ) :
+				$integration_modules[ $_gdin_slug ]['premium'] = false;
+			endif;
+			// A module that registered itself is, by definition, usable.
+			$integration_modules[ $_gdin_slug ]['available'] = true;
+		endforeach;
+
+		/**
+		 * Advertise premium modules the add-on would have registered.
+		 *
+		 * Only slugs the add-on did not register are added, so an active licence always
+		 * wins over the teaser. These rows are rendered locked and are never saved.
+		 */
+		foreach ( gdpr_get_premium_integration_teasers() as $_gdin_slug => $_gdin_teaser ) :
+			if ( isset( $integration_modules[ $_gdin_slug ] ) ) :
+				$integration_modules[ $_gdin_slug ]['premium'] = true;
+				continue;
+			endif;
+
+			$integration_modules[ $_gdin_slug ] = array_merge(
+				array(
+					'name'       => '',
+					'desc'       => '',
+					'type'       => 'snippet',
+					'cookie_cat' => 2,
+					'tacking_id' => '',
+					'id_format'  => '',
+					'atts'       => array(
+						'toggle' => true,
+						'input'  => 'disabled',
+					),
+					'status'     => false,
+					'premium'    => true,
+					'available'  => false,
+				),
+				$_gdin_teaser
+			);
+		endforeach;
+
+		return $integration_modules;
+	}
+endif;
+
+if ( ! function_exists( 'gdpr_get_premium_integration_teasers' ) ) :
+	/**
+	 * Premium-only integration modules, shown locked when the add-on is not active.
+	 *
+	 * Kept deliberately minimal - name and description only. The add-on owns the real
+	 * definition; this exists purely so the free plugin can advertise it.
+	 *
+	 * @return array
+	 */
+	function gdpr_get_premium_integration_teasers() {
+		$teasers = array(
+			'recaptcha' => array(
+				'name' => 'Google reCAPTCHA',
+				'desc' => __( 'Blocks reCAPTCHA until the visitor accepts the selected category', 'gdpr-cookie-compliance' ),
+				'type' => 'blocker',
+			),
+		);
+		return apply_filters( 'gdpr_premium_integration_teasers', $teasers );
+	}
+endif;
+
+if ( ! function_exists( 'gdpr_get_premium_upgrade_url' ) ) :
+	/**
+	 * Where the locked premium rows send the site owner.
+	 *
+	 * @return string
+	 */
+	function gdpr_get_premium_upgrade_url() {
+		return apply_filters( 'gdpr_premium_upgrade_url', 'https://www.mooveagency.com/wordpress-plugins/gdpr-cookie-compliance/' );
+	}
+endif;
+
+if ( ! function_exists( 'gdpr_integration_module_badge' ) ) :
+	/**
+	 * Premium badge markup for an integration row.
+	 *
+	 * Shared by the global and the language specific integration tables so the two
+	 * cannot drift apart.
+	 *
+	 * @param array $gdin_module Integration module.
+	 * @return string Escaped markup, or an empty string for free modules.
+	 */
+	function gdpr_integration_module_badge( $gdin_module ) {
+		if ( empty( $gdin_module['premium'] ) ) :
+			return '';
+		endif;
+
+		$locked = empty( $gdin_module['available'] );
+		$class  = 'gdpr-premium-badge' . ( $locked ? ' gdpr-premium-badge-locked' : '' );
+
+		return ' <span class="' . esc_attr( $class ) . '">' . esc_html__( 'Premium', 'gdpr-cookie-compliance' ) . '</span>';
+	}
+endif;
+
+if ( ! function_exists( 'gdpr_integration_module_needs_id' ) ) :
+	/**
+	 * Whether an integration module requires a tracking ID to be stored.
+	 *
+	 * @param array $gdin_module Integration module.
+	 * @return bool
+	 */
+	function gdpr_integration_module_needs_id( $gdin_module ) {
+		$type = isset( $gdin_module['type'] ) ? $gdin_module['type'] : 'snippet';
+		return 'blocker' !== $type;
+	}
+endif;
+
+if ( ! function_exists( 'gdpr_get_cookie_cat_slug' ) ) :
+	/**
+	 * Map a stored cookie category ID onto its consent cookie key.
+	 *
+	 * The IDs come from the category <select> on the Integrations screen and match
+	 * the keys returned by Moove_GDPR_Content::gdpr_get_php_cookies().
+	 *
+	 * @param int $cookie_cat Cookie category ID.
+	 * @return string Cookie key, or an empty string when the ID is unknown.
+	 */
+	function gdpr_get_cookie_cat_slug( $cookie_cat ) {
+		$cookie_cats = array(
+			1 => 'strict',
+			2 => 'thirdparty',
+			3 => 'advanced',
+			4 => 'performance',
+			5 => 'preference',
+		);
+		$cookie_cat  = intval( $cookie_cat );
+		return isset( $cookie_cats[ $cookie_cat ] ) ? $cookie_cats[ $cookie_cat ] : '';
 	}
 endif;
 

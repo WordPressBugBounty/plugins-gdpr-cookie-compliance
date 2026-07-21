@@ -269,43 +269,49 @@ class Moove_GDPR_Content {
 			 *   thirdparty  → analytics_storage  (GA4 / GTM analytics tags)
 			 *   advanced    → ad_storage, ad_user_data, ad_personalization
 			 *   preference  → personalization_storage
+			 *
+			 * The state is resolved in the browser rather than rendered by PHP: this
+			 * markup is served from the page cache, so baking one visitor's decision
+			 * into it would hand that decision to every subsequent visitor. See
+			 * gdpr_consent_cookie_js_preamble(). The read is still synchronous and
+			 * still happens before GTM loads, so the ecommerce behaviour above is
+			 * unaffected.
 			 */
-			$has_stored_consent = isset( $_COOKIE['moove_gdpr_popup'] );
-			$php_cookies        = $gdpr_default_content->gdpr_get_php_cookies();
-
-			$strict_state  = ( $has_stored_consent && ! empty( $php_cookies['strict'] ) ) ? 'granted' : 'denied';
-			$analytics     = ( $has_stored_consent && ! empty( $php_cookies['thirdparty'] ) ) ? 'granted' : 'denied';
-			$ads           = ( $has_stored_consent && ! empty( $php_cookies['advanced'] ) ) ? 'granted' : 'denied';
-			$personaliz    = ( $has_stored_consent && ! empty( $php_cookies['preference'] ) ) ? 'granted' : 'denied';
 
 			// Only apply wait_for_update on first-visit (no stored consent).  For
 			// returning users the values are final; the delay would only defer GTM.
-			$wait_for_update_ms = esc_attr( apply_filters( 'gdpr_cc_gtm2_wait_for_update', '2000' ) );
+			$wait_for_update_ms = esc_js( apply_filters( 'gdpr_cc_gtm2_wait_for_update', '2000' ) );
 
 			// Set default consent based on stored cookie preference (if any).
 			// First-time visitors get all-denied + wait_for_update so the banner
 			// can grant before any tags fire.  Returning visitors who have already
 			// accepted get the correct granted state immediately, preventing
 			// ecommerce events from being blocked on page load.
-			
+
 			?>
 				<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 				<script>
 					// Define dataLayer and the gtag function.
 					window.dataLayer = window.dataLayer || [];
 					function gtag(){dataLayer.push(arguments);}
-					gtag('consent', 'default', {
-						'ad_storage': '<?php echo esc_js( $ads ); ?>',
-						'ad_user_data': '<?php echo esc_js( $ads ); ?>',
-						'ad_personalization': '<?php echo esc_js( $ads ); ?>',
-						'analytics_storage': '<?php echo esc_js( $analytics ); ?>',
-						'personalization_storage': '<?php echo esc_js( $personaliz ); ?>',
-						'security_storage': '<?php echo esc_js( $strict_state ); ?>',
-						'functionality_storage': '<?php echo esc_js( $strict_state ); ?>'
-						<?php if ( ! $has_stored_consent ) : ?>,
-						'wait_for_update': '<?php echo $wait_for_update_ms; ?>'
-						<?php endif; ?>
-					});
+					(function(){
+						<?php echo self::gdpr_consent_cookie_js_preamble(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+
+						var _gdpr_ads = _gdpr_state('advanced'), _gdpr_strict = _gdpr_state('strict');
+						var _gdpr_consent = {
+							'ad_storage': _gdpr_ads,
+							'ad_user_data': _gdpr_ads,
+							'ad_personalization': _gdpr_ads,
+							'analytics_storage': _gdpr_state('thirdparty'),
+							'personalization_storage': _gdpr_state('preference'),
+							'security_storage': _gdpr_strict,
+							'functionality_storage': _gdpr_strict
+						};
+						if ( ! _gdpr_has ) {
+							_gdpr_consent['wait_for_update'] = '<?php echo $wait_for_update_ms; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>';
+						}
+						gtag('consent', 'default', _gdpr_consent);
+					})();
 				</script>
 
 				<!-- Google Tag Manager -->
@@ -318,6 +324,103 @@ class Moove_GDPR_Content {
 				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 			<?php
 		endif;
+	}
+
+	/**
+	 * JS preamble that reads the visitor's stored consent client-side.
+	 *
+	 * Consent state must NEVER be rendered into the page HTML by PHP. The plugin's
+	 * consent cookie is not in the default bypass list of any of the common page
+	 * caches (WP Rocket, LiteSpeed, Varnish, Cloudflare APO), so a page generated
+	 * for a visitor who accepted would be stored and then served to visitors who
+	 * never did - silently granting consent on their behalf.
+	 *
+	 * Reading the cookie in the browser keeps the markup identical for every
+	 * visitor, so it stays safely cacheable. This still runs synchronously in
+	 * wp_head, before any tag has loaded, so nothing is lost by deferring it.
+	 *
+	 * Defines in the enclosing scope:
+	 *   _gdpr_has          - bool, whether a stored decision exists at all.
+	 *   _gdpr_state( key ) - 'granted' | 'denied' for a cookie category key.
+	 *
+	 * Categories are only ever 'granted' when a decision has actually been stored;
+	 * the admin's "enable on first visit" defaults deliberately do not apply here.
+	 *
+	 * @return string JavaScript, for embedding inside a <script> block.
+	 */
+	private static function gdpr_consent_cookie_js_preamble() {
+		// document.cookie throws in a sandboxed iframe without allow-same-origin;
+		// both reads fail closed to 'denied' rather than leaving consent unset.
+		return "var _gdpr_c = {}, _gdpr_m = null, _gdpr_has = false;\n"
+			. "\t\t\t\ttry { _gdpr_m = document.cookie.match(/(?:^|;\\s*)moove_gdpr_popup=([^;]*)/); _gdpr_has = !! _gdpr_m; } catch ( e ) {}\n"
+			. "\t\t\t\tif ( _gdpr_m ) { try { _gdpr_c = JSON.parse( decodeURIComponent( _gdpr_m[1] ) ) || {}; } catch ( e ) { _gdpr_c = {}; } }\n"
+			. "\t\t\t\tvar _gdpr_state = function( k ) { return _gdpr_has && parseInt( _gdpr_c[ k ], 10 ) === 1 ? 'granted' : 'denied'; };";
+	}
+
+	/**
+	 * Microsoft Clarity - Consent API v2.
+	 *
+	 * Unlike the other snippet modules, Clarity is NOT held back until consent is
+	 * given. The Consent API is signal-based: the tag loads on every page view and
+	 * is told what it may store. With analytics_Storage denied Clarity runs in
+	 * "no-consent mode" - no first or third party cookies, a throwaway ID per page
+	 * view - which is what lets it keep working lawfully before the visitor decides.
+	 *
+	 * Emitting this on wp_head (rather than only after the banner is accepted) means
+	 * returning visitors get their stored decision applied on the very first call,
+	 * before Clarity has a chance to write anything. The state itself is resolved in
+	 * the browser - see gdpr_consent_cookie_js_preamble() for why.
+	 *
+	 * Consent type mapping:
+	 *   analytics_Storage -> the category the module is assigned to on the
+	 *                        Integrations screen (Clarity is analytics tooling).
+	 *   ad_Storage        -> 'advanced', the plugin's advertising/targeting
+	 *                        category, matching the Consent Mode v2 mapping above.
+	 *
+	 * @see https://learn.microsoft.com/en-us/clarity/setup-and-installation/clarity-consent-api-v2
+	 */
+	public static function gdpr_clarity_consent_snippet() {
+		$gdpr_default_content = new Moove_GDPR_Content();
+		$option_name          = $gdpr_default_content->moove_gdpr_get_option_name();
+		$gdpr_options         = get_option( $option_name );
+		$gdin_values          = isset( $gdpr_options['gdin_values'] ) ? json_decode( $gdpr_options['gdin_values'], true ) : array();
+		$gdin_modules         = gdpr_get_integration_modules( $gdpr_options, $gdin_values );
+
+		if ( ! isset( $gdin_modules['clarity'] ) || empty( $gdin_modules['clarity']['status'] ) ) :
+			return;
+		endif;
+
+		$project_id = isset( $gdin_modules['clarity']['tacking_id'] ) ? trim( $gdin_modules['clarity']['tacking_id'] ) : '';
+		$cookie_cat = gdpr_get_cookie_cat_slug( $gdin_modules['clarity']['cookie_cat'] );
+
+		if ( ! $project_id || ! $cookie_cat ) :
+			return;
+		endif;
+
+		?>
+		<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
+		<!-- Microsoft Clarity -->
+		<script data-type="gdpr-integration">
+			(function(c,l,a,r,i,t,y){
+				c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+				t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+				y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+			})(window, document, "clarity", "script", "<?php echo esc_js( $project_id ); ?>");
+
+			// Queued against the shim defined above, so it is applied as soon as the
+			// tag finishes loading - no race with the banner.
+			(function(){
+				<?php echo self::gdpr_consent_cookie_js_preamble(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+
+				window.clarity('consentv2', {
+					ad_Storage: _gdpr_state('advanced'),
+					analytics_Storage: _gdpr_state('<?php echo esc_js( $cookie_cat ); ?>')
+				});
+			})();
+		</script>
+		<!-- End Microsoft Clarity -->
+		<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
+		<?php
 	}
 
 	/**
@@ -373,9 +476,63 @@ class Moove_GDPR_Content {
 					define( 'gdpr_i_gtmc2_h', true );
 				else :
 					ob_end_clean();
-				endif;				
+				endif;
 			endif;
 		endif;
+		return $cache_array;
+	}
+
+	/**
+	 * Microsoft Clarity - consent update on acceptance.
+	 *
+	 * The tag itself is already on the page (see gdpr_clarity_consent_snippet), so
+	 * this only re-signals consent once the visitor accepts the mapped category.
+	 * The state is read from the plugin's own cookie at run time rather than baked
+	 * in at render time: this snippet is cached per category, and ad_Storage depends
+	 * on a different category than the one that triggered the injection.
+	 *
+	 * Withdrawal needs no counterpart here - the plugin reloads the page on revoke,
+	 * and the wp_head snippet then emits 'denied', which makes Clarity drop its
+	 * cookies and restart in no-consent mode.
+	 *
+	 * @param array $cache_array Cache array.
+	 * @param array $_gdin_module Integration Module.
+	 */
+	public static function gdpr_insert_integration_clarity_snippet( $cache_array, $_gdin_module ) {
+		if ( ! isset( $_gdin_module['tacking_id'] ) || ! $_gdin_module['tacking_id'] ) :
+			return $cache_array;
+		endif;
+
+		$cookie_cat_n = gdpr_get_cookie_cat_slug( $_gdin_module['cookie_cat'] );
+
+		// 'strict' has no cache bucket - it is never gated behind acceptance.
+		if ( ! $cookie_cat_n || 'strict' === $cookie_cat_n || ! isset( $cache_array[ $cookie_cat_n ] ) ) :
+			return $cache_array;
+		endif;
+
+		ob_start();
+		?>
+		<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
+		<script data-type="gdpr-integration">
+			(function(){
+				if ( typeof window.clarity !== 'function' ) { return; }
+				<?php echo self::gdpr_consent_cookie_js_preamble(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+
+				window.clarity('consentv2', {
+					ad_Storage: _gdpr_state('advanced'),
+					analytics_Storage: _gdpr_state('<?php echo esc_js( $cookie_cat_n ); ?>')
+				});
+			})();
+		</script>
+		<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
+		<?php
+		if ( ! defined( 'gdpr_i_clarity_h' ) ) :
+			$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
+			define( 'gdpr_i_clarity_h', true );
+		else :
+			ob_end_clean();
+		endif;
+
 		return $cache_array;
 	}
 
