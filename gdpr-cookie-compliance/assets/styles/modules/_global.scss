@@ -64,6 +64,109 @@ body.logged-in.et_divi_builder.et-fb {
   box-shadow: 1px 1px 5px #010101;
 }
 
+// The banner, the full-screen banner's box and the modal carry tabindex="-1" so focus can be
+// moved to them programmatically when they open. None is reachable by Tab, so hiding their
+// outline does not remove a keyboard focus indicator - the controls inside keep theirs.
+#moove_gdpr_cookie_info_bar:focus,
+#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container:focus,
+#moove_gdpr_cookie_modal:focus {
+  outline: none;
+}
+
+// Keyboard focus indicators. Rules below (and many themes) strip outlines from buttons and
+// links, so these need !important. :focus-visible keeps them off mouse and touch use. A dark
+// outline around a light ring stays visible on light and dark banner schemes alike.
+// Checkboxes are visually hidden, so their indicator is drawn on the switch next to them.
+#moove_gdpr_cookie_info_bar a:focus-visible,
+#moove_gdpr_cookie_info_bar button:focus-visible,
+#moove_gdpr_cookie_info_bar [tabindex="0"]:focus-visible,
+#moove_gdpr_cookie_modal a:focus-visible,
+#moove_gdpr_cookie_modal button:focus-visible,
+#moove_gdpr_cookie_modal [tabindex="0"]:focus-visible,
+#moove_gdpr_cookie_modal .cookie-switch input:focus-visible + .cookie-slider,
+#moove_gdpr_save_popup_settings_button:focus-visible,
+.gdpr_cookie_settings_shortcode_content a:focus-visible,
+.gdpr_cookie_settings_shortcode_content button:focus-visible,
+.gdpr-shr-switch input:focus-visible + .gdpr-shr-slider {
+  outline: 2px solid #000 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 2px #fff !important;
+}
+
+// Tab panels sit inside a scrolling container that clips anything drawn outside them.
+#moove_gdpr_cookie_modal .moove-gdpr-tab-main[tabindex="0"]:focus-visible {
+  outline-offset: -2px !important;
+  box-shadow: none !important;
+}
+
+// Forced colours (e.g. Windows High Contrast) remove background colours and box shadows, and
+// those are all the close icons, button edges and switches were drawn with. The plugin's own
+// rules for these are highly specific, hence !important, which only applies in this mode.
+@media (forced-colors: active) {
+  #moove_gdpr_cookie_info_bar .mgbutton,
+  #moove_gdpr_cookie_info_bar .moove-gdpr-infobar-close-btn,
+  #moove_gdpr_cookie_modal .mgbutton,
+  #moove_gdpr_save_popup_settings_button,
+  .gdpr-shr-button {
+    border: 1px solid ButtonText !important;
+  }
+
+  // System colours set explicitly: with forced-color-adjust: none, currentColor would resolve
+  // to the author's text colour (white on the dark banner), invisible on a light theme.
+  #moove_gdpr_cookie_info_bar .moove-gdpr-infobar-close-btn.moovegdpr-arrow-close::before,
+  #moove_gdpr_cookie_info_bar .moove-gdpr-infobar-close-btn.moovegdpr-arrow-close::after,
+  .gdpr-icon.moovegdpr-arrow-close::before,
+  .gdpr-icon.moovegdpr-arrow-close::after,
+  i.moovegdpr-arrow-close::before,
+  i.moovegdpr-arrow-close::after {
+    forced-color-adjust: none;
+    background-color: ButtonText !important;
+  }
+
+  #moove_gdpr_cookie_modal .cookie-switch .cookie-slider,
+  .gdpr-shr-switch .gdpr-shr-slider {
+    forced-color-adjust: none;
+    background-color: Canvas !important;
+    border: 1px solid CanvasText;
+
+    &::before {
+      background-color: CanvasText !important;
+    }
+
+    // The Enabled / Disabled text sits inside the switch; let the user's colours apply to it.
+    .gdpr-sr-label {
+      forced-color-adjust: auto;
+    }
+  }
+
+  #moove_gdpr_cookie_modal .cookie-switch input:checked + .cookie-slider,
+  .gdpr-shr-switch input:checked + .gdpr-shr-slider {
+    background-color: Highlight !important;
+
+    &::before {
+      background-color: HighlightText !important;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #moove_gdpr_cookie_info_bar,
+  #moove_gdpr_cookie_info_bar *,
+  #moove_gdpr_cookie_modal *,
+  #moove_gdpr_cookie_modal *::before,
+  #moove_gdpr_cookie_modal *::after,
+  #moove_gdpr_save_popup_settings_button,
+  .gdpr_lightbox,
+  .gdpr_lightbox-content,
+  .gdpr-shr-switch *,
+  .gdpr-shr-switch *::before {
+    // Near-zero rather than none, so transitionend still fires for the lightbox close.
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 #moove_gdpr_cookie_info_bar {
   .gdpr-fbo-0 {
     order: 1;
@@ -153,8 +256,10 @@ body.gdpr-no-icons {
   }
 }
 
+// No content-visibility here: in Safari it hides the text of controls inside the banner from
+// VoiceOver (a text-only button was announced with no name). The banner is small and always
+// on screen when shown, so there is nothing for it to skip rendering anyway.
 #moove_gdpr_cookie_info_bar {
-  content-visibility: auto;
 
   .moove-gdpr-button-holder {
     display: flex;    
@@ -255,6 +360,26 @@ body.gdpr-no-icons {
 	font-family: 'Nunito', sans-serif;
   content-visibility: hidden;
 
+	// Section titles are real headings so screen reader users can navigate by them. Themes
+	// style headings heavily, so reset them to behave like the spans they replaced; the
+	// rules further down then apply the plugin's own typography.
+	h2.tab-title {
+		margin: 0;
+		padding: 0;
+		border: 0;
+		background: none;
+		font-family: inherit;
+		font-size: inherit;
+		font-weight: inherit;
+		font-style: inherit;
+		line-height: inherit;
+		letter-spacing: inherit;
+		text-transform: inherit;
+		text-align: inherit;
+		color: inherit;
+	}
+
+	h2.tab-title,
 	span.tab-title {
 		display: block;
 	}
@@ -276,8 +401,18 @@ body.gdpr-no-icons {
 		width: 50px;
 		height: 30px;
     padding: 0;
+		// Visually hidden rather than display:none, which removed the checkbox from the Tab
+		// order and from assistive technology. Clicks land on the label, which toggles it.
 		input {
-				display:none;
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			margin: -1px;
+			padding: 0;
+			border: 0;
+			overflow: hidden;
+			clip: rect(0, 0, 0, 0);
+			white-space: nowrap;
 		}
 		/* The slider */
 		.slider,
@@ -319,7 +454,7 @@ body.gdpr-no-icons {
 				font-weight: 700;
 				font-size: 16px;
 				line-height: 30px;
-				color: #ff0000;
+				color: #c00000;
 				display: block;
 				white-space: nowrap;
 			}
@@ -338,13 +473,14 @@ body.gdpr-no-icons {
       }
 		}
     
+    // Label text is darker than the switch colours so it meets 4.5:1 text contrast.
     .gdpr-sr-enable {
       display: none;
-      color: #2e9935;
+      color: #1e7b24;
     }
     .gdpr-sr-disable {
       display: block;
-      color: #ff0000;
+      color: #c00000;
     }
 
     .gdpr-sr-label {
@@ -354,7 +490,7 @@ body.gdpr-no-icons {
       font-weight: 700;
       font-size: 16px;
       line-height: 30px;
-      color: #ff0000;
+      color: #c00000;
       display: block;
       white-space: nowrap;
     }
@@ -364,7 +500,7 @@ body.gdpr-no-icons {
 			background-color: #2e9935;
 			&:after {
 				content: attr(data-text-enable);
-				color: #2e9935;
+				color: #1e7b24;
 				white-space: nowrap;
 			}
 
@@ -518,6 +654,7 @@ body.gdpr-no-icons {
             }
 					}
 				}
+				h2.tab-title,
 				h3.tab-title,
 				span.tab-title {
 					font-weight: 700;
@@ -619,7 +756,8 @@ body.gdpr-no-icons {
 				display: inline-block;
 			}
 		}
-		.moove-gdpr-modal-title h2 {
+		// Excludes the one-page layout's own title heading, which used to be a span and must keep its spacing.
+		.moove-gdpr-modal-title h2:not(.tab-title) {
 			font-weight: 400;
 			font-size: 20px;
 			margin: 5px 0px 0px 0px;
@@ -627,12 +765,14 @@ body.gdpr-no-icons {
 			color: #000;
 		}
 		.moove-gdpr-tab-content.moove-gdpr-no-modal-title {
+			.moove-gdpr-tab-main h2.tab-title,
 			.moove-gdpr-tab-main h3.tab-title,
 			.moove-gdpr-tab-main span.tab-title {
 				margin-top: 0;
 			}
 		}
 		.moove-gdpr-tab-main {
+			h2.tab-title,
 			h3.tab-title,
 			span.tab-title {
 				font-weight: 700;
@@ -1367,6 +1507,13 @@ body.gdpr-no-icons {
     content-visibility: visible;
   }
 
+  // On short screens (landscape phones, 400% zoom) the modal is taller than the viewport, and
+  // without scrolling the footer buttons sit out of reach.
+  .gdpr_lightbox-wrap {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
   .gdpr_lightbox-container {
     max-width: 100%;
   }
@@ -1640,6 +1787,7 @@ body.gdpr-no-icons {
 					}
 				}
 			}
+			h2.tab-title,
 			h3.tab-title,
 			span.tab-title {
 				padding-right: 0;
@@ -1791,6 +1939,7 @@ body.gdpr-no-icons {
 			}
       
 			.moove-gdpr-tab-main {
+				h2.tab-title,
 				h3.tab-title,
 				span.tab-title {
 					font-weight: 700;
@@ -1956,6 +2105,7 @@ body.gdpr-no-icons {
 				padding-top: 30px;
 				min-height: 75px;
 		}
+		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main h2.tab-title,
 		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main h3.tab-title,
 		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main span.tab-title {
 				margin-bottom: 10px;
@@ -2048,6 +2198,7 @@ body.gdpr-no-icons {
 				margin-left: 15px;
 				margin-left: 5vw;
 		}
+		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main h2.tab-title,
 		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main h3.tab-title,
 		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main span.tab-title {
 				font-weight: 700;
@@ -2119,6 +2270,14 @@ body.gdpr-no-icons {
       margin-right: 8px;
     }
 }
+// Room for the close button, which sits partly outside the modal box and would otherwise be
+// cut off at the top once the lightbox scrolls.
+@media (max-height: 500px) {
+  .gdpr_lightbox.moove_gdpr_cookie_modal_open .gdpr_lightbox-wrap {
+    padding: 30px 0;
+  }
+}
+
 @media (min-width: 768px) and (max-height: 700px) {
 
 		#moove_gdpr_cookie_modal .moove-gdpr-modal-content {
@@ -2331,6 +2490,14 @@ i.moovegdpr-arrow-close {
           justify-content: center;
           line-height: 1;
           font-family: 'Georgia', serif;
+        }
+
+        // The arrow is decoration: where the alternative text syntax is supported, keep it out of
+        // the heading's accessible name. In its own block so minifiers keep the fallback above.
+        @supports (content: "x" / "") {
+          &::before {
+            content: unquote("'\\203A' / ''");
+          }
         }
       }
 

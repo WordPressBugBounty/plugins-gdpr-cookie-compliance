@@ -13,8 +13,6 @@
     var _attrAriaHidden = 'ah';
     var _dataAriaHidden = 'gdpr_lightbox-' + _attrAriaHidden;
 
-    var _focusableElementsSelector = 'a[href],area[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),button:not([disabled]),iframe,object,embed,[contenteditable],[tabindex]:not([tabindex^="-"])';
-
     var _defaultOptions = {
         esc: true,
         handler: null,
@@ -27,7 +25,9 @@
             facebookvideo: facebookvideoHandler,
             iframe: iframeHandler
         },
-        template: '<div class="gdpr_lightbox" role="dialog" aria-label="Dialog Window (Press escape to close)" tabindex="-1"><div class="gdpr_lightbox-wrap" data-gdpr_lightbox-close role="document"><div class="gdpr_lightbox-loader">Loading...</div><div class="gdpr_lightbox-container"><div class="gdpr_lightbox-content"></div><button class="gdpr_lightbox-close" type="button" aria-label="Close (Press escape to close)" data-gdpr_lightbox-close>&times;</button></div></div></div>'
+        // No dialog role here: the content placed inside (#moove_gdpr_cookie_modal) is the dialog,
+        // and a second role="dialog" wrapped around it made screen readers announce two dialogs.
+        template: '<div class="gdpr_lightbox" tabindex="-1"><div class="gdpr_lightbox-wrap" data-gdpr_lightbox-close><div class="gdpr_lightbox-loader">Loading...</div><div class="gdpr_lightbox-container"><div class="gdpr_lightbox-content"></div><button class="gdpr_lightbox-close" type="button" aria-label="Close (Press escape to close)" data-gdpr_lightbox-close>&times;</button></div></div></div>'
     };
 
     var _imageRegexp = /(^data:image\/)|(\.(png|jpe?g|gif|svg|webp|bmp|ico|tiff?)(\?\S*)?$)/i;
@@ -303,23 +303,7 @@
             current.close();
         }
 
-        // TAB key
-        if (e.keyCode === 9) {
-            handleTabKey(e, current);
-        }
-    }
-
-    function handleTabKey(e, instance) {
-        var focusableElements = instance.element().find(_focusableElementsSelector);
-        var focusedIndex = focusableElements.index(document.activeElement);
-
-        if (e.shiftKey && focusedIndex <= 0) {
-            focusableElements.get(focusableElements.length - 1);
-            e.preventDefault();
-        } else if (!e.shiftKey && focusedIndex === focusableElements.length - 1) {
-            focusableElements.get(0);
-            e.preventDefault();
-        }
+        // Tab is kept inside the modal by main.js, which knows which controls are visible.
     }
 
     function resize() {

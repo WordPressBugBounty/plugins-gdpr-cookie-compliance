@@ -96,7 +96,7 @@ if ( ! function_exists( 'gdpr_get_integration_modules' ) ) :
 				'desc'       => 'Standard implementation',
 				'cookie_cat' => isset( $gdin_values['gtm'] ) ? intval( $gdin_values['gtm'] ) : 2,
 				'tacking_id' => isset( $gdin_values['gtm_id'] ) ? $gdin_values['gtm_id'] : '',
-				'id_format'  => 'GTM-XXXXXX',
+				'id_format'  => 'GTM-XXXXXX or G-XXXXXXX',
 				'atts'       => array(
 					'toggle' => true,
 					'input'  => '',
@@ -108,7 +108,7 @@ if ( ! function_exists( 'gdpr_get_integration_modules' ) ) :
 				'desc'       => 'Consent Mode v2 [for advanced users only]',
 				'cookie_cat' => isset( $gdin_values['gtmc2'] ) ? intval( $gdin_values['gtmc2'] ) : 2,
 				'tacking_id' => isset( $gdin_values['gtmc2_id'] ) ? $gdin_values['gtmc2_id'] : '',
-				'id_format'  => 'GTM-XXXXXX',
+				'id_format'  => 'GTM-XXXXXX or G-XXXXXXX',
 				'atts'       => array(
 					'toggle' => true,
 					'input'  => '',

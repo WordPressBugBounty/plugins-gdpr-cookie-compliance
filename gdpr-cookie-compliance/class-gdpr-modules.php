@@ -178,7 +178,7 @@ class GDPR_Modules {
 		$content            = str_replace( '[reject]', '{reject}', $content );
 		$content            = str_replace( '[/reject]', '{/reject}', $content );
 
-		$content            = str_replace( '{setting}', '<button ' . $tabindex . ' aria-haspopup="true" data-href="#moove_gdpr_cookie_modal" class="change-settings-button ' . esc_attr( $settings_btn_class ) . '">', $content );
+		$content            = str_replace( '{setting}', '<button ' . $tabindex . ' aria-haspopup="dialog" data-href="#moove_gdpr_cookie_modal" class="change-settings-button ' . esc_attr( $settings_btn_class ) . '">', $content );
 		$content            = str_replace( '{/setting}', '</button>', $content );
 		$content            = apply_filters( 'gdpr_info_bar_notice_content', $content );
 		$data               = new stdClass();

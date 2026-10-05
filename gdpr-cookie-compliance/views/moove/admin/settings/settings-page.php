@@ -34,6 +34,11 @@ else :
 
 endif; // end if.
 
+// The tab is loaded as a view: reject anything that is not a plain slug, and the container views, which would include themselves.
+if ( ! preg_match( '/^[a-z0-9_-]+$/', $active_tab ) || in_array( $active_tab, array( 'settings-page', 'plugin-boxes' ), true ) ) :
+	$active_tab = 'branding';
+endif;
+
 $show_tab_nav  = 'licence' === $active_tab ? true : $show_tab_nav;
 $option_name   = $gdpr_default_content->moove_gdpr_get_option_name();
 $modal_options = get_option( $option_name );

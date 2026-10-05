@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <div id="privacy_overview" class="moove-gdpr-tab-main">
 	<?php if ( $content->tab_title ) : ?>
-	<span class="tab-title"><?php echo esc_attr( $content->tab_title ); ?></span>
+	<h2 class="tab-title"><span class="gdpr-tab-title-text"><?php echo esc_attr( $content->tab_title ); ?></span></h2>
 	<?php endif; ?>
 	<div class="moove-gdpr-tab-main-content">
 	<?php echo $content->tab_content; // phpcs:ignore ?>

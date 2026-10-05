@@ -28,10 +28,13 @@
 
         $(document).on('click','#moove_gdpr_cookie_modal .moove-gdpr-modal-content.moove_gdpr_modal_theme_v1 .main-modal-content .moove-gdpr-tab-main:not(#privacy_overview) .tab-title', function(e){
           if( window.innerWidth < 768 ) {
-            if ( ! $(this).closest('.moove-gdpr-tab-main').find('.moove-gdpr-tab-main-content').is(':visible') ) {
-              $(this).closest('.moove-gdpr-tab-main').find('.moove-gdpr-tab-main-content').slideDown(300);
+            var expand   = ! $(this).closest('.moove-gdpr-tab-main').find('.moove-gdpr-tab-main-content').is(':visible');
+            var duration = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 300;
+            $(this).find('.gdpr-tab-title-text[role="button"]').attr( 'aria-expanded', expand ? 'true' : 'false' );
+            if ( expand ) {
+              $(this).closest('.moove-gdpr-tab-main').find('.moove-gdpr-tab-main-content').slideDown( duration );
             } else {
-              $(this).closest('.moove-gdpr-tab-main').find('.moove-gdpr-tab-main-content').slideUp(300);
+              $(this).closest('.moove-gdpr-tab-main').find('.moove-gdpr-tab-main-content').slideUp( duration );
             }
           }
         });
@@ -71,392 +74,8 @@
           
           moove_gdpr_check_reload( 'reject-btn' );
         });
-        var has_focus = false;
-        var aos_default_enabled = false;
-
-        function gdpr_find_next_tab_stop(el) {
-          var universe = document.querySelectorAll('.gdpr-cc-form-fieldset');
-          var list = Array.prototype.filter.call(universe, function(item) {return item.tabIndex >= "0"});
-          var index = list.indexOf(el);
-          return list[index + 1] || list[0];
-        }
-        var selected_menu_g   = $('.moove_gdpr_modal_theme_v2 .moove-gdpr-tab-main').first();
-        var selected_menu_g_1 = $('.moove_gdpr_modal_theme_v2 .moove-gdpr-tab-main').first();
-        var active_g = '';
-        var gdpr_dynamic_focus_index   = 0;
-        var gdpr_dynamic_focus_inforbar   = -1;
-
-        var active_infobar = '';
-        var is_shift = false;
-
-        $(document).on('keydown', function(e) {
-          // Keyboard accessibility only inside GDPR Popup
-          if ( $('body').hasClass('moove_gdpr_overflow') && $('.moove-gdpr-modal-content').hasClass('moove_gdpr_modal_theme_v1') ) { 
-
-            // Up arrow
-            if ( e.keyCode == 38 ) {
-              e.preventDefault();
-              var selected_menu = $('#moove-gdpr-menu li.menu-item-selected');
-              var prev = selected_menu.prev();
-              if ( prev.length === 0 ) {
-                prev = $('#moove-gdpr-menu li').last();
-              }               
-              prev.find('.moove-gdpr-tab-nav:visible').trigger('click');
-              $('.moove-gdpr-tab-main:visible').trigger('focus');
-            }
-
-            // Down arrow
-            if ( e.keyCode == 40 ) {
-              e.preventDefault();
-              if ( is_shift ) {
-                var selected_menu = $('#moove-gdpr-menu li.menu-item-selected');
-                var prev = selected_menu.prev();
-                if ( prev.length === 0 ) {
-                  prev = $('#moove-gdpr-menu li').last();
-                }               
-                prev.find('.moove-gdpr-tab-nav:visible').trigger('click');
-                $('.moove-gdpr-tab-main:visible').trigger('focus');
-              } else {
-                var selected_menu = $('#moove-gdpr-menu li.menu-item-selected');
-                var next = selected_menu.next();
-                if ( next.length === 0 ) {
-                  next = $('#moove-gdpr-menu li').first();
-                }               
-                next.find('.moove-gdpr-tab-nav:visible').trigger('click');
-                $('.moove-gdpr-tab-main:visible').trigger('focus');
-              }              
-            }
-
-            // Tab
-            if ( e.keyCode == 9 ) {
-              e.preventDefault();
-
-              var items_to_focus = $('#moove_gdpr_cookie_modal .mgbutton, #moove_gdpr_cookie_modal .moove-gdpr-modal-close, #moove_gdpr_cookie_modal #moove-gdpr-menu > li, #moove_gdpr_cookie_modal .moove-gdpr-branding');
-
-              if ( items_to_focus.length > 0 ) {
-                var item_to_focus = false;       
-                
-                if ( gdpr_dynamic_focus_index <= items_to_focus.length ) {
-                  if ( is_shift ) {
-                    gdpr_dynamic_focus_index--;
-                  } else {
-                    gdpr_dynamic_focus_index++;
-                  }
-                  item_to_focus = items_to_focus[gdpr_dynamic_focus_index];
-                  
-                  if ( ! $(item_to_focus).is(':visible') ) {
-                    if ( is_shift ) {
-                      gdpr_dynamic_focus_index--;
-                    } else {
-                      gdpr_dynamic_focus_index++;
-                    }
-                    item_to_focus = items_to_focus[gdpr_dynamic_focus_index];
-                    
-                  }
-                } else {
-                  gdpr_dynamic_focus_index = 0;
-                  item_to_focus = items_to_focus[gdpr_dynamic_focus_index];
-                }
-                $('#moove_gdpr_cookie_modal .focus-g').removeClass('focus-g');
-                if ( gdpr_dynamic_focus_index < 0 && is_shift ) {
-                  gdpr_dynamic_focus_index = items_to_focus.length;
-                }
-
-                if ( ! item_to_focus && gdpr_dynamic_focus_index > items_to_focus.length ) {
-                  gdpr_dynamic_focus_index = 0;
-                  item_to_focus = items_to_focus[gdpr_dynamic_focus_index];
-                }
-
-                $(item_to_focus).addClass('focus-g').trigger('focus');
-                if ( $(item_to_focus).hasClass('menu-item-on') || $(item_to_focus).hasClass('menu-item-off') ) {
-                  $(item_to_focus).find('button').trigger('click');
-                }
-
-                if ( $(item_to_focus).length > 0 && 'undefined' !== typeof document.body.scrollIntoViewIfNeeded ) {
-                  try {
-                    $(item_to_focus)[0].scrollIntoViewIfNeeded();
-                  } catch (error) {
-                    console.warn(error);
-                  }
-                }
-                
-              } else {
-                $('.cookie-switch').removeClass('focus-g');
-              
-                var next = selected_menu_g.next();
-                selected_menu_g = next;
-     
-                if ( next.length === 0 ) {
-                  next = selected_menu_g_1;
-                  selected_menu_g = selected_menu_g_1;
-
-
-                }               
-                // next.find('.cookie-switch:visible').trigger('click');
-                next.find('.cookie-switch').trigger('focus').addClass('focus-g');
-                if ( next.find('.cookie-switch').length > 0 && 'undefined' !== typeof document.body.scrollIntoViewIfNeeded ) {
-                  try {
-                    next.find('.cookie-switch')[0].scrollIntoViewIfNeeded();
-                  } catch (error) {
-                    console.warn(error);
-                  }
-                }
-              }
-            }
-
-            // Space key pressed - toggle checkboxes
-            if( e.keyCode == 32 ) {
-              e.preventDefault();
-              var checkbox_element = $('.moove-gdpr-tab-main:visible').find('.moove-gdpr-status-bar input[type=checkbox]');
-              checkbox_element.trigger('click');
-            }
-
-            // Enter key pressed - saving preferences
-            if( e.keyCode == 13 ) {
-              e.preventDefault();
-              if ( $(document).find('.focus-g').length > 0 ) {
-                $(document).find('.focus-g').trigger('click');
-              } else {
-                $('.moove-gdpr-modal-save-settings').trigger('click');
-              }
-            }
-          } 
-
-          if ( $('body').hasClass('moove_gdpr_overflow') && $('.moove-gdpr-modal-content').hasClass('moove_gdpr_modal_theme_v2') ) { 
-
-            // Up arrow
-            if ( e.keyCode == 38 ) {
-              e.preventDefault();
-              var selected_menu = $('#moove-gdpr-menu li.menu-item-selected');
-              var prev = selected_menu.prev();
-              if ( prev.length === 0 ) {
-                prev = $('#moove-gdpr-menu li').last();
-              }               
-              prev.find('.moove-gdpr-tab-nav:visible').trigger('click');
-              $('.moove-gdpr-tab-main:visible').trigger('focus');
-            }
-
-            // Down arrow
-            if ( e.keyCode == 40 ) {
-              e.preventDefault();
-              var selected_menu = $('#moove-gdpr-menu li.menu-item-selected');
-              var next = selected_menu.next();
-              if ( next.length === 0 ) {
-                next = $('#moove-gdpr-menu li').first();
-              }               
-              next.find('.moove-gdpr-tab-nav:visible').trigger('click');
-              $('.moove-gdpr-tab-main:visible').trigger('focus');
-            }
-
-            // Space key pressed - toggle checkboxes
-            if( e.keyCode == 32 ) {
-              e.preventDefault();
-              var fcs_element = $('#moove_gdpr_cookie_modal').find('.focus-g');
-              fcs_element.trigger('click');
-            }
-
-            // Tab
-            if ( e.keyCode == 9 ) {
-              e.preventDefault();
-
-              var items_to_focus = $('#moove_gdpr_cookie_modal .cookie-switch, #moove_gdpr_cookie_modal .gdpr-cd-details-toggle, #moove_gdpr_cookie_modal .mgbutton, #moove_gdpr_cookie_modal a:not(.moove-gdpr-branding), #moove_gdpr_cookie_modal .moove-gdpr-modal-close, #moove_gdpr_cookie_modal .moove-gdpr-branding');
-
-              if ( items_to_focus.length > 0 ) {
-                var item_to_focus = false;       
-                
-                if ( gdpr_dynamic_focus_index <= items_to_focus.length ) {
-                  if ( is_shift ) {
-                    gdpr_dynamic_focus_index--;
-                  } else {
-                    gdpr_dynamic_focus_index++;
-                  }
-                  item_to_focus = items_to_focus[gdpr_dynamic_focus_index];
-                  
-                  if ( ! $(item_to_focus).is(':visible') ) {
-                    if ( is_shift ) {
-                      gdpr_dynamic_focus_index--;
-                    } else {
-                      gdpr_dynamic_focus_index++;
-                    }
-                    item_to_focus = items_to_focus[gdpr_dynamic_focus_index];
-                    
-                  }
-                } else {
-                  gdpr_dynamic_focus_index = 0;
-                  item_to_focus = items_to_focus[gdpr_dynamic_focus_index];
-                }
-                $('#moove_gdpr_cookie_modal .focus-g').removeClass('focus-g');
-                if ( gdpr_dynamic_focus_index < 0 && is_shift ) {
-                  gdpr_dynamic_focus_index = items_to_focus.length;
-                }
-
-                if ( ! item_to_focus && gdpr_dynamic_focus_index > items_to_focus.length ) {
-                  gdpr_dynamic_focus_index = 0;
-                  item_to_focus = items_to_focus[gdpr_dynamic_focus_index];
-                }
-
-                $(item_to_focus).addClass('focus-g').trigger('focus');
-
-                if ( $(item_to_focus).length > 0 && 'undefined' !== typeof document.body.scrollIntoViewIfNeeded ) {
-                  try {
-                    $(item_to_focus)[0].scrollIntoViewIfNeeded();
-                  } catch (error) {
-                    console.warn(error);
-                  }
-                }
-                
-              } else {
-                $('.cookie-switch').removeClass('focus-g');
-              
-                var next = selected_menu_g.next();
-                selected_menu_g = next;
-     
-                if ( next.length === 0 ) {
-                  next = selected_menu_g_1;
-                  selected_menu_g = selected_menu_g_1;
-
-
-                }               
-                // next.find('.cookie-switch:visible').trigger('click');
-                next.find('.cookie-switch').trigger('focus').addClass('focus-g');
-                if ( next.find('.cookie-switch').length > 0 && 'undefined' !== typeof document.body.scrollIntoViewIfNeeded ) {
-                  try {
-                    next.find('.cookie-switch')[0].scrollIntoViewIfNeeded();
-                  } catch (error) {
-                    console.warn(error);
-                  }
-                }
-              }
-            }
-
-            // Enter key pressed - saving preferences
-            if( e.keyCode == 13 ) {
-              if ( $('#moove_gdpr_cookie_modal .focus-g').length > 0 && ( $('#moove_gdpr_cookie_modal .focus-g').hasClass('mgbutton') || $('#moove_gdpr_cookie_modal .focus-g').hasClass('moove-gdpr-modal-close') || $('#moove_gdpr_cookie_modal .focus-g').attr('href') ) ) {
-                if ( $('#moove_gdpr_cookie_modal .focus-g').attr('href') ) {
-                  $('#moove_gdpr_cookie_modal .focus-g').trigger('click');
-                } else {
-                  e.preventDefault();
-                  $('#moove_gdpr_cookie_modal .focus-g').trigger('click');
-                }
-              } else {
-                e.preventDefault();
-                $('.moove-gdpr-modal-save-settings').trigger('click');
-              }
-            }
-          } 
-        });
-       
-        $(document).on('keyup', function(e) {
-          if ( e.keyCode == 16 ) {
-            is_shift = false;
-          }
-
-          if ( e.keyCode == 17 || e.keyCode == 18 || e.keyCode == 13 ) {
-            is_shift = false;
-          }
-        });
-
-        document.addEventListener('visibilitychange', function (event) {
-          is_shift = false;
-        });
-
-        $(document).on('keydown', function(e) {
-          if ( e.keyCode == 16 ) {
-            is_shift = true;
-          }
-
-          if ( $('body').hasClass('gdpr-infobar-visible') && ! $('body').hasClass('moove_gdpr_overflow') && $('#moove_gdpr_cookie_info_bar').hasClass('gdpr-full-screen-infobar') ) {
-            // Tab
-            if ( e.keyCode == 9 ) {
-              e.preventDefault();
-              console.warn('fsw-tab');
-
-              var items_to_focus = $('#moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar span.change-settings-button, #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar .moove-gdpr-infobar-allow-all, #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar .moove-gdpr-infobar-reject-btn,  #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar button.change-settings-button, #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar [data-target="third_party_cookies"] label, #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar [data-target="advanced-cookies"] label, #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar [data-target="performance-cookies"], #moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar [data-target="preference-cookies"], label#moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar .mgbutton');
-
-              if ( items_to_focus.length > 0 ) {
-                var item_to_focus = false;       
-                
-                if ( gdpr_dynamic_focus_index <= items_to_focus.length ) {
-                  if ( is_shift ) {
-                    gdpr_dynamic_focus_index--;
-                  } else {
-                    gdpr_dynamic_focus_index++;
-                  }
-                  item_to_focus = items_to_focus[gdpr_dynamic_focus_index];
-                  
-                  if ( ! $(item_to_focus).is(':visible') ) {
-                    if ( is_shift ) {
-                      gdpr_dynamic_focus_index--;
-                    } else {
-                      gdpr_dynamic_focus_index++;
-                    }
-                    item_to_focus = items_to_focus[gdpr_dynamic_focus_index];
-                    
-                  }
-                } else {
-                  gdpr_dynamic_focus_index = 0;
-                  item_to_focus = items_to_focus[gdpr_dynamic_focus_index];
-                }
-                $('#moove_gdpr_cookie_info_bar .focus-g').removeClass('focus-g');
-                if ( gdpr_dynamic_focus_index < 0 && is_shift ) {
-                  gdpr_dynamic_focus_index = items_to_focus.length;
-                }
-
-                if ( ! item_to_focus && gdpr_dynamic_focus_index > items_to_focus.length ) {
-                  gdpr_dynamic_focus_index = 0;
-                  item_to_focus = items_to_focus[gdpr_dynamic_focus_index];
-                }
-                $(document).find('*').blur();
-                $(item_to_focus).addClass('focus-g').trigger('focus');
-
-                if ( $(item_to_focus).length > 0 && 'undefined' !== typeof document.body.scrollIntoViewIfNeeded ) {
-                  try {
-                    $(item_to_focus)[0].scrollIntoViewIfNeeded();
-                  } catch (error) {
-                    console.warn(error);
-                  }
-                }
-                
-              } else {
-                $('.cookie-switch').removeClass('focus-g');
-              
-                var next = selected_menu_g.next();
-                selected_menu_g = next;
-     
-                if ( next.length === 0 ) {
-                  next = selected_menu_g_1;
-                  selected_menu_g = selected_menu_g_1;
-
-
-                }               
-                // next.find('.cookie-switch:visible').trigger('click');
-                next.find('.cookie-switch').trigger('focus').addClass('focus-g');
-                if ( next.find('.cookie-switch').length > 0 && 'undefined' !== typeof document.body.scrollIntoViewIfNeeded ) {
-                  try {
-                    next.find('.cookie-switch')[0].scrollIntoViewIfNeeded();
-                  } catch (error) {
-                    console.warn(error);
-                  }
-                }
-              }
-            }
-
-            if( e.keyCode == 32 ) {
-              e.preventDefault();
-              var checkbox_element = $('#moove_gdpr_cookie_info_bar').find('.gdpr-shr-switch.focus-g input[type=checkbox]');
-              console.warn('space');
-              checkbox_element.trigger('click');
-            }
-          }
-
-          if( e.keyCode == 13 ) {
-            if ( $(document.activeElement).length > 0 && $(document.activeElement).closest('#moove_gdpr_cookie_info_bar').length > 0 ) {
-              e.preventDefault();
-              $(document.activeElement).trigger('click');
-            }
-          }
-          // }
-        });
+        // The control that opened the settings modal, so focus can be handed back on close.
+        var gdpr_modal_return_focus = null;
 
         function gdpr_cc_log( log ) {
           try {
@@ -548,7 +167,18 @@
               }
             );
           } else {
+            var cookie_values = {};
+
+            cookie_values['strict'] = 1;
+            cookie_values['thirdparty'] = 0;
+            cookie_values['advanced'] = 0;
+            cookie_values['performance'] = 0;
+            cookie_values['preference'] = 0;
             gdpr_delete_all_cookies();
+
+            // Mirror the AJAX branch above: the rejection still has to be recorded against
+            // the WP Consent API, otherwise consent-aware plugins are left with no value.
+            moove_gdpr_change_switchers( cookie_values );
           }
         }
 
@@ -556,6 +186,28 @@
           if ( typeof jQuery.fn.gdpr_cookie_compliance_analytics === 'function' ) {
             jQuery().gdpr_cookie_compliance_analytics( $options, $extras );
           }
+        }
+
+        /**
+         * Push a consent value to the WP Consent API.
+         *
+         * wp_set_consent() lives in the WP Consent API's own script, which is a separate
+         * file we only depend on, not control. If an optimisation plugin defers, delays or
+         * combines it, the global can still be missing by the time we run - bail out quietly
+         * rather than throwing a ReferenceError that aborts the whole caller.
+         */
+        function gdpr_wp_set_consent( category, value ) {
+          if ( typeof moove_frontend_gdpr_scripts.wp_consent_api === 'undefined' || 'true' !== moove_frontend_gdpr_scripts.wp_consent_api ) {
+            return;
+          }
+
+          if ( typeof wp_set_consent !== 'function' ) {
+            gdpr_cc_log( 'wp_set_consent() unavailable - the WP Consent API script has not loaded' );
+            return;
+          }
+
+          gdpr_cc_log( 'wp_set_consent: ' + category + ' - ' + value );
+          wp_set_consent( category, value );
         }
 
         function gdpr_save_consent_log( value ) {
@@ -814,9 +466,7 @@
                 $('#moove_gdpr_preference_cc_cookies').prop('disabled',false);
               }
               // WP Consent API
-              if ( typeof moove_frontend_gdpr_scripts.wp_consent_api !== 'undefined' && 'true' === moove_frontend_gdpr_scripts.wp_consent_api ) {
-                wp_set_consent('functional', 'allow');
-              }
+              gdpr_wp_set_consent( 'functional', 'allow' );
             } else {
               if ( $('#moove_gdpr_strict_cookies').is(':checked') ) {
                 $('#moove_gdpr_strict_cookies').prop('checked',true).trigger('change'); // + 131022
@@ -835,9 +485,7 @@
 
               }
               // WP Consent API
-              if ( typeof moove_frontend_gdpr_scripts.wp_consent_api !== 'undefined' && 'true' === moove_frontend_gdpr_scripts.wp_consent_api ) {
-                wp_set_consent('functional', 'deny');
-              }
+              gdpr_wp_set_consent( 'functional', 'deny' );
             }
 
             if ( parseInt( cookies.thirdparty ) === 1 ) {
@@ -846,18 +494,14 @@
               }
 
               // WP Consent API
-              if ( typeof moove_frontend_gdpr_scripts.wp_consent_api !== 'undefined' && 'true' === moove_frontend_gdpr_scripts.wp_consent_api ) {
-                wp_set_consent('statistics', 'allow');
-              }
+              gdpr_wp_set_consent( 'statistics', 'allow' );
             } else {
               if ( $('#moove_gdpr_performance_cookies').is(':checked') ) {
                 $('#moove_gdpr_performance_cookies').prop('checked', false).trigger('change'); // + 131022
               }
 
-              // WP Consent API
-                if ( typeof moove_frontend_gdpr_scripts.wp_consent_api !== 'undefined' && 'true' === moove_frontend_gdpr_scripts.wp_consent_api ) {
-                  wp_set_consent('statistics', 'deny');
-                }
+                // WP Consent API
+                gdpr_wp_set_consent( 'statistics', 'deny' );
             }
 
             if ( parseInt( cookies.advanced ) === 1 ) {
@@ -866,18 +510,14 @@
               }
 
               // WP Consent API
-              if ( typeof moove_frontend_gdpr_scripts.wp_consent_api !== 'undefined' && 'true' === moove_frontend_gdpr_scripts.wp_consent_api ) {
-                wp_set_consent('marketing', 'allow');
-              }
+              gdpr_wp_set_consent( 'marketing', 'allow' );
             } else {
               if ( $('#moove_gdpr_advanced_cookies').is(':checked') ) {
                 $('#moove_gdpr_advanced_cookies').prop('checked', false).trigger('change'); // + 131022
               }
 
               // WP Consent API
-              if ( typeof moove_frontend_gdpr_scripts.wp_consent_api !== 'undefined' && 'true' === moove_frontend_gdpr_scripts.wp_consent_api ) {
-                wp_set_consent('marketing', 'deny');
-              }
+              gdpr_wp_set_consent( 'marketing', 'deny' );
             }
 
             if ( parseInt( cookies.performance ) === 1 ) {
@@ -885,10 +525,16 @@
                 $('#moove_gdpr_performance_cc_cookies').prop('checked', true).trigger('change'); // + 131022
               }
 
+              // WP Consent API
+              gdpr_wp_set_consent( 'statistics-anonymous', 'allow' );
+
             } else {
               if ( $('#moove_gdpr_performance_cc_cookies').is(':checked') ) {
                 $('#moove_gdpr_performance_cc_cookies').prop('checked', false).trigger('change'); // + 131022
               }
+
+              // WP Consent API
+              gdpr_wp_set_consent( 'statistics-anonymous', 'deny' );
             }
 
             if ( parseInt( cookies.preference ) === 1 ) {
@@ -897,9 +543,7 @@
               }
 
               // WP Consent API
-              if ( typeof moove_frontend_gdpr_scripts.wp_consent_api !== 'undefined' && 'true' === moove_frontend_gdpr_scripts.wp_consent_api ) {
-                wp_set_consent('preferences', 'allow');
-              }
+              gdpr_wp_set_consent( 'preferences', 'allow' );
 
             } else {
               if ( $('#moove_gdpr_preference_cc_cookies').is(':checked') ) {
@@ -907,9 +551,7 @@
               }
 
               // WP Consent API
-              if ( typeof moove_frontend_gdpr_scripts.wp_consent_api !== 'undefined' && 'true' === moove_frontend_gdpr_scripts.wp_consent_api ) {
-                wp_set_consent('preferences', 'deny');
-              }
+              gdpr_wp_set_consent( 'preferences', 'deny' );
             }
 
             $('input[data-name="moove_gdpr_performance_cookies"]').prop('checked',$('#moove_gdpr_performance_cookies').is(':checked'));
@@ -917,6 +559,7 @@
             $('input[data-name="moove_gdpr_advanced_cookies"]').prop('checked',$('#moove_gdpr_advanced_cookies').is(':checked'));
             $('input[data-name="moove_gdpr_performance_cc_cookies"]').prop('checked',$('#moove_gdpr_performance_cc_cookies').is(':checked'));
             $('input[data-name="moove_gdpr_preference_cc_cookies"]').prop('checked',$('#moove_gdpr_preference_cc_cookies').is(':checked'));
+            moove_gdpr_sync_disabled_notes();
           }
         }
 
@@ -926,6 +569,110 @@
             $('body').removeClass('gdpr-infobar-visible');
             $('#moove_gdpr_cookie_info_bar').hide();
           }
+        }
+
+        var gdpr_infobar_moved = false;
+        var gdpr_scroll_padding_side = null;
+
+        /**
+         * Keeps keyboard focus from landing underneath the banner (WCAG 2.4.11). While the banner is
+         * visible, the page's scroll padding on the banner's edge is raised to the banner's height,
+         * so browsers scroll focused elements clear of it. A theme's own scroll padding is kept if
+         * it is larger. The full-screen banner blocks the page, so it needs none.
+         */
+        function moove_gdpr_sync_scroll_padding() {
+          var infobar = document.getElementById('moove_gdpr_cookie_info_bar');
+          var root    = document.documentElement;
+
+          if ( gdpr_scroll_padding_side ) {
+            root.style.removeProperty( 'scroll-padding-' + gdpr_scroll_padding_side );
+            gdpr_scroll_padding_side = null;
+          }
+
+          if ( ! infobar || ! $(infobar).is(':visible') || $(infobar).hasClass('gdpr-full-screen-infobar') ) {
+            return;
+          }
+
+          var side     = $(infobar).hasClass('gdpr_infobar_postion_top') ? 'top' : 'bottom';
+          var existing = parseFloat( window.getComputedStyle( root ).getPropertyValue( 'scroll-padding-' + side ) ) || 0;
+          root.style.setProperty( 'scroll-padding-' + side, Math.max( infobar.offsetHeight, existing ) + 'px' );
+          gdpr_scroll_padding_side = side;
+        }
+
+        // The box inside the full-screen banner, which is exposed as a modal dialog. Null for the regular banner.
+        function moove_gdpr_infobar_dialog() {
+          var infobar = $('#moove_gdpr_cookie_info_bar.gdpr-full-screen-infobar');
+          return infobar.length > 0 ? infobar.find('.moove-gdpr-info-bar-container')[0] || null : null;
+        }
+
+        /**
+         * Runs before the banner is first shown.
+         *
+         * The banner is printed on wp_footer, which puts it last in reading and Tab order, so
+         * screen reader and keyboard users reach it only after the whole page. Moving it to the
+         * start of <body> fixes that. It is position: fixed, so where it appears does not change.
+         * It is moved once only: later moves would drop focus from inside it.
+         *
+         * The full-screen banner covers and blocks the page, so its box is exposed as a modal dialog.
+         */
+        function moove_gdpr_prepare_infobar() {
+          var infobar = document.getElementById('moove_gdpr_cookie_info_bar');
+          if ( ! infobar ) {
+            return;
+          }
+
+          if ( ! gdpr_infobar_moved ) {
+            if ( document.body.firstChild !== infobar ) {
+              document.body.insertBefore( infobar, document.body.firstChild );
+            }
+            // Size changes include the banner being hidden, so this also clears the padding.
+            if ( typeof window.ResizeObserver === 'function' ) {
+              new window.ResizeObserver( moove_gdpr_sync_scroll_padding ).observe( infobar );
+            }
+            $(window).on( 'resize', moove_gdpr_sync_scroll_padding );
+          }
+          gdpr_infobar_moved = true;
+
+          var dialog = moove_gdpr_infobar_dialog();
+          if ( dialog ) {
+            $(dialog).attr({ 'role': 'dialog', 'aria-modal': 'true', 'tabindex': '-1' });
+            if ( document.getElementById('moove_gdpr_cookie_info_bar_title') ) {
+              $(dialog).attr( 'aria-labelledby', 'moove_gdpr_cookie_info_bar_title' );
+            }
+          }
+        }
+
+        /**
+         * Moves focus to the cookie banner once it is visible.
+         *
+         * The full-screen banner always takes focus, as any modal dialog must. The regular
+         * banner does so only when the "Accessibility" option is set to "Cookie Banner", and
+         * only while the document itself still holds focus - if the visitor has already tabbed
+         * or clicked into the page (the banner can appear after a configurable delay), their
+         * position is left alone.
+         */
+        function moove_gdpr_focus_infobar() {
+          var $infobar = $('#moove_gdpr_cookie_info_bar');
+          if ( $infobar.length === 0 || ! $infobar.is(':visible') ) {
+            return;
+          }
+
+          var dialog = moove_gdpr_infobar_dialog();
+          if ( dialog ) {
+            dialog.focus();
+            return;
+          }
+
+          if ( typeof moove_frontend_gdpr_scripts.gdpr_focus_cb === 'undefined' || moove_frontend_gdpr_scripts.gdpr_focus_cb !== 'true' ) {
+            return;
+          }
+
+          var active = document.activeElement;
+          if ( active && active !== document.body && active !== document.documentElement ) {
+            return;
+          }
+
+          $infobar[0].focus();
         }
 
         function moove_gdpr_show_infobar() {
@@ -940,7 +687,9 @@
                 $('#moove_gdpr_cookie_info_bar').removeClass('moove-gdpr-info-bar-hidden');
                 $('#moove_gdpr_save_popup_settings_button:not(.button-visible)').hide();
                 $('body').addClass('gdpr-infobar-visible');
+                moove_gdpr_prepare_infobar();
                 $('#moove_gdpr_cookie_info_bar').show();
+                moove_gdpr_focus_infobar();
                 gdpr_save_analytics( 'show_infobar', '' );
               }
             } else {
@@ -964,7 +713,9 @@
               $('#moove_gdpr_cookie_info_bar').removeClass('moove-gdpr-info-bar-hidden');
               $('#moove_gdpr_save_popup_settings_button:not(.button-visible)').hide();
               $('body').addClass('gdpr-infobar-visible');
+              moove_gdpr_prepare_infobar();
               $('#moove_gdpr_cookie_info_bar').show();
+              moove_gdpr_focus_infobar();
               gdpr_save_analytics( 'show_infobar', '' );
             }
           }
@@ -1583,6 +1334,61 @@
           }
         };
 
+        /**
+         * Add-on option to hide the banner after the visitor scrolls, or after a delay.
+         *
+         * This only hides the banner for the rest of the session. It never records consent or
+         * loads scripts: scrolling or waiting is not a decision, and keyboard and screen reader
+         * users scroll and pause while they are still reading. The banner is left alone while the
+         * visitor is using it or the settings modal, and settings stay reachable afterwards from
+         * the floating button or any settings link.
+         */
+        function moove_gdpr_init_auto_hide( initial_scroll ) {
+          var modes = moove_frontend_gdpr_scripts.gdpr_aos_hide;
+          if ( moove_frontend_gdpr_scripts.enable_on_scroll !== 'true' || typeof modes === 'undefined' ) {
+            return;
+          }
+
+          var has_mode = function( mode ) {
+            return modes === mode || ( mode === '1' && modes === 'true' ) || ( typeof modes === 'object' && modes !== null && modes.indexOf( mode ) !== -1 );
+          };
+
+          // Returns false while the visitor is still using the banner, so the caller can retry.
+          var hide = function() {
+            var infobar = document.getElementById('moove_gdpr_cookie_info_bar');
+            if ( ! infobar || ! $(infobar).is(':visible') || moove_gdpr_read_cookie('moove_gdpr_popup') ) {
+              return true;
+            }
+            if ( $('body').hasClass('moove_gdpr_overflow') || infobar === document.activeElement || $.contains( infobar, document.activeElement ) ) {
+              return false;
+            }
+            moove_gdpr_hide_infobar();
+            $('#moove_gdpr_save_popup_settings_button').show();
+            if ( typeof( sessionStorage ) !== "undefined" ) {
+              sessionStorage.setItem( 'gdpr_infobar_hidden', 1 );
+            }
+            return true;
+          };
+
+          if ( has_mode('1') ) {
+            $(window).on('scroll.gdpr_auto_hide', function() {
+              if ( $(window).scrollTop() - initial_scroll > 200 && hide() ) {
+                $(window).off('scroll.gdpr_auto_hide');
+              }
+            });
+          }
+
+          if ( has_mode('2') ) {
+            var seconds = parseInt( moove_frontend_gdpr_scripts.gdpr_aos_hide_seconds, 10 );
+            var attempt = function() {
+              if ( ! hide() ) {
+                setTimeout( attempt, 5000 );
+              }
+            };
+            setTimeout( attempt, ( isNaN( seconds ) ? 30 : seconds ) * 1000 );
+          }
+        }
+
         function moove_gdpr_check_cookie(){
 
           var path = location.pathname;
@@ -1596,173 +1402,22 @@
           var default_performance = typeof moove_frontend_gdpr_scripts.enabled_default.performance !== 'undefined' ? moove_frontend_gdpr_scripts.enabled_default.performance : false ;
           var default_preference = typeof moove_frontend_gdpr_scripts.enabled_default.preference !== 'undefined' ? moove_frontend_gdpr_scripts.enabled_default.preference : false ;
 
-          if ( ( typeof moove_frontend_gdpr_scripts.enable_on_scroll !== 'undefined' ) && moove_frontend_gdpr_scripts.enable_on_scroll === 'true' ) {
-            
-            if ( parseInt( default_trirdparty ) !== 1 && parseInt( default_advanced ) !== 1 && parseInt( default_performance ) !== 1 && parseInt( default_preference ) !== 1 ) {
-              default_strict = 1;
-              default_trirdparty = 1;
-              default_advanced = 1;
-              default_performance = 1;
-              default_preference = 1;
-            }
-
-          }
-
           if ( ( document.cookie.indexOf("moove_gdpr_popup") >= 0 ) || ( default_trirdparty == 1 || default_advanced == 1 || default_performance == 1 || default_preference == 1 || default_strict > 1 ) ) {
 
             var cookies = moove_gdpr_read_cookie('moove_gdpr_popup');
             if ( ! cookies ) {
-              var gdpr_session = false;
-              if ( typeof( sessionStorage ) !== "undefined" ) {
-                gdpr_session = sessionStorage.getItem("gdpr_session");
-              }
+              cookies = {
+                "strict" : 1,
+                "thirdparty" : default_trirdparty,
+                "advanced" : default_advanced,
+                "performance": default_performance,
+                "preference": default_preference
+              };
 
-              if ( ( typeof moove_frontend_gdpr_scripts.enable_on_scroll !== 'undefined' ) && moove_frontend_gdpr_scripts.enable_on_scroll === 'true' ) {
-                var scroll_offset = 200;
-                if ( gdpr_session ) {
-                  try {
-                    moove_gdpr_change_switchers(JSON.parse( gdpr_session ) );                  
-                    is_created = true;
-                    gdpr_cc_log('dbg - inject - 1');
-                    moove_gdpr_inject_scripts_on_load( gdpr_session );         
-                    moove_gdpr_create_cookie( 'moove_gdpr_popup', gdpr_session, cookie_expiration );
-                    moove_gdpr_hide_infobar();           
-                  } catch(err) {
-                    // console.warn(err);
-                  }                         
-                } else {
-                  
+              moove_gdpr_change_switchers(cookies);
+              cookies = JSON.stringify( cookies );
 
-                  // Loading default cookies
-                  if ( ( !is_created && moove_frontend_gdpr_scripts.enabled_default.third_party == 1 ) || ( !is_created && moove_frontend_gdpr_scripts.enabled_default.advanced == 1 ) || ( !is_created && moove_frontend_gdpr_scripts.enabled_default.performance == 1 ) || ( !is_created && moove_frontend_gdpr_scripts.enabled_default.performance == 1 )  ) {
-                    cookies = {
-                      "strict" : 1,
-                      "thirdparty" : default_trirdparty,
-                      "advanced" : default_advanced,
-                      "performance": default_performance,
-                      "preference": default_preference
-                    };
-                    moove_gdpr_change_switchers(cookies);
-                    cookies = JSON.stringify( cookies );
-                    aos_default_enabled = true;
-                    moove_gdpr_show_infobar();
-                    gdpr_cc_log('dbg - default scroll inject');
-                  }
-
-                  // Enable on scroll
-                  if ( ( typeof moove_frontend_gdpr_scripts.gdpr_aos_hide !== 'undefined' ) && ( moove_frontend_gdpr_scripts.gdpr_aos_hide === '1' || moove_frontend_gdpr_scripts.gdpr_aos_hide === 'true' || ( typeof moove_frontend_gdpr_scripts.gdpr_aos_hide === 'object' && moove_frontend_gdpr_scripts.gdpr_aos_hide.includes("1") ) ) ) {
-                    // Scroll trigger
-                    gdpr_cc_log('dbg - enable on scroll - enter');
-                    $( window ).scroll(function() {
-                      if ( ( !is_created || aos_default_enabled ) && ( $(this).scrollTop() - initial_scroll ) > scroll_offset ) {
-                        cookies = {
-                          "strict" : 1,
-                          "thirdparty" : default_trirdparty,
-                          "advanced" : default_advanced,
-                          "performance": default_performance,
-                          "preference": default_preference
-                        };
-                        var cookies_stored = moove_gdpr_read_cookie('moove_gdpr_popup');
-                        if ( ! cookies_stored ) {
-                          if ( typeof( sessionStorage ) !== "undefined" ) {
-                            gdpr_session = sessionStorage.getItem("gdpr_session");
-                            if ( ! gdpr_session ) {
-                              sessionStorage.setItem( "gdpr_session", JSON.stringify( cookies ) );
-                              gdpr_session = sessionStorage.getItem("gdpr_session");
-                            }
-                          }
-                        }
-                        try {
-                          moove_gdpr_change_switchers(cookies);
-                          cookies = JSON.stringify( cookies );
-                          moove_gdpr_show_infobar();
-                          is_created = true;
-                          gdpr_cc_log('dbg - inject - 2 - accept on scroll');
-                          if ( ! aos_default_enabled ) {
-                            moove_gdpr_inject_scripts_on_load(cookies);
-                          }
-                          aos_default_enabled = false;
-                          moove_gdpr_create_cookie('moove_gdpr_popup',cookies,cookie_expiration);
-                          moove_gdpr_hide_infobar();
-                          moove_gdpr_check_reload( 'check reload on scroll' );
-                          $('#moove_gdpr_save_popup_settings_button').show();
-                        } catch(err) {
-                          // console.warn(err);
-                        }                 
-                      }                    
-                    });
-
-                  }
-                  // Hidetimer
-                  if ( ( typeof moove_frontend_gdpr_scripts.gdpr_aos_hide !== 'undefined' ) && ( moove_frontend_gdpr_scripts.gdpr_aos_hide === '2' || ( typeof moove_frontend_gdpr_scripts.gdpr_aos_hide === 'object' &&  moove_frontend_gdpr_scripts.gdpr_aos_hide.includes("2") ) ) ) {
-                    var timeout = 30;
-                    if ( ( typeof moove_frontend_gdpr_scripts.gdpr_aos_hide_seconds !== 'undefined' ) ) {
-                      var timeout = parseInt( moove_frontend_gdpr_scripts.gdpr_aos_hide_seconds );
-                    }
-
-                    gdpr_cc_log( 'dbg - hidetimer - enter, seconds: ' + timeout );
-
-                    setTimeout(
-                      function () {
-                        gdpr_cc_log( 'dbg - hidetimer - is_created: ' + is_created );
-                        // Time trigger
-                        if ( !is_created ) {
-                          cookies = {
-                            "strict" : 1,
-                            "thirdparty" : default_trirdparty,
-                            "advanced" : default_advanced,
-                            "performance": default_performance,
-                            "preference": default_preference
-                          };
-                          var cookies_stored = moove_gdpr_read_cookie('moove_gdpr_popup');
-
-                          gdpr_cc_log( 'dbg - hidetimer - cookies_stored: ' + cookies_stored );
-
-                          if ( ! cookies_stored ) {
-                            if ( typeof( sessionStorage ) !== "undefined" ) {
-                              gdpr_session = sessionStorage.getItem("gdpr_session");
-                              if ( ! gdpr_session ) {
-                                sessionStorage.setItem( "gdpr_session", JSON.stringify( cookies ) );
-                                gdpr_session = sessionStorage.getItem("gdpr_session");
-                              }
-                            }
-                          }
-                          try {
-                            moove_gdpr_change_switchers(cookies);
-                            cookies = JSON.stringify( cookies );
-                            moove_gdpr_show_infobar();
-                            is_created = true;
-                            gdpr_cc_log('dbg - inject - 2a');
-                            moove_gdpr_inject_scripts_on_load(cookies);
-                            moove_gdpr_create_cookie('moove_gdpr_popup',cookies,cookie_expiration);
-                            moove_gdpr_check_reload( 'check reload hidetimer' );                            
-                          } catch(err) {
-                            // console.warn(err);
-                          }                 
-                        }
-                        moove_gdpr_hide_infobar();
-                        $('#moove_gdpr_save_popup_settings_button').show();
-                      },
-                      timeout * 1000
-                    );                    
-                  }
-                  
-                }
-              } else {
-                cookies = {
-                  "strict" : 1,
-                  "thirdparty" : default_trirdparty,
-                  "advanced" : default_advanced,
-                  "performance": default_performance,
-                  "preference": default_preference
-                };
-
-                moove_gdpr_change_switchers(cookies);
-                cookies = JSON.stringify( cookies );
-
-                moove_gdpr_show_infobar();
-              }
-
+              moove_gdpr_show_infobar();
             } else {
               var cookies_json = m_g_read_cookies();
               
@@ -1776,6 +1431,8 @@
           } else {
             moove_gdpr_show_infobar();
           }
+
+          moove_gdpr_init_auto_hide( initial_scroll );
         }
         moove_gdpr_check_cookie();
 
@@ -1832,6 +1489,10 @@
           e.stopPropagation();
           $('#moove-gdpr-menu li').removeClass('menu-item-selected');
           $(this).parent().addClass('menu-item-selected');
+          // Keep the tablist state in sync with the visual selection. Only the selected tab is
+          // in the Tab order; arrow keys move between tabs (see the tab list keydown handler).
+          $('#moove-gdpr-menu .moove-gdpr-tab-nav').attr({ 'aria-selected': 'false', 'tabindex': '-1' });
+          $(this).attr({ 'aria-selected': 'true', 'tabindex': '0' });
           $('.moove-gdpr-tab-content .moove-gdpr-tab-main').hide();
           $( $(this).attr('href') ).show();
           $( $(this).attr('data-href') ).show();
@@ -1839,6 +1500,247 @@
           gdpr_save_analytics( 'clicked_to_tab', $(this).attr('data-href') );
 
         });
+        /*
+         * Keyboard and screen reader support for the banner and the settings modal.
+         *
+         * Everything here relies on real DOM focus and on the native behaviour of buttons,
+         * links and checkboxes. Only what native HTML does not already provide is handled:
+         * keeping Tab inside modal surfaces, arrow keys in the tab list, and Enter/Space on
+         * the few non-native elements that act as buttons.
+         */
+        var gdpr_focusable_selector = 'a[href], area[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), iframe, [contenteditable="true"], [tabindex]';
+        var gdpr_narrow_viewport    = typeof window.matchMedia === 'function' ? window.matchMedia( '(max-width: 767px)' ) : null;
+
+        function gdpr_is_narrow_viewport() {
+          return gdpr_narrow_viewport ? gdpr_narrow_viewport.matches : window.innerWidth < 768;
+        }
+
+        function gdpr_get_focusable( container ) {
+          return $(container).find( gdpr_focusable_selector ).filter( function() {
+            return ! $(this).is('[tabindex^="-"]') && $(this).is(':visible');
+          });
+        }
+
+        // Keeps Tab and Shift+Tab cycling inside a modal surface instead of reaching the page behind it.
+        function gdpr_trap_focus( e, container ) {
+          var focusable = gdpr_get_focusable( container );
+          var active    = document.activeElement;
+          var inside    = active === container || $.contains( container, active );
+
+          if ( focusable.length === 0 ) {
+            e.preventDefault();
+            container.focus();
+            return;
+          }
+
+          var first = focusable[0];
+          var last  = focusable[ focusable.length - 1 ];
+
+          if ( e.shiftKey && ( ! inside || active === first || active === container ) ) {
+            e.preventDefault();
+            last.focus();
+          } else if ( ! e.shiftKey && ( ! inside || active === last ) ) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+
+        /**
+         * Category switches are disabled until strictly necessary cookies are on. Disabled
+         * checkboxes cannot take focus and just read as "unavailable", so the reason is attached
+         * as their description, and announced when someone clicks one.
+         */
+        function moove_gdpr_sync_disabled_notes() {
+          var strict = document.getElementById('moove_gdpr_strict_cookies');
+          var modal  = document.getElementById('moove_gdpr_cookie_modal');
+          if ( ! strict || ! modal || typeof moove_frontend_gdpr_scripts.gdpr_a11y_strict_first !== 'string' ) {
+            return;
+          }
+
+          var note = document.getElementById('moove_gdpr_disabled_note');
+          if ( ! note ) {
+            note = document.createElement('span');
+            note.id = 'moove_gdpr_disabled_note';
+            note.className = 'gdpr-sr-only';
+            modal.appendChild( note );
+          }
+          note.textContent = moove_frontend_gdpr_scripts.gdpr_a11y_strict_first.replace( '%s', strict.getAttribute('aria-label') || '' );
+
+          $(modal).find('.moove-gdpr-status-bar input[type=checkbox]').not( strict ).each( function() {
+            if ( this.disabled && ! strict.checked ) {
+              $(this).attr( 'aria-describedby', note.id );
+            } else {
+              $(this).removeAttr('aria-describedby');
+            }
+          });
+        }
+
+        // Polite announcement through a status region inside the modal. The region is created
+        // when the modal opens, because screen readers ignore regions added with their message.
+        function moove_gdpr_ensure_status_region() {
+          var modal  = document.getElementById('moove_gdpr_cookie_modal');
+          var region = document.getElementById('moove_gdpr_status');
+          if ( ! region && modal ) {
+            region = document.createElement('span');
+            region.id = 'moove_gdpr_status';
+            region.className = 'gdpr-sr-only';
+            region.setAttribute( 'role', 'status' );
+            modal.appendChild( region );
+          }
+          return region;
+        }
+
+        function moove_gdpr_announce( message ) {
+          var region = moove_gdpr_ensure_status_region();
+          if ( ! region || ! message ) {
+            return;
+          }
+          // Cleared first so the same message is announced again on a repeat attempt.
+          region.textContent = '';
+          setTimeout( function() {
+            region.textContent = message;
+          }, 100 );
+        }
+
+        /**
+         * Applies the semantics that match how the modal is presented right now:
+         * - tabbed layout (v1), wide viewport: a tab list controlling tab panels
+         * - tabbed layout (v1), narrow viewport: the menu is hidden and each section title
+         *   expands its own content, so the titles become disclosure buttons
+         * - one-page layout (v2): the menu is hidden and every section is shown, so the
+         *   sections are plain headed content with no tab roles
+         *
+         * This lives in the script rather than the templates because the right roles change
+         * with the viewport, and it also covers tabs added by older add-on versions and
+         * theme-overridden templates that predate these attributes.
+         */
+        function moove_gdpr_sync_modal_semantics() {
+          var modal_content = $('#moove_gdpr_cookie_modal .moove-gdpr-modal-content');
+          if ( modal_content.length === 0 ) {
+            return;
+          }
+
+          var is_tabbed_layout = modal_content.hasClass('moove_gdpr_modal_theme_v1');
+          var is_tabs          = is_tabbed_layout && ! gdpr_is_narrow_viewport();
+          var is_accordion     = is_tabbed_layout && gdpr_is_narrow_viewport();
+
+          // The desktop tab list is a vertical column.
+          $('#moove-gdpr-menu').attr({ 'role': 'tablist', 'aria-orientation': is_tabs ? 'vertical' : null }).children('li').attr('role', 'presentation');
+          $('#moove-gdpr-menu .moove-gdpr-tab-nav').each( function() {
+            var tab      = $(this);
+            var panel_id = ( tab.attr('data-href') || '' ).replace( '#', '' );
+            var selected = tab.parent().hasClass('menu-item-selected');
+
+            if ( ! tab.attr('id') && panel_id ) {
+              tab.attr( 'id', 'gdpr-tab-' + panel_id );
+            }
+
+            tab.attr({
+              'role': 'tab',
+              'aria-controls': panel_id,
+              'aria-selected': selected ? 'true' : 'false',
+              'tabindex': selected ? '0' : '-1'
+            });
+          });
+
+          $('#moove_gdpr_cookie_modal .moove-gdpr-tab-main').each( function() {
+            var panel = $(this);
+            var tab   = this.id ? document.getElementById( 'gdpr-tab-' + this.id ) : null;
+
+            if ( is_tabs && tab ) {
+              panel.attr({ 'role': 'tabpanel', 'tabindex': '0', 'aria-labelledby': tab.id });
+            } else {
+              panel.removeAttr('role tabindex aria-labelledby');
+            }
+
+            var toggle = panel.children('.tab-title').children('.gdpr-tab-title-text');
+            var body   = panel.children('.moove-gdpr-tab-main-content');
+
+            if ( is_accordion && this.id !== 'privacy_overview' && toggle.length > 0 && body.length > 0 ) {
+              if ( ! body.attr('id') ) {
+                body.attr( 'id', this.id + '-content' );
+              }
+              toggle.attr({
+                'role': 'button',
+                'tabindex': '0',
+                'aria-controls': body.attr('id'),
+                'aria-expanded': body.is(':visible') ? 'true' : 'false'
+              });
+            } else {
+              toggle.removeAttr('role tabindex aria-controls aria-expanded');
+            }
+          });
+
+          moove_gdpr_sync_disabled_notes();
+          moove_gdpr_ensure_status_region();
+        }
+
+        if ( gdpr_narrow_viewport ) {
+          var gdpr_on_viewport_change = function() {
+            if ( is_gdpr_lightbox ) {
+              moove_gdpr_sync_modal_semantics();
+            }
+          };
+          if ( typeof gdpr_narrow_viewport.addEventListener === 'function' ) {
+            gdpr_narrow_viewport.addEventListener( 'change', gdpr_on_viewport_change );
+          } else if ( typeof gdpr_narrow_viewport.addListener === 'function' ) {
+            gdpr_narrow_viewport.addListener( gdpr_on_viewport_change );
+          }
+        }
+
+        $(document).on('keydown', function(e) {
+          if ( e.keyCode !== 9 ) {
+            return;
+          }
+
+          if ( $('body').hasClass('moove_gdpr_overflow') ) {
+            var gdpr_modal = document.getElementById('moove_gdpr_cookie_modal');
+            if ( gdpr_modal ) {
+              gdpr_trap_focus( e, gdpr_modal );
+            }
+          } else if ( $('body').hasClass('gdpr-infobar-visible') && moove_gdpr_infobar_dialog() ) {
+            // The full-screen banner covers and blocks the page, so it behaves as a modal dialog.
+            gdpr_trap_focus( e, moove_gdpr_infobar_dialog() );
+          }
+        });
+
+        // Tab list: arrow keys move between tabs and select them, Home/End jump to the ends.
+        $(document).on('keydown', '#moove-gdpr-menu .moove-gdpr-tab-nav', function(e) {
+          var steps  = { 37: -1, 38: -1, 39: 1, 40: 1 };
+          var tabs   = $('#moove-gdpr-menu .moove-gdpr-tab-nav:visible');
+          var index  = tabs.index( this );
+          var target = -1;
+
+          if ( e.altKey || e.ctrlKey || e.metaKey || index < 0 ) {
+            return;
+          }
+
+          if ( typeof steps[ e.keyCode ] !== 'undefined' ) {
+            target = ( index + steps[ e.keyCode ] + tabs.length ) % tabs.length;
+          } else if ( e.keyCode === 36 ) {
+            target = 0;
+          } else if ( e.keyCode === 35 ) {
+            target = tabs.length - 1;
+          }
+
+          if ( target < 0 ) {
+            return;
+          }
+
+          e.preventDefault();
+          tabs.eq( target ).trigger('focus').trigger('click');
+        });
+
+        // Non-native elements acting as buttons (section toggles on narrow screens, add-on
+        // "Show details", legacy span-based settings links) get the keys a real button has.
+        $(document).on('keydown', '#moove_gdpr_cookie_modal [role="button"], #moove_gdpr_cookie_info_bar [role="button"], #moove_gdpr_cookie_info_bar span.change-settings-button', function(e) {
+          if ( e.target !== this || ( e.keyCode !== 13 && e.keyCode !== 32 ) || $(this).is('button, a[href], input') ) {
+            return;
+          }
+          e.preventDefault();
+          $(this).trigger('click');
+        });
+
         $(document).on('gdpr_lightbox:close', function(event, instance) {
            $(document).moove_gdpr_lightbox_close();
         });
@@ -1846,14 +1748,43 @@
           if ( is_gdpr_lightbox ) {
             $('body').removeClass('moove_gdpr_overflow');
             is_gdpr_lightbox = false;
+
+            // Hand focus back to whatever opened the modal. Without this, focus is lost to
+            // <body> and keyboard users restart from the top of the document.
+            if ( gdpr_modal_return_focus && document.body.contains( gdpr_modal_return_focus ) ) {
+              try {
+                gdpr_modal_return_focus.focus();
+              } catch (error) {
+                gdpr_cc_log( error );
+              }
+            }
+            gdpr_modal_return_focus = null;
           }
         }
         $.fn.moove_gdpr_lightbox_open = function(options){
           if ( is_gdpr_lightbox ) {
             $('body').addClass('moove_gdpr_overflow');
             var cookies = moove_gdpr_read_cookie('moove_gdpr_popup');
-            document.activeElement.blur();
-   
+
+            // Remember the trigger, then move focus into the dialog so it is announced and
+            // Tab starts inside the modal rather than at the document top.
+            // The dialog is shown by class toggle, so `autofocus` never fires here.
+            if ( document.activeElement && document.activeElement !== document.body ) {
+              gdpr_modal_return_focus = document.activeElement;
+              document.activeElement.blur();
+            }
+
+            moove_gdpr_sync_modal_semantics();
+
+            var $gdpr_modal = $('#moove_gdpr_cookie_modal');
+            if ( $gdpr_modal.length > 0 ) {
+              try {
+                $gdpr_modal[0].focus();
+              } catch (error) {
+                gdpr_cc_log( error );
+              }
+            }
+
             if ( moove_frontend_gdpr_scripts.show_icons === 'none' ) {
               $('body').addClass('gdpr-no-icons');
             }
@@ -1890,6 +1821,7 @@
         $(document).on('gdpr_lightbox:open', function(event, instance) {
            $(document).moove_gdpr_lightbox_open();
         });
+
         $(document).on('click tap','.fl-disabled',function(e){
           if ( $('#moove_gdpr_cookie_modal .moove-gdpr-modal-content').is('.moove_gdpr_modal_theme_v2') ) {
             if ( $('#moove_gdpr_strict_cookies').length > 0 ) {
@@ -1898,6 +1830,10 @@
             }
           } else {
             $(this).closest('.moove-gdpr-tab-main-content').find('.moove-gdpr-strict-secondary-warning-message').slideDown();
+            var disabled_note = document.getElementById('moove_gdpr_disabled_note');
+            if ( disabled_note ) {
+              moove_gdpr_announce( disabled_note.textContent );
+            }
           }
         });
 
@@ -1964,9 +1900,10 @@
           $('input[data-name="'+$(this).attr('name')+'"]').prop('checked',$(this).is(':checked'));
 
           check_allow_button();
+          moove_gdpr_sync_disabled_notes();
         });
 
-        $(document).on('click tap','.gdpr_cookie_settings_shortcode_content a.gdpr-shr-save-settings',function(e){
+        $(document).on('click tap','.gdpr_cookie_settings_shortcode_content .gdpr-shr-save-settings',function(e){
           e.preventDefault();
           save_cookies( true );
           $('.gdpr_lightbox .gdpr_lightbox-close').trigger('click');
@@ -2049,22 +1986,51 @@
           }
         };
 
-        function gdpr_delete_all_cookies( type ) {         
+        // Domains a cookie has to be expired on, besides host-only. Mirrors
+        // Moove_GDPR_Controller::moove_gdpr_get_cookie_domains() so both removal methods agree.
+        function gdpr_get_cookie_domains( name, host ) {
+          var domains   = [ host, host.replace( /^www\./, '' ) ];
+          var d_domains = typeof moove_frontend_gdpr_scripts.parent_domain_cookies !== 'undefined' ? moove_frontend_gdpr_scripts.parent_domain_cookies : [];
+          for ( var i = 0; i < d_domains.length; i++ ) {
+            if ( d_domains[i] && name.indexOf( d_domains[i] ) !== -1 ) {
+              // gtag and friends write on the registrable domain (blog.example.com -> example.com),
+              // so walk up every level. Browsers ignore the public-suffix ones.
+              var labels = host.split('.');
+              while ( labels.length > 1 ) {
+                domains.push( labels.join('.') );
+                labels.shift();
+              }
+              break;
+            }
+          }
+          return domains;
+        }
+
+        function gdpr_delete_all_cookies( type ) {
           try {
             $(document).find('script[data-gdpr]').each(function() {
               gdpr_cc_log( 'script_removed: ' + $(this).attr('src') );
               $(this).remove();
             });
             var cookies = document.cookie.split(";");
-            var domain  = window.location.hostname;
+            var host    = window.location.hostname.toLowerCase();
             for (var i = 0; i < cookies.length; i++) {
               var cookie = cookies[i];
               var eqPos = cookie.indexOf("=");
-              var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-              if ( ! name.includes('woocommerce') && ! name.includes('wc_') && ! name.includes('moove_gdpr_popup') && ! name.includes('wordpress') ) {
-                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;domain=" + domain;
-                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;domain=." + domain;
-                gdpr_cc_log('cookie removed: ' + name + ' - ' + domain);
+              var name = ( eqPos > -1 ? cookie.substr(0, eqPos) : cookie ).trim();
+              // wp_consent_* holds the visitor's consent state for the WP Consent API.
+              // Wiping it leaves consent-aware plugins with no value at all, which reads as
+              // "never asked" rather than "denied", so they stay blocked with no way back.
+              if ( name && ! name.includes('woocommerce') && ! name.includes('wc_') && ! name.includes('moove_gdpr_popup') && ! name.includes('wordpress') && ! name.includes('wp_consent') ) {
+                // path=/ is required: without it the browser scopes the delete to the current
+                // page's directory and misses cookies set on /.
+                var expired = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+                var domains = gdpr_get_cookie_domains( name, host );
+                document.cookie = expired;
+                for (var j = 0; j < domains.length; j++) {
+                  document.cookie = expired + ";domain=." + domains[j];
+                }
+                gdpr_cc_log('cookie removed: ' + name + ' - ' + domains.join(', '));
               }
             }
           } catch(e) {
@@ -2256,8 +2222,11 @@
       if ( ! gpc_blocked ) {
         if ( typeof moove_frontend_gdpr_scripts.geo_location !== 'undefined' && moove_frontend_gdpr_scripts.geo_location === 'true' ) {
           var gdpr_geo_cache_name = 'moove_gdpr_geo_cache';
+          // Bump when the stored decision changes meaning, so that decisions
+          // cached by an earlier version are fetched again.
+          var gdpr_geo_cache_version = 2;
 
-          function gdpr_geo_cache_read() {
+          var gdpr_geo_cache_read = function() {
             var nameEQ = encodeURIComponent( gdpr_geo_cache_name ) + '=';
             var ca = document.cookie.split(';');
             for ( var i = 0; i < ca.length; i++ ) {
@@ -2270,46 +2239,76 @@
               }
             }
             return null;
-          }
+          };
 
-          function gdpr_geo_cache_write( data ) {
-            // Session cookie (no expires) — geo result is per-session, avoids stale risk
-            document.cookie = encodeURIComponent( gdpr_geo_cache_name ) + '=' + encodeURIComponent( JSON.stringify( data ) ) + '; path=/; SameSite=Lax';
-          }
+          var gdpr_geo_cache_write = function( data ) {
+            // Session cookie (no expires) — geo result is per-session, avoids stale risk.
+            // Only the decision is stored; the full response can outgrow the cookie size limit.
+            var stored = {
+              v: gdpr_geo_cache_version,
+              display_cookie_banner: data.display_cookie_banner,
+              enabled_default: data.enabled_default
+            };
+            document.cookie = encodeURIComponent( gdpr_geo_cache_name ) + '=' + encodeURIComponent( JSON.stringify( stored ) ) + '; path=/; SameSite=Lax';
+          };
 
-          var geoCached = gdpr_geo_cache_read();
-          if ( geoCached !== null ) {
-            if ( typeof geoCached.display_cookie_banner !== 'undefined' ) {
-              moove_frontend_gdpr_scripts.display_cookie_banner = geoCached.display_cookie_banner;
+          var gdpr_geo_apply = function( data ) {
+            if ( typeof data.display_cookie_banner !== 'undefined' ) {
+              moove_frontend_gdpr_scripts.display_cookie_banner = data.display_cookie_banner;
             }
-            if ( typeof geoCached.enabled_default !== 'undefined' ) {
-              moove_frontend_gdpr_scripts.enabled_default = geoCached.enabled_default;
+            if ( typeof data.enabled_default !== 'undefined' ) {
+              moove_frontend_gdpr_scripts.enabled_default = data.enabled_default;
             }
+          };
+
+          var gdpr_geo_init = function() {
             if ( ! gdpr_js_init ) {
               gdpr_js_init = true;
               GDPR_UTIL_FE.fire('common');
             }
+          };
+
+          // No answer means the visitor's location is unknown, so the banner
+          // is shown. Hiding it would load every script category.
+          var gdpr_geo_fail_closed = function() {
+            moove_frontend_gdpr_scripts.display_cookie_banner = 'true';
+            gdpr_geo_init();
+          };
+
+          var geoCached = gdpr_geo_cache_read();
+          if ( geoCached !== null && geoCached.v === gdpr_geo_cache_version ) {
+            gdpr_geo_apply( geoCached );
+            gdpr_geo_init();
           } else {
-            jQuery.post(
-              moove_frontend_gdpr_scripts.ajaxurl,
-              {
+            jQuery.ajax({
+              type: 'POST',
+              url: moove_frontend_gdpr_scripts.ajaxurl,
+              data: {
                 action: 'moove_gdpr_localize_scripts',
               },
-              function( msg ) {
-                var object = typeof msg === 'string' ? JSON.parse( msg ) : msg;
-                if ( typeof object.display_cookie_banner !== 'undefined' ) {
-                  moove_frontend_gdpr_scripts.display_cookie_banner = object.display_cookie_banner;
+              timeout: 10000,
+              success: function( msg ) {
+                var object = null;
+                try {
+                  object = typeof msg === 'string' ? JSON.parse( msg ) : msg;
+                } catch(e) {
+                  object = null;
                 }
-                if ( typeof object.enabled_default !== 'undefined' ) {
-                  moove_frontend_gdpr_scripts.enabled_default = object.enabled_default;
+                if ( object === null || typeof object !== 'object' ) {
+                  gdpr_geo_fail_closed();
+                  return;
                 }
-                gdpr_geo_cache_write( object );
-                if ( ! gdpr_js_init ) {
-                  gdpr_js_init = true;
-                  GDPR_UTIL_FE.fire('common');
+                gdpr_geo_apply( object );
+                // An unresolved location is asked for again on the next page view.
+                if ( object.geo_resolved !== 'false' ) {
+                  gdpr_geo_cache_write( object );
                 }
+                gdpr_geo_init();
+              },
+              error: function() {
+                gdpr_geo_fail_closed();
               }
-            );
+            });
           }
         } else {
           var gdpr_script_delay = typeof moove_frontend_gdpr_scripts.script_delay !== undefined && parseInt( moove_frontend_gdpr_scripts.script_delay ) >= 0 ? parseInt( moove_frontend_gdpr_scripts.script_delay ) : 0;

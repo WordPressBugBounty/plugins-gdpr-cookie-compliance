@@ -2,9 +2,9 @@
 Contributors: MooveAgency
 Donate link: https://www.mooveagency.com/wordpress-plugins/gdpr-cookie-compliance/
 Tags: GDPR, CCPA, DSGVO, cookie banner, cookie consent, cookie notice
-Stable tag: 5.1.0
+Stable tag: 5.2.0
 Requires at least: 4.5
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
 License: GPLv3
 
@@ -256,6 +256,15 @@ The Brazilian General Data Protection Law (“Lei Geral de Proteção de Dados�
 31. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
 
 == Changelog ==
+= 5.2.0: 5 October 2026 =
+* Accessibility fixes
+* Google Tag Manager integrations: Google tag IDs (G-, GT-, AW-) now load via gtag.js, as required by Google from 2 October 2026
+* GTM container IDs (GTM-) are unaffected
+* Cookie removal fixed: Google Ads and Meta cookies (e.g. _gcl_au, _fbc) are now deleted when consent is revoked
+* Consent Mode v2: GA4 cookieless pings are now sent before consent
+* Geo location fixed: the cookie banner is now always shown when the visitor's location cannot be determined
+* Admin settings: invalid tab parameters now fall back to the default tab
+
 = 5.1.0: 21 July 2026 =
 * Security improvements
 * Integration enhancements

@@ -568,7 +568,7 @@ $gdpr_cb_show_mobile = isset( $gdpr_options['gdpr_cb_show_mobile'] ) && intval( 
 					</label>
 					<p class="description">
 						<?php
-							$content = __( 'Choose the right accessibility experience for your users. You can decide wether pressing tab key on your keyboard should first focus on the Cookie Banner or on your website\'s content.', 'gdpr-cookie-compliance' );
+							$content = __( 'The Cookie Banner is always placed first in the page\'s reading and keyboard order. Choose "Cookie Banner" to also move keyboard focus to the banner as soon as it appears, or "Content" to leave focus on your website\'s content.', 'gdpr-cookie-compliance' );
 							apply_filters( 'gdpr_cc_keephtml', $content, true );
 						?>
 					</p>            

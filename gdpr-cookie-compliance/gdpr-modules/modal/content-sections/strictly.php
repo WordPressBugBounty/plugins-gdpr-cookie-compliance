@@ -6,7 +6,7 @@
 
 <?php if ( $content->show ) : ?>
   <div id="strict-necessary-cookies" class="moove-gdpr-tab-main" <?php echo $content->visibility; ?>>
-    <span class="tab-title"><?php echo esc_attr( $content->tab_title ); ?></span>
+    <h2 class="tab-title"><span class="gdpr-tab-title-text"><?php echo esc_attr( $content->tab_title ); ?></span></h2>
     <div class="moove-gdpr-tab-main-content">
       <?php 
         echo $content->tab_content; // phpcs:ignore
@@ -16,9 +16,8 @@
         <div class="gdpr-cc-form-wrap">
           <div class="gdpr-cc-form-fieldset">
             <label class="cookie-switch" for="moove_gdpr_strict_cookies">    
-              <span class="gdpr-sr-only"><?php esc_html_e( 'Enable or Disable Cookies', 'gdpr-cookie-compliance' ); ?></span>        
               <input type="checkbox" aria-label="<?php echo esc_attr( $content->tab_title ); ?>" <?php echo $content->is_checked; ?> value="check" name="moove_gdpr_strict_cookies" id="moove_gdpr_strict_cookies">
-              <span class="cookie-slider cookie-round gdpr-sr" data-text-enable="<?php echo esc_attr( $content->text_enable ); ?>" data-text-disabled="<?php echo esc_attr( $content->text_disable ); ?>">
+              <span class="cookie-slider cookie-round gdpr-sr" aria-hidden="true" data-text-enable="<?php echo esc_attr( $content->text_enable ); ?>" data-text-disabled="<?php echo esc_attr( $content->text_disable ); ?>">
                 <span class="gdpr-sr-label">
                   <span class="gdpr-sr-enable"><?php echo esc_attr( $content->text_enable ); ?></span>
                   <span class="gdpr-sr-disable"><?php echo esc_attr( $content->text_disable ); ?></span>

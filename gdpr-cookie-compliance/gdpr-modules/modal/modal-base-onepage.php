@@ -7,16 +7,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<!--copyscapeskip-->
 	<!-- V2 -->
 	<?php // The `open` attribute is required so the dialog subtree is not treated as inert. Visibility is controlled by the `gdpr_lightbox-hide` class. ?>
-	<dialog id="moove_gdpr_cookie_modal" class="gdpr_lightbox-hide" open aria-modal="true" aria-label="<?php esc_html_e( 'GDPR Settings Screen', 'gdpr-cookie-compliance' ); ?>">
+	<?php // `tabindex="-1"` lets the script move focus here when the modal opens - the dialog is shown by class toggle, not showModal(), so nothing focuses it natively. ?>
+	<dialog id="moove_gdpr_cookie_modal" class="gdpr_lightbox-hide" open tabindex="-1" aria-modal="true" aria-label="<?php esc_html_e( 'GDPR Settings Screen', 'gdpr-cookie-compliance' ); ?>">
 	<div class="moove-gdpr-modal-content moove-clearfix logo-position-<?php echo esc_attr( $content->logo_position ); ?> <?php echo esc_attr( $content->theme ); ?>">
 		<?php if ( $content->close ) : ?>
-		<button class="moove-gdpr-modal-close" autofocus aria-label="<?php esc_html_e( 'Close GDPR Cookie Settings', 'gdpr-cookie-compliance' ); ?>">
+		<button class="moove-gdpr-modal-close" aria-label="<?php esc_html_e( 'Close GDPR Cookie Settings', 'gdpr-cookie-compliance' ); ?>">
 			<span class="gdpr-sr-only"><?php esc_html_e( 'Close GDPR Cookie Settings', 'gdpr-cookie-compliance' ); ?></span>
 			<span class="gdpr-icon moovegdpr-arrow-close"> </span>
 		</button>
 		<?php endif; ?>
 		<div class="moove-gdpr-modal-left-content">
-		<ul id="moove-gdpr-menu">
+		<ul id="moove-gdpr-menu" role="tablist" aria-label="<?php esc_html_e( 'Cookie categories', 'gdpr-cookie-compliance' ); ?>">
 			<?php echo gdpr_get_module( 'tab-navigation' ); // phpcs:ignore ?>
 		</ul>
 		</div>
@@ -24,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div class="moove-gdpr-modal-right-content">
 			<div class="moove-gdpr-modal-title"> 
 			<div>
-				<span class="tab-title"><?php echo esc_attr( $content->modal_title ); ?></span>
+				<h2 class="tab-title"><?php echo esc_attr( $content->modal_title ); ?></h2>
 			</div>
 			<?php echo gdpr_get_module( 'company-logo' ); // phpcs:ignore ?>
 			</div>

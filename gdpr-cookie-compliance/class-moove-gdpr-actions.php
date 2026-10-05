@@ -125,8 +125,42 @@ class Moove_GDPR_Actions {
 
 		add_action( 'wp_ajax_gdpr_msba_bulk_activate', array( 'Moove_GDPR_License_Manager', 'gdpr_msba_bulk_activate_ajx' ) );
 
-		add_filter( 'wp_consent_api_registered_gdpr-cookie-compliance', '__return_true' );
+		/**
+		 * WP Consent API.
+		 *
+		 * consent_api_registered() builds this hook name from the plugin basename as it
+		 * appears in the active_plugins option, so it has to include the main plugin file -
+		 * the folder name on its own never matches and leaves us listed as non-compliant.
+		 */
+		add_filter( 'wp_consent_api_registered_' . plugin_basename( MOOVE_GDPR_PLUGIN_FILE ), '__return_true' );
+
+		/**
+		 * Declare the consent type so the WP Consent API knows a consent manager is present.
+		 *
+		 * Without this, wp_get_consent_type() returns false and the API treats the site as
+		 * having no consent management at all - which makes the PHP-side wp_has_consent()
+		 * return true for every category regardless of what the visitor chose.
+		 */
+		add_filter( 'wp_get_consent_type', array( &$this, 'gdpr_wp_get_consent_type' ) );
+
 		add_action( 'gdpr_admin_top_nav_links', array( 'Moove_GDPR_Content', 'gdpr_admin_top_nav_links_gcat' ), 10, 2 );
+	}
+
+	/**
+	 * Report our consent model to the WP Consent API.
+	 *
+	 * The plugin blocks cookies until the visitor accepts, which is opt-in. Returning an
+	 * unrecognised value here is the same as returning nothing, so it must stay one of the
+	 * types the API validates against.
+	 *
+	 * Filterable via gdpr_cc_wp_consent_type for sites running the banner in a region where
+	 * opt-out is the appropriate model.
+	 *
+	 * @param string|bool $consent_type Consent type set by another plugin, if any.
+	 * @return string $consent_type
+	 */
+	public function gdpr_wp_get_consent_type( $consent_type = false ) {
+		return apply_filters( 'gdpr_cc_wp_consent_type', 'optin' );
 	}
 
 	/**
@@ -640,6 +674,7 @@ class Moove_GDPR_Actions {
 		// Custom Font Weights.
 		if ( isset( $gdpr_options['moove_gdpr_plugin_font_type'] ) && '1' !== $gdpr_options['moove_gdpr_plugin_font_type'] || 'inherit' !== $custom_font_weight ) :
 			?>
+				#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main h2.tab-title,
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main h3.tab-title, 
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main span.tab-title,
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-left-content #moove-gdpr-menu li a, 
@@ -662,6 +697,7 @@ class Moove_GDPR_Actions {
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main .moove-gdpr-tab-main-content h5, 
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main .moove-gdpr-tab-main-content h6,
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content.moove_gdpr_modal_theme_v2 .moove-gdpr-modal-title .tab-title,
+				#moove_gdpr_cookie_modal .moove-gdpr-modal-content.moove_gdpr_modal_theme_v2 .moove-gdpr-tab-main h2.tab-title,
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content.moove_gdpr_modal_theme_v2 .moove-gdpr-tab-main h3.tab-title, 
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content.moove_gdpr_modal_theme_v2 .moove-gdpr-tab-main span.tab-title,
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content.moove_gdpr_modal_theme_v2 .moove-gdpr-branding-cnt a {
@@ -711,7 +747,7 @@ class Moove_GDPR_Actions {
 			$settings_btn_bhv   = isset( $modal_options['gdpr_settings_button_bhv'] ) && intval( $modal_options['gdpr_settings_button_bhv'] ) ? intval( $modal_options['gdpr_settings_button_bhv'] ) : 2;
 			$settings_btn_class = 'gdpr-settings-btn-style-' . $settings_btn_bhv;
 			?>
-				<button class="mgbutton moove-gdpr-infobar-settings-btn change-settings-button gdpr-fbo-<?php echo esc_attr( $button_order ); ?> <?php echo esc_attr( $settings_btn_class ); ?>" aria-haspopup="true" data-href="#moove_gdpr_cookie_modal" <?php echo apply_filters( 'gdpr_tabindex_attribute', '', $button_order ); // phpcs:ignore ?> aria-label="<?php echo esc_attr( $button_label ); ?>"><?php echo esc_attr( $button_label ); ?></button>
+				<button class="mgbutton moove-gdpr-infobar-settings-btn change-settings-button gdpr-fbo-<?php echo esc_attr( $button_order ); ?> <?php echo esc_attr( $settings_btn_class ); ?>" aria-haspopup="dialog" data-href="#moove_gdpr_cookie_modal" <?php echo apply_filters( 'gdpr_tabindex_attribute', '', $button_order ); // phpcs:ignore ?> aria-label="<?php echo esc_attr( $button_label ); ?>"><?php echo esc_attr( $button_label ); ?></button>
 			<?php
 		endif;
 	}
@@ -949,15 +985,56 @@ class Moove_GDPR_Actions {
 		$loc_data['gdpr_scor']  = $store_cookie_on_reject ? 'true' : 'false';
 		$loc_data['wp_lang']    = $wpml_lang;
 
+		$loc_data['parent_domain_cookies'] = Moove_GDPR_Controller::moove_gdpr_get_parent_domain_cookies();
+
 		$loc_data['wp_consent_api'] = 'false';
 		if ( class_exists( 'WP_CONSENT_API' ) ) :
 			$loc_data['wp_consent_api'] = 'true';
-			wp_add_inline_script( $ascript, 'window.wp_consent_type = "' . apply_filters( 'gdpr_cc_wp_consent_type', 'gdpr_cc' ) . '"' );
+
+			/**
+			 * Keep the JavaScript consent type in step with the PHP one by reading it back
+			 * through the API rather than resolving our own filter a second time.
+			 *
+			 * Only emit a value the API recognises: wp_has_consent() in JavaScript treats an
+			 * empty consent type as "no consent manager present" and grants every category,
+			 * so a blank value here would be worse than staying silent.
+			 */
+			$gdpr_consent_type = function_exists( 'wp_get_consent_type' ) && function_exists( 'wp_validate_consent_type' )
+				? wp_validate_consent_type( wp_get_consent_type() )
+				: false;
+
+			if ( $gdpr_consent_type ) :
+				wp_add_inline_script( $ascript, 'window.wp_consent_type = "' . esc_js( $gdpr_consent_type ) . '";', 'before' );
+			endif;
 		endif;
 
 		$loc_data['gdpr_nonce'] = wp_create_nonce( "gdpr-cookie-compliance" );
 
+		/**
+		 * When the "Accessibility" option is set to "Cookie Banner", focus is moved to the
+		 * banner once it becomes visible. The banner renders on `wp_footer`; main.js moves it
+		 * to the start of <body> regardless of this option, so it is always first in reading order.
+		 */
+		$focus_banner              = isset( $modal_options['gdpr_accesibility'] ) && 1 === intval( $modal_options['gdpr_accesibility'] );
+		$loc_data['gdpr_focus_cb'] = apply_filters( 'gdpr_cc_focus_cookie_banner', $focus_banner ) ? 'true' : 'false';
+
+		/* translators: %s: name of the strictly necessary cookie category, as set in the plugin settings. */
+		$loc_data['gdpr_a11y_strict_first'] = __( 'Turn on %s first to change this setting.', 'gdpr-cookie-compliance' );
+
 		$this->gdpr_loc_data = apply_filters( 'gdpr_extend_loc_data', $loc_data );
+
+		/**
+		 * With geo location on, the banner decision comes only from the
+		 * moove_gdpr_localize_scripts AJAX request. Older Premium Add-On versions
+		 * also made one while rendering the page; when the two disagreed, or the
+		 * AJAX request failed, cookies stayed enabled by default next to a visible
+		 * banner. Discard the render-time decision so the configured defaults apply.
+		 */
+		if ( 'true' === $geo_location_enabled && isset( $this->gdpr_loc_data['display_cookie_banner'] ) ) :
+			unset( $this->gdpr_loc_data['display_cookie_banner'] );
+			$this->gdpr_loc_data['enabled_default'] = $loc_data['enabled_default'];
+		endif;
+
 		wp_localize_script( $ascript, 'moove_frontend_gdpr_scripts', $this->gdpr_loc_data );
 
 		if ( function_exists( 'gdpr_cookie_is_accepted' ) ) :
@@ -990,7 +1067,19 @@ class Moove_GDPR_Actions {
 	public function moove_frontend_gdpr_scripts() {
 		$disable_main_assets = apply_filters( 'gdpr_disable_main_assets_enqueue', false );
 		if ( ! $disable_main_assets ) :
-			$gdpr_deps = apply_filters( 'gdpr_main_script_depends_on', array( 'jquery' ) );
+			$gdpr_deps = array( 'jquery' );
+
+			/**
+			 * The WP Consent API documents that the consent manager must declare a dependency
+			 * on its script. Without it we rely on enqueue order alone, and any plugin that
+			 * defers, delays or combines JavaScript can leave wp_set_consent() undefined at
+			 * the point the banner needs it.
+			 */
+			if ( class_exists( 'WP_CONSENT_API' ) ) :
+				$gdpr_deps[] = 'wp-consent-api';
+			endif;
+
+			$gdpr_deps = apply_filters( 'gdpr_main_script_depends_on', $gdpr_deps );
 			wp_enqueue_script( 'moove_gdpr_frontend', plugins_url( basename( dirname( __FILE__ ) ) ) . '/dist/scripts/main.js', $gdpr_deps, MOOVE_GDPR_VERSION, true );
 
 			$gdpr_default_content = new Moove_GDPR_Content();
@@ -1056,9 +1145,10 @@ class Moove_GDPR_Actions {
 		$modal_options        = get_option( $option_name );
 		$wpml_lang            = $gdpr_default_content->moove_gdpr_get_wpml_lang();
 		$powered_label        = ( isset( $modal_options[ 'moove_gdpr_modal_powered_by_label' . $wpml_lang ] ) && $modal_options[ 'moove_gdpr_modal_powered_by_label' . $wpml_lang ] ) ? $modal_options[ 'moove_gdpr_modal_powered_by_label' . $wpml_lang ] : 'Powered by';
+		$link_target          = apply_filters( 'gdpr_branding_link_target', 'target="_blank"' );
 		ob_start();
 		?>
-		<a href="https://wordpress.org/plugins/gdpr-cookie-compliance/" <?php echo apply_filters( 'gdpr_branding_link_attributes', 'rel="noopener noreferrer"' ); // phpcs:ignore ?> <?php echo apply_filters( 'gdpr_branding_link_target', 'target="_blank"' ); // phpcs:ignore ?> class='moove-gdpr-branding'><?php echo esc_attr( $powered_label ); ?>&nbsp; <span><?php esc_attr_e( 'GDPR Cookie Compliance', 'gdpr-cookie-compliance' ); ?></span></a>
+		<a href="https://wordpress.org/plugins/gdpr-cookie-compliance/" <?php echo apply_filters( 'gdpr_branding_link_attributes', 'rel="noopener noreferrer"' ); // phpcs:ignore ?> <?php echo $link_target; // phpcs:ignore ?> class='moove-gdpr-branding'><?php echo esc_attr( $powered_label ); ?>&nbsp; <span><?php esc_attr_e( 'GDPR Cookie Compliance', 'gdpr-cookie-compliance' ); ?></span><?php if ( false !== strpos( (string) $link_target, '_blank' ) ) : ?><span class="gdpr-sr-only"> <?php esc_html_e( '(opens in a new tab)', 'gdpr-cookie-compliance' ); ?></span><?php endif; ?></a>
 		<?php
 		return ob_get_clean();
 	}

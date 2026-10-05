@@ -48,14 +48,29 @@ class Moove_GDPR_Controller {
 	 * JavaScript localization script
 	 */
 	public static function moove_gdpr_localize_scripts() {
+		header( 'Content-Type: application/json; charset=utf-8' );
+
+		/**
+		 * Whether to cache the whole response per anonymised REMOTE_ADDR.
+		 *
+		 * Add-ons that cache locations themselves turn this off: the key is
+		 * the connecting address, which behind a proxy is not the visitor's,
+		 * so one visitor's answer would be served to everyone behind it.
+		 */
+		$use_cache = apply_filters( 'gdpr_cc_geo_response_cache', true );
+
+		if ( ! $use_cache ) {
+			$content_cnt = new Moove_GDPR_Content();
+			echo json_encode( $content_cnt->moove_gdpr_get_localize_scripts() ); // phpcs:ignore
+			die();
+		}
+
 		// Cache per anonymised IP to avoid repeated geo-lookup API calls.
 		// wp_privacy_anonymize_ip() masks the last octet (IPv4) or last 80 bits (IPv6)
 		// so the key never stores a full identifiable IP address.
 		$remote_ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 		$ip_anon   = function_exists( 'wp_privacy_anonymize_ip' ) ? wp_privacy_anonymize_ip( $remote_ip ) : '';
 		$cache_key = 'gdpr_geo_' . md5( $ip_anon );
-
-		header( 'Content-Type: application/json; charset=utf-8' );
 
 		$cached = get_transient( $cache_key );
 		if ( false !== $cached ) {
@@ -552,9 +567,14 @@ class Moove_GDPR_Controller {
 		// The cookie-clearing branch below mutates state; only allow it on a same-origin
 		// POST (an empty/cross-site Referer or a bodyless GET must not reach that branch).
 		$is_post = isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) );
-		$strict     = isset( $_POST['strict'] ) && intval( $_POST['strict'] ) && 1 === intval( $_POST['strict'] ) ? true : false;
-		$thirdparty = isset( $_POST['thirdparty'] ) && intval( $_POST['thirdparty'] ) && 1 === intval( $_POST['thirdparty'] ) ? true : false;
-		$advanced   = isset( $_POST['advanced'] ) && intval( $_POST['advanced'] ) && 1 === intval( $_POST['advanced'] ) ? true : false;
+		$strict      = isset( $_POST['strict'] ) && intval( $_POST['strict'] ) && 1 === intval( $_POST['strict'] ) ? true : false;
+		$thirdparty  = isset( $_POST['thirdparty'] ) && intval( $_POST['thirdparty'] ) && 1 === intval( $_POST['thirdparty'] ) ? true : false;
+		$advanced    = isset( $_POST['advanced'] ) && intval( $_POST['advanced'] ) && 1 === intval( $_POST['advanced'] ) ? true : false;
+		// main.js has always posted these two, but they used to be dropped here, so
+		// the premium Performance/Preferences scripts never shipped over AJAX - only
+		// via the pre-localised path in moove_gdpr_get_static_scripts().
+		$performance = isset( $_POST['performance'] ) && 1 === intval( $_POST['performance'] ) ? true : false;
+		$preference  = isset( $_POST['preference'] ) && 1 === intval( $_POST['preference'] ) ? true : false;
 
 		$wp_lang = isset( $_POST['wp_lang'] ) ? sanitize_text_field( wp_unslash( urlencode( $_POST['wp_lang'] ) ) ) : ''; // phpcs:ignore
 
@@ -679,73 +699,30 @@ class Moove_GDPR_Controller {
 
 		if ( true === $strict ) :
 			$transient_from_cache = apply_filters( 'gdpr_lss_extension', $transient_from_cache, $wp_lang );
-			if ( $thirdparty ) :
-				if ( isset( $transient_from_cache['thirdparty'] ) ) :
-					$scripts_array['header'] .= $transient_from_cache['thirdparty']['header'];
-					$scripts_array['body']   .= $transient_from_cache['thirdparty']['body'];
-					$scripts_array['footer'] .= $transient_from_cache['thirdparty']['footer'];
-				endif;
-			endif;
 
-			if ( $advanced ) :
-				if ( isset( $transient_from_cache['advanced'] ) ) :
-					$scripts_array['header'] .= $transient_from_cache['advanced']['header'];
-					$scripts_array['body']   .= $transient_from_cache['advanced']['body'];
-					$scripts_array['footer'] .= $transient_from_cache['advanced']['footer'];
+			/*
+			 * Mirrors the category list handled by moove_gdpr_get_static_scripts().
+			 * 'strict' is intentionally absent: it is delivered by the pre-localised
+			 * path, not this endpoint.
+			 */
+			$accepted_cats = array(
+				'thirdparty'  => $thirdparty,
+				'advanced'    => $advanced,
+				'performance' => $performance,
+				'preference'  => $preference,
+			);
+
+			foreach ( $accepted_cats as $_cat => $_accepted ) :
+				if ( ! $_accepted || ! isset( $transient_from_cache[ $_cat ] ) ) :
+					continue;
 				endif;
-			endif;
+				$scripts_array['header'] .= isset( $transient_from_cache[ $_cat ]['header'] ) ? $transient_from_cache[ $_cat ]['header'] : '';
+				$scripts_array['body']   .= isset( $transient_from_cache[ $_cat ]['body'] ) ? $transient_from_cache[ $_cat ]['body'] : '';
+				$scripts_array['footer'] .= isset( $transient_from_cache[ $_cat ]['footer'] ) ? $transient_from_cache[ $_cat ]['footer'] : '';
+			endforeach;
 		elseif ( $is_post && $same_origin ) :
-			$d_domains = array( '_ga', '_fbp', '_gid', '_gat', '__utma', '__utmb', '__utmc', '__utmt', '__utmz' );
-			$d_domains = apply_filters( 'gdpr_d_domains_filter', $d_domains );
-
-			if ( isset( $_SERVER['HTTP_COOKIE'] ) ) {
-				$cookies = explode( ';', sanitize_text_field( wp_unslash( $_SERVER['HTTP_COOKIE'] ) ) );
-
-				$urlparts               = wp_parse_url( site_url( '/' ) );
-				$domain                 = preg_replace( '/www\./i', '', $urlparts['host'] );
-				$store_cookie_on_reject = apply_filters( 'gdpr_cc_store_cookie_on_reject', true );
-				foreach ( $cookies as $cookie ) {
-					$parts = explode( '=', $cookie );
-					$name  = trim( $parts[0] );
-					if ( false === $strict && 'moove_gdpr_popup' === $name && ! $store_cookie_on_reject ) :
-						setcookie( $name, '', time() - 1000 );
-						setcookie( $name, '', time() - 1000, '/' );
-					endif;
-					if ( 'moove_gdpr_popup' !== $name && strpos( $name, 'woocommerce' ) === false && strpos( $name, 'wc_' ) === false && stripos( $name, 'wordpress' ) === false ) :
-						if ( 'language' === $name || 'currency' === $name ) {
-							setcookie( $name, '', -1, '/', 'www.' . $domain );
-						} elseif ( in_array( $name, $d_domains ) || strpos( $name, '_ga' ) !== false || strpos( $name, '_fbp' ) !== false ) { // phpcs:ignore
-							setcookie( $name, '', -1, '/', '.' . $domain );
-						} else {
-							setcookie( $name, '', time() - 1000 );
-							setcookie( $name, '', time() - 1000, '/' );
-						}
-					endif;
-				}
-			}
-
-			if ( isset( $_COOKIE ) && is_array( $_COOKIE ) ) :
-				$urlparts               = wp_parse_url( site_url( '/' ) );
-				$domain                 = preg_replace( '/www\./i', '', $urlparts['host'] );
-				$store_cookie_on_reject = apply_filters( 'gdpr_cc_store_cookie_on_reject', true );
-				foreach ( $_COOKIE as $key => $value ) {
-					if ( false === $strict && 'moove_gdpr_popup' === $key && ! $store_cookie_on_reject ) :
-						setcookie( $key, '', -1, '/', 'www.' . $domain );
-						setcookie( $key, '', -1, '/', '.' . $domain );
-						$cookies_removed[ $key ] = $domain;
-					endif;
-
-					if ( 'moove_gdpr_popup' !== $key && strpos( $key, 'woocommerce' ) === false && strpos( $key, 'wc_' ) === false && stripos( $key, 'wordpress' ) === false ) :
-						if ( 'language' === $key || 'currency' === $key ) {
-							setcookie( $key, '', -1, '/', 'www.' . $domain );
-							$cookies_removed[ $key ] = $domain;
-						} elseif ( in_array( $key, $d_domains ) || strpos( $key, '_ga' ) !== false || strpos( $key, '_fbp' ) !== false ) { // phpcs:ignore
-							setcookie( $key, '', -1, '/', '.' . $domain );
-							$cookies_removed[ $key ] = $domain;
-						}
-					endif;
-				}
-			endif;
+			// Also drops our own consent cookie on reject when the site opts out of remembering it.
+			self::moove_gdpr_expire_request_cookies( ! apply_filters( 'gdpr_cc_store_cookie_on_reject', true ) );
 		endif;
 		header( 'Content-Type: application/json; charset=utf-8' );
 		$scripts_json = apply_filters( 'gdpr_filter_scripts_before_insert', json_encode( $scripts_array ) ); // phpcs:ignore
@@ -761,47 +738,104 @@ class Moove_GDPR_Controller {
 		$nonce    = isset( $_POST['security'] ) ? sanitize_key( wp_unslash( $_POST['security'] ) ) : false;
 		$nonce    = $nonce ? $nonce : ( isset( $_GET['security'] ) ? sanitize_key( wp_unslash( $_GET['security'] ) ) : false );
 		if ( $nonce && wp_verify_nonce( $nonce, 'gdpr-cookie-compliance' ) ) :
-			$urlparts        = wp_parse_url( site_url( '/' ) );
-			$domain          = preg_replace( '/www\./i', '', $urlparts['host'] );
-			$d_domains       = array( '_ga', '_fbp', '_gid', '_gat', '__utma', '__utmb', '__utmc', '__utmt', '__utmz' );
-			$d_domains       = apply_filters( 'gdpr_d_domains_filter', $d_domains );
-			if ( isset( $_COOKIE ) && is_array( $_COOKIE ) && $domain ) :
-				foreach ( $_COOKIE as $key => $value ) {
-					if ( 'moove_gdpr_popup' !== $key && strpos( $key, 'woocommerce' ) === false && strpos( $key, 'wc_' ) === false && stripos( $key, 'wordpress' ) === false ) :
-						if ( 'language' === $key || 'currency' === $key ) {
-							setcookie( $key, '', -1, '/', 'www.' . $domain );
-							$cookies_removed[ $key ] = $domain;
-						} elseif ( in_array( $key, $d_domains ) || strpos( $key, '_ga' ) !== false || strpos( $key, '_fbp' ) !== false ) { // phpcs:ignore
-							setcookie( $key, '', -1, '/', '.' . $domain );
-							$cookies_removed[ $key ] = $domain;
-						}
-					endif;
-				}
-			endif;
-
-			$cookies = isset( $_SERVER['HTTP_COOKIE'] ) ? explode( ';', sanitize_text_field( wp_unslash( $_SERVER['HTTP_COOKIE'] ) ) ) : false;
-			if ( is_array( $cookies ) ) :
-				foreach ( $cookies as $cookie ) {
-					$parts = explode( '=', $cookie );
-					$name  = trim( $parts[0] );
-					if ( $name && 'moove_gdpr_popup' !== $name && strpos( $name, 'woocommerce' ) === false && strpos( $name, 'wc_' ) === false && stripos( $name, 'wordpress' ) === false ) :
-						setcookie( $name, '', time() - 1000 );
-						setcookie( $name, '', time() - 1000, '/' );
-						if ( 'language' === $name || 'currency' === $name ) {
-							setcookie( $name, '', -1, '/', 'www.' . $domain );
-							$cookies_removed[ $name ] = $domain;
-						} elseif ( in_array( $key, $d_domains ) || strpos( $name, '_ga' ) !== false || strpos( $name, '_fbp' ) !== false ) { // phpcs:ignore
-							setcookie( $name, '', -1, '/', '.' . $domain );
-							$cookies_removed[ $name ] = '.' . $domain;
-						} else {
-							setcookie( $name, '', -1, '/' );
-							$cookies_removed[ $name ] = $domain;
-						}
-					endif;
-				}
-			endif;
+			$cookies_removed = self::moove_gdpr_expire_request_cookies();
 		endif;
 		echo json_encode( $cookies_removed ); // phpcs:ignore
+	}
+
+	/**
+	 * Cookie names tags write on a parent domain rather than the site host - gtag and the
+	 * Conversion Linker default to the registrable domain (.example.com), as does Meta Pixel.
+	 * Matched as substrings, so prefixed variants (_ga_XXXX, _gcl_au, custom GA prefixes) count.
+	 *
+	 * Shared with main.js so the static and dynamic removal methods reach the same domains.
+	 *
+	 * @return string[]
+	 */
+	public static function moove_gdpr_get_parent_domain_cookies() {
+		$d_domains = array( '_ga', '_fbp', '_gid', '_gat', '__utma', '__utmb', '__utmc', '__utmt', '__utmz', '_gcl_', '_gac_', '_fbc' );
+		$d_domains = apply_filters( 'gdpr_d_domains_filter', $d_domains );
+		return array_values( array_filter( (array) $d_domains, 'is_string' ) );
+	}
+
+	/**
+	 * Expires every removable cookie sent with the current request.
+	 *
+	 * Reads the raw Cookie header rather than $_COOKIE, which rewrites dots and spaces in
+	 * names to underscores and would expire a cookie that does not exist.
+	 *
+	 * @param bool $include_consent_cookie Also expire moove_gdpr_popup.
+	 * @return array Cookie name => domains it was expired on.
+	 */
+	private static function moove_gdpr_expire_request_cookies( $include_consent_cookie = false ) {
+		$cookies_removed = array();
+		$cookies         = isset( $_SERVER['HTTP_COOKIE'] ) ? explode( ';', sanitize_text_field( wp_unslash( $_SERVER['HTTP_COOKIE'] ) ) ) : array();
+		$host            = strtolower( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) );
+		$d_domains       = self::moove_gdpr_get_parent_domain_cookies();
+
+		foreach ( $cookies as $cookie ) {
+			$parts = explode( '=', $cookie );
+			$name  = trim( $parts[0] );
+			if ( ! self::moove_gdpr_is_removable_cookie( $name ) || ( 'moove_gdpr_popup' === $name && ! $include_consent_cookie ) ) :
+				continue;
+			endif;
+
+			$domains = self::moove_gdpr_get_cookie_domains( $name, $host, $d_domains );
+			setcookie( $name, '', -1, '/' );
+			foreach ( $domains as $domain ) {
+				setcookie( $name, '', -1, '/', '.' . $domain );
+			}
+			$cookies_removed[ $name ] = $domains;
+		}
+		return $cookies_removed;
+	}
+
+	/**
+	 * Whether a cookie may be expired on consent revocation.
+	 *
+	 * wp_consent_* is kept for the same reason as in main.js: without it, WP Consent API
+	 * plugins read "never asked" instead of "denied".
+	 *
+	 * @param string $name Cookie name.
+	 * @return bool
+	 */
+	private static function moove_gdpr_is_removable_cookie( $name ) {
+		// setcookie() throws a ValueError on these characters in PHP 8.
+		if ( '' === $name || preg_match( '/[=,; \t\r\n\013\014]/', $name ) ) :
+			return false;
+		endif;
+		return false === strpos( $name, 'woocommerce' )
+			&& false === strpos( $name, 'wc_' )
+			&& false === stripos( $name, 'wordpress' )
+			&& false === strpos( $name, 'wp_consent' );
+	}
+
+	/**
+	 * Domains a cookie has to be expired on, besides host-only. A Domain=.example.com cookie
+	 * and a host-only cookie with the same name are separate cookies to the browser, so each
+	 * scope needs its own Set-Cookie.
+	 *
+	 * @param string   $name      Cookie name.
+	 * @param string   $host      Site host.
+	 * @param string[] $d_domains Parent-domain cookie names, see moove_gdpr_get_parent_domain_cookies().
+	 * @return string[] Domains without the leading dot.
+	 */
+	private static function moove_gdpr_get_cookie_domains( $name, $host, $d_domains ) {
+		$domains = array( $host, preg_replace( '/^www\./', '', $host ) );
+
+		foreach ( $d_domains as $d_domain ) {
+			if ( '' !== $d_domain && false !== strpos( $name, $d_domain ) ) :
+				// Walk up to the registrable domain (blog.example.com -> example.com); we cannot
+				// tell which level the tag picked. Browsers reject the public-suffix levels.
+				$labels = explode( '.', $host );
+				while ( count( $labels ) > 1 ) {
+					$domains[] = implode( '.', $labels );
+					array_shift( $labels );
+				}
+				break;
+			endif;
+		}
+		return array_values( array_unique( array_filter( $domains ) ) );
 	}
 
 	/**

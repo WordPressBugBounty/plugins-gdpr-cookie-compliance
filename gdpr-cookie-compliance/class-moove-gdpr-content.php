@@ -202,36 +202,30 @@ class Moove_GDPR_Content {
 			}
 			if ( $cookie_cat_n ) :
 				ob_start();
-				?>
-				<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
-				<!-- Google Tag Manager -->
-				<script data-type="gdpr-integration">(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-				new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-				j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-				'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-				})(window,document,'script','dataLayer','<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>');</script>
-				<!-- End Google Tag Manager -->
-				<?php
+				self::gdpr_render_google_tag_loader( $_gdin_module['tacking_id'], 'data-type="gdpr-integration"' );
 				if ( ! defined( 'gdpr_i_gtm_h' ) ) :
 					$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
 					define( 'gdpr_i_gtm_h', true );
 				else :
 					ob_end_clean();
-				endif;	
-				ob_start();
-				?>
-				<!-- Google Tag Manager (noscript) -->
-				<noscript data-type="gdpr-integration"><iframe src="https://www.googletagmanager.com/ns.html?id=<?php echo esc_attr( $_gdin_module['tacking_id'] ); ?>"
-				height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-				<!-- End Google Tag Manager (noscript) -->
-				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
-				<?php
-				if ( ! defined( 'gdpr_i_gtm_b' ) ) :
-					$cache_array[ $cookie_cat_n ]['body'] .= ob_get_clean();
-					define( 'gdpr_i_gtm_b', true );
-				else :
-					ob_end_clean();
-				endif;					
+				endif;
+
+				// ns.html only exists for GTM containers, not Google tag IDs.
+				if ( self::gdpr_is_gtm_container_id( $_gdin_module['tacking_id'] ) ) :
+					ob_start();
+					?>
+					<!-- Google Tag Manager (noscript) -->
+					<noscript data-type="gdpr-integration"><iframe src="https://www.googletagmanager.com/ns.html?id=<?php echo esc_attr( trim( $_gdin_module['tacking_id'] ) ); ?>"
+					height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+					<!-- End Google Tag Manager (noscript) -->
+					<?php
+					if ( ! defined( 'gdpr_i_gtm_b' ) ) :
+						$cache_array[ $cookie_cat_n ]['body'] .= ob_get_clean();
+						define( 'gdpr_i_gtm_b', true );
+					else :
+						ob_end_clean();
+					endif;
+				endif;
 			endif;
 		endif;
 		return $cache_array;
@@ -246,84 +240,180 @@ class Moove_GDPR_Content {
 	}
 
 	/**
-	 * Integration Extensions
+	 * Google Consent Mode v2 - 'consent default' + GTM container or Google tag (default language).
+	 *
+	 * Bails when something has already emitted the head half for this request, so a
+	 * WPML site running the premium language-specific variant does not end up with
+	 * two 'consent default' calls and two loaders on the same page. The
+	 * add-on's counterpart runs at wp_head priority 0, ahead of this one, and claims
+	 * the guard whenever it has a language-specific GTM ID to use.
+	 *
+	 * @see gdpr_render_gtm_consent_default() for the markup and the category mapping.
 	 */
 	public static function gdpr_google_consent_mode2_snippet() {
+		if ( defined( 'GDPR_CC_GTM2_HEAD_DONE' ) ) :
+			return;
+		endif;
+
 		$gdpr_default_content = new Moove_GDPR_Content();
 		$option_name          = $gdpr_default_content->moove_gdpr_get_option_name();
 		$gdpr_options         = get_option( $option_name );
 		$gdin_values          = isset( $gdpr_options['gdin_values'] ) ? json_decode( $gdpr_options['gdin_values'], true ) : array();
 		$gdin_modules         = gdpr_get_integration_modules( $gdpr_options, $gdin_values );
+
 		if ( isset( $gdin_modules['gtmc2'] ) && isset( $gdin_modules['gtmc2']['tacking_id'] ) && $gdin_modules['gtmc2']['status'] ) :
-
-			/*
-			 * Read the user's stored consent before GTM loads so that returning visitors
-			 * who have already accepted cookies receive 'granted' defaults from the very
-			 * first gtag() call.  Without this, the Consent Update fires after GTM has
-			 * already initialised, which is too late for ecommerce events
-			 * (view_item_list, view_item, add_to_cart) triggered on page load — those
-			 * events are blocked and never retro-fired by GTM.
-			 *
-			 * Consent type mapping:
-			 *   strict      → functionality_storage, security_storage
-			 *   thirdparty  → analytics_storage  (GA4 / GTM analytics tags)
-			 *   advanced    → ad_storage, ad_user_data, ad_personalization
-			 *   preference  → personalization_storage
-			 *
-			 * The state is resolved in the browser rather than rendered by PHP: this
-			 * markup is served from the page cache, so baking one visitor's decision
-			 * into it would hand that decision to every subsequent visitor. See
-			 * gdpr_consent_cookie_js_preamble(). The read is still synchronous and
-			 * still happens before GTM loads, so the ecommerce behaviour above is
-			 * unaffected.
-			 */
-
-			// Only apply wait_for_update on first-visit (no stored consent).  For
-			// returning users the values are final; the delay would only defer GTM.
-			$wait_for_update_ms = esc_js( apply_filters( 'gdpr_cc_gtm2_wait_for_update', '2000' ) );
-
-			// Set default consent based on stored cookie preference (if any).
-			// First-time visitors get all-denied + wait_for_update so the banner
-			// can grant before any tags fire.  Returning visitors who have already
-			// accepted get the correct granted state immediately, preventing
-			// ecommerce events from being blocked on page load.
-
-			?>
-				<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
-				<script>
-					// Define dataLayer and the gtag function.
-					window.dataLayer = window.dataLayer || [];
-					function gtag(){dataLayer.push(arguments);}
-					(function(){
-						<?php echo self::gdpr_consent_cookie_js_preamble(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-
-						var _gdpr_ads = _gdpr_state('advanced'), _gdpr_strict = _gdpr_state('strict');
-						var _gdpr_consent = {
-							'ad_storage': _gdpr_ads,
-							'ad_user_data': _gdpr_ads,
-							'ad_personalization': _gdpr_ads,
-							'analytics_storage': _gdpr_state('thirdparty'),
-							'personalization_storage': _gdpr_state('preference'),
-							'security_storage': _gdpr_strict,
-							'functionality_storage': _gdpr_strict
-						};
-						if ( ! _gdpr_has ) {
-							_gdpr_consent['wait_for_update'] = '<?php echo $wait_for_update_ms; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>';
-						}
-						gtag('consent', 'default', _gdpr_consent);
-					})();
-				</script>
-
-				<!-- Google Tag Manager -->
-				<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-				new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-				j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-				'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-				})(window,document,'script','dataLayer','<?php echo esc_attr( $gdin_modules['gtmc2']['tacking_id'] ); ?>');</script>
-				<!-- End Google Tag Manager -->
-				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
-			<?php
+			self::gdpr_render_gtm_consent_default( $gdin_modules['gtmc2']['tacking_id'] );
 		endif;
+	}
+
+	/**
+	 * Renders the Consent Mode v2 head half: the 'consent default' call followed by
+	 * the GTM container or Google tag loader (see gdpr_render_google_tag_loader()).
+	 *
+	 * Shared by the free (default language) and premium (WPML language-specific)
+	 * entry points. It used to be duplicated, and the two copies drifted - the
+	 * premium one kept emitting a hardcoded all-denied default long after this one
+	 * learned to read the returning visitor's stored decision, so translated pages
+	 * silently lost the ecommerce behaviour described below.
+	 *
+	 * Read the user's stored consent before GTM loads so that returning visitors
+	 * who have already accepted cookies receive 'granted' defaults from the very
+	 * first gtag() call.  Without this, the Consent Update fires after GTM has
+	 * already initialised, which is too late for ecommerce events
+	 * (view_item_list, view_item, add_to_cart) triggered on page load - those
+	 * events are blocked and never retro-fired by GTM.
+	 *
+	 * Consent type mapping (must stay in step with the update half - see
+	 * gdpr_insert_integration_gtmc2_snippet):
+	 *   strict      -> functionality_storage, security_storage
+	 *   thirdparty  -> analytics_storage  (GA4 / GTM analytics tags)
+	 *   advanced    -> ad_storage, ad_user_data, ad_personalization
+	 *   preference  -> personalization_storage
+	 *
+	 * The state is resolved in the browser rather than rendered by PHP: this
+	 * markup is served from the page cache, so baking one visitor's decision
+	 * into it would hand that decision to every subsequent visitor. See
+	 * gdpr_consent_cookie_js_preamble(). The read is still synchronous and
+	 * still happens before GTM loads, so the ecommerce behaviour above is
+	 * unaffected.
+	 *
+	 * @param string $tag_id GTM container ID (GTM-XXXXXX) or Google tag ID (G-XXXXXXX).
+	 * @return void
+	 */
+	public static function gdpr_render_gtm_consent_default( $tag_id ) {
+		// The ID lands inside a JS string in a <script> block, where esc_attr() cannot
+		// escape quotes for JS and esc_js() cannot stop a literal '</script>'. A
+		// container or tag ID is only ever [A-Za-z0-9_-], so constrain it to that
+		// instead of relying on the output escaper alone.
+		$tag_id = preg_replace( '/[^A-Za-z0-9_-]/', '', trim( $tag_id ) );
+
+		if ( ! $tag_id || defined( 'GDPR_CC_GTM2_HEAD_DONE' ) ) :
+			return;
+		endif;
+
+		define( 'GDPR_CC_GTM2_HEAD_DONE', true );
+
+		// wait_for_update is off unless a site opts in through the filter. Google's
+		// tag does not treat it as a maximum wait: GA4 holds its hits until a consent
+		// update carrying the ad signals arrives, and the update half sends nothing
+		// until the banner is answered - so any value here suppresses the Advanced
+		// Consent Mode cookieless pings for first-time visitors. Stored consent is
+		// read synchronously below, before GTM loads, so there is nothing to wait for.
+		// When enabled it only applies on first visit (no stored consent); for
+		// returning users the values are final.
+		$wait_for_update_ms = absint( apply_filters( 'gdpr_cc_gtm2_wait_for_update', 0 ) );
+
+		?>
+			<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
+			<script>
+				// Define dataLayer and the gtag function.
+				window.dataLayer = window.dataLayer || [];
+				function gtag(){dataLayer.push(arguments);}
+				(function(){
+					<?php echo self::gdpr_consent_cookie_js_preamble(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+
+					var _gdpr_ads = _gdpr_state('advanced'), _gdpr_strict = _gdpr_state('strict');
+					var _gdpr_consent = {
+						'ad_storage': _gdpr_ads,
+						'ad_user_data': _gdpr_ads,
+						'ad_personalization': _gdpr_ads,
+						'analytics_storage': _gdpr_state('thirdparty'),
+						'personalization_storage': _gdpr_state('preference'),
+						'security_storage': _gdpr_strict,
+						'functionality_storage': _gdpr_strict
+					};
+					<?php if ( $wait_for_update_ms > 0 ) : ?>
+					if ( ! _gdpr_has ) {
+						_gdpr_consent['wait_for_update'] = <?php echo $wait_for_update_ms; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>;
+					}
+					<?php endif; ?>
+					gtag('consent', 'default', _gdpr_consent);
+				})();
+			</script>
+			<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
+		<?php
+		self::gdpr_render_google_tag_loader( $tag_id );
+	}
+
+	/**
+	 * Prints the loader for the ID entered in a Google Tag Manager integration.
+	 *
+	 * The GTM fields ask for a container ID but have always accepted any ID, and
+	 * sites routinely enter a Google tag ID there instead (G-, GT-, AW-, DC-).
+	 * Google does not support loading those through gtm.js: from 2 October 2026
+	 * gtm.js initialises on load and ignores gtag('config'). So only a GTM-
+	 * container gets the GTM snippet; any other ID gets the standard gtag.js one.
+	 *
+	 * Both loaders read the consent state already queued in the dataLayer, so this
+	 * must be printed after any gtag('consent', 'default') call.
+	 *
+	 * @param string $tag_id       GTM container ID or Google tag ID.
+	 * @param string $script_attrs Extra attributes for the script tags. Literal markup, never user input.
+	 * @return void
+	 */
+	private static function gdpr_render_google_tag_loader( $tag_id, $script_attrs = '' ) {
+		// The ID lands inside a JS string - see gdpr_render_gtm_consent_default() for
+		// why it is constrained rather than only escaped.
+		$tag_id = preg_replace( '/[^A-Za-z0-9_-]/', '', trim( $tag_id ) );
+
+		if ( ! $tag_id ) :
+			return;
+		endif;
+
+		$script_attrs = $script_attrs ? ' ' . $script_attrs : '';
+		?>
+			<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript, WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
+			<?php if ( self::gdpr_is_gtm_container_id( $tag_id ) ) : ?>
+			<!-- Google Tag Manager -->
+			<script<?php echo $script_attrs; ?>>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+			new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+			j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+			'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+			})(window,document,'script','dataLayer','<?php echo esc_js( $tag_id ); ?>');</script>
+			<!-- End Google Tag Manager -->
+			<?php else : ?>
+			<!-- Google tag (gtag.js) -->
+			<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr( $tag_id ); ?>"<?php echo $script_attrs; ?>></script>
+			<script<?php echo $script_attrs; ?>>
+				window.dataLayer = window.dataLayer || [];
+				function gtag(){dataLayer.push(arguments);}
+				gtag('js', new Date());
+				gtag('config', '<?php echo esc_js( $tag_id ); ?>');
+			</script>
+			<!-- End Google tag (gtag.js) -->
+			<?php endif; ?>
+			<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript, WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>
+		<?php
+	}
+
+	/**
+	 * Whether an ID is a GTM container (GTM-XXXXXX) rather than a Google tag ID.
+	 *
+	 * @param string $tag_id Tag ID as entered in the integration settings.
+	 * @return bool
+	 */
+	private static function gdpr_is_gtm_container_id( $tag_id ) {
+		return 0 === stripos( trim( $tag_id ), 'GTM-' );
 	}
 
 	/**
@@ -424,61 +514,148 @@ class Moove_GDPR_Content {
 	}
 
 	/**
-	 * Integration Extensions
+	 * Google Consent Mode v2 - consent update on acceptance.
+	 *
+	 * Counterpart to gdpr_google_consent_mode2_snippet(), which emits the
+	 * 'consent default' call in wp_head. Both halves MUST use the same category ->
+	 * signal mapping, or the plugin grants permissions the visitor was never asked
+	 * for:
+	 *
+	 *   strict      -> functionality_storage, security_storage
+	 *   thirdparty  -> analytics_storage  (GA4 / GTM analytics tags)
+	 *   advanced    -> ad_storage, ad_user_data, ad_personalization
+	 *   preference  -> personalization_storage
+	 *
+	 * The mapping is fixed by Consent Mode semantics, so - as in the wp_head half -
+	 * the module's own 'cookie_cat' assignment is deliberately not consulted here.
+	 * It only ever decided which cache bucket the snippet landed in, which is what
+	 * previously made a single accepted category grant all seven signals.
+	 *
+	 * State is resolved in the browser rather than rendered by PHP: this markup is
+	 * cached per category and each bucket is served to whoever accepted that one
+	 * category, while the payload has to describe every category. See
+	 * gdpr_consent_cookie_js_preamble().
+	 *
+	 * Injected into every gated bucket, because the visitor may have accepted any
+	 * subset of them and only the accepted buckets are delivered. Running more than
+	 * once would be harmless (each copy reports the same resolved state) but would
+	 * duplicate the 'cookie_consent_update' event and double-fire any GTM tag bound
+	 * to it, so the first copy to execute claims a window flag and the rest return.
+	 *
+	 * 'strict' is excluded on purpose: the AJAX delivery path never returns that
+	 * bucket, and the static path can inject it before the visitor has decided
+	 * anything (the "enabled on first visit" default). A visitor who accepts
+	 * nothing but strict therefore gets no update at all - correct, since the
+	 * wp_head defaults already describe that state.
+	 *
+	 * Withdrawal needs no counterpart - the plugin reloads the page on revoke and
+	 * the wp_head snippet then emits the denied state.
 	 *
 	 * @param array $cache_array Cache array.
 	 * @param array $_gdin_module Integration Module.
 	 */
 	public static function gdpr_insert_integration_gtmc2_snippet( $cache_array, $_gdin_module ) {
-		if ( isset( $_gdin_module['tacking_id'] ) && $_gdin_module['tacking_id'] && intval( $_gdin_module['cookie_cat'] ) ) :
-			$cookie_cat_n = '';
-			switch ( intval( $_gdin_module['cookie_cat'] ) ) {
-				case 2:
-					$cookie_cat_n = 'thirdparty';
-					break;
-				case 3:
-					$cookie_cat_n = 'advanced';
-					break;
-				case 4:
-					$cookie_cat_n = 'performance';
-					break;
-				case 5:
-					$cookie_cat_n = 'preference';
-					break;
-				default:
-					// code...
-					break;
-			}
+		if ( ! isset( $_gdin_module['tacking_id'] ) || ! $_gdin_module['tacking_id'] ) :
+			return $cache_array;
+		endif;
 
-			if ( $cookie_cat_n ) :
-				ob_start();
-				?>
-				<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
-				<script>
-					gtag('consent', 'update', {
-					'ad_storage': 'granted',
-					'ad_user_data': 'granted',
-					'ad_personalization': 'granted',
-					'analytics_storage': 'granted',
-					'personalization_storage': 'granted',
-						'security_storage': 'granted',
-						'functionality_storage': 'granted',
+		if ( defined( 'gdpr_i_gtmc2_h' ) ) :
+			return $cache_array;
+		endif;
+
+		ob_start();
+		?>
+		<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
+		<script data-type="gdpr-integration">
+			(function(){
+				// gtag() is defined by the wp_head half; if that did not run there is
+				// no consent state to update. Bail before claiming the flag so a later
+				// copy can still succeed.
+				if ( window._gdpr_gtmc2_updated || typeof gtag !== 'function' ) { return; }
+
+				<?php echo self::gdpr_consent_cookie_js_preamble(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+
+				// No stored decision means the banner has not been answered yet. Leave
+				// the wp_head defaults alone.
+				if ( ! _gdpr_has ) { return; }
+
+				window._gdpr_gtmc2_updated = true;
+
+				var _gdpr_ads = _gdpr_state('advanced'), _gdpr_strict = _gdpr_state('strict');
+
+				gtag('consent', 'update', {
+					'ad_storage': _gdpr_ads,
+					'ad_user_data': _gdpr_ads,
+					'ad_personalization': _gdpr_ads,
+					'analytics_storage': _gdpr_state('thirdparty'),
+					'personalization_storage': _gdpr_state('preference'),
+					'security_storage': _gdpr_strict,
+					'functionality_storage': _gdpr_strict
 				});
 
-				dataLayer.push({
+				window.dataLayer = window.dataLayer || [];
+				window.dataLayer.push({
 					'event': 'cookie_consent_update'
-					});
-				</script>	
-				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
-				<?php
-				if ( ! defined( 'gdpr_i_gtmc2_h' ) ) :
-					$cache_array[ $cookie_cat_n ]['header'] .= ob_get_clean();
-					define( 'gdpr_i_gtmc2_h', true );
-				else :
-					ob_end_clean();
-				endif;
+				});
+			})();
+		</script>
+		<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
+		<?php
+		$gtmc2_snippet = ob_get_clean();
+
+		/*
+		 * Target the gated categories explicitly rather than iterating whatever
+		 * happens to be in $cache_array. The premium 'performance' and 'preference'
+		 * buckets are appended by the add-on AFTER the per-module snippet filters
+		 * have already run (see gdpr_extend_integration_snippets_lsi), so a loop
+		 * over existing keys can never reach them - the visitor would accept
+		 * Preferences and get no personalization_storage grant.
+		 *
+		 * Buckets are created when missing; the add-on appends to them with .= and
+		 * only initialises them when unset, so pre-creating here is safe.
+		 */
+		$gated_buckets = apply_filters(
+			'gdpr_cc_gtmc2_update_buckets',
+			array(
+				'thirdparty' => 'moove_gdpr_third_party_cookies_enable',
+				'advanced'   => 'moove_gdpr_advanced_cookies_enable',
+				'performance' => 'moove_gdpr_performance_ccat_enable',
+				'preference' => 'moove_gdpr_preference_ccat_enable',
+			)
+		);
+
+		$gdpr_default_content = new Moove_GDPR_Content();
+		$gdpr_options         = get_option( $gdpr_default_content->moove_gdpr_get_option_name() );
+
+		$injected = false;
+		foreach ( $gated_buckets as $_bucket_key => $_enable_key ) :
+			// Skip categories the site has switched off, so free installs do not
+			// carry empty premium buckets around in the script cache.
+			$enabled = ! $_enable_key || ( isset( $gdpr_options[ $_enable_key ] ) && 1 === intval( $gdpr_options[ $_enable_key ] ) );
+			if ( ! $enabled && ! isset( $cache_array[ $_bucket_key ] ) ) :
+				continue;
 			endif;
+
+			if ( ! isset( $cache_array[ $_bucket_key ] ) || ! is_array( $cache_array[ $_bucket_key ] ) ) :
+				$cache_array[ $_bucket_key ] = array(
+					'header' => '',
+					'body'   => '',
+					'footer' => '',
+				);
+			endif;
+
+			if ( ! isset( $cache_array[ $_bucket_key ]['header'] ) ) :
+				$cache_array[ $_bucket_key ]['header'] = '';
+			endif;
+
+			$cache_array[ $_bucket_key ]['header'] .= $gtmc2_snippet;
+			$injected                               = true;
+		endforeach;
+
+		if ( $injected ) :
+			define( 'gdpr_i_gtmc2_h', true );
 		endif;
+
 		return $cache_array;
 	}
 
