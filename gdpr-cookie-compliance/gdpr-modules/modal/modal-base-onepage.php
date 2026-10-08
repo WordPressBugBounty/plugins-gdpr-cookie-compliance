@@ -25,7 +25,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div class="moove-gdpr-modal-right-content">
 			<div class="moove-gdpr-modal-title"> 
 			<div>
-				<h2 class="tab-title"><?php echo esc_attr( $content->modal_title ); ?></h2>
+				<?php // Not an <h2>: role="heading" keeps this a heading for screen readers without adding H2s to every page's SEO outline. ?>
+				<div class="tab-title" role="heading" aria-level="2"><?php echo esc_attr( $content->modal_title ); ?></div>
 			</div>
 			<?php echo gdpr_get_module( 'company-logo' ); // phpcs:ignore ?>
 			</div>

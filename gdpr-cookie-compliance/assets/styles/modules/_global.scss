@@ -360,9 +360,11 @@ body.gdpr-no-icons {
 	font-family: 'Nunito', sans-serif;
   content-visibility: hidden;
 
-	// Section titles are real headings so screen reader users can navigate by them. Themes
-	// style headings heavily, so reset them to behave like the spans they replaced; the
-	// rules further down then apply the plugin's own typography.
+	// Section titles are `div[role="heading"]`: screen reader users can navigate by them, but
+	// SEO crawlers don't count them as H2s on every page. 5.2.0 shipped them as real <h2>s,
+	// which theme template overrides may still use; themes style headings heavily, so reset
+	// those to behave like the spans they replaced. The rules further down then apply the
+	// plugin's own typography to every variant (div/h2/h3/span).
 	h2.tab-title {
 		margin: 0;
 		padding: 0;
@@ -379,6 +381,7 @@ body.gdpr-no-icons {
 		color: inherit;
 	}
 
+	div.tab-title,
 	h2.tab-title,
 	span.tab-title {
 		display: block;
@@ -654,6 +657,7 @@ body.gdpr-no-icons {
             }
 					}
 				}
+				div.tab-title,
 				h2.tab-title,
 				h3.tab-title,
 				span.tab-title {
@@ -765,6 +769,7 @@ body.gdpr-no-icons {
 			color: #000;
 		}
 		.moove-gdpr-tab-content.moove-gdpr-no-modal-title {
+			.moove-gdpr-tab-main div.tab-title,
 			.moove-gdpr-tab-main h2.tab-title,
 			.moove-gdpr-tab-main h3.tab-title,
 			.moove-gdpr-tab-main span.tab-title {
@@ -772,6 +777,7 @@ body.gdpr-no-icons {
 			}
 		}
 		.moove-gdpr-tab-main {
+			div.tab-title,
 			h2.tab-title,
 			h3.tab-title,
 			span.tab-title {
@@ -1787,6 +1793,7 @@ body.gdpr-no-icons {
 					}
 				}
 			}
+			div.tab-title,
 			h2.tab-title,
 			h3.tab-title,
 			span.tab-title {
@@ -1939,6 +1946,7 @@ body.gdpr-no-icons {
 			}
       
 			.moove-gdpr-tab-main {
+				div.tab-title,
 				h2.tab-title,
 				h3.tab-title,
 				span.tab-title {
@@ -2105,6 +2113,7 @@ body.gdpr-no-icons {
 				padding-top: 30px;
 				min-height: 75px;
 		}
+		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main div.tab-title,
 		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main h2.tab-title,
 		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main h3.tab-title,
 		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main span.tab-title {
@@ -2198,6 +2207,7 @@ body.gdpr-no-icons {
 				margin-left: 15px;
 				margin-left: 5vw;
 		}
+		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main div.tab-title,
 		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main h2.tab-title,
 		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main h3.tab-title,
 		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main span.tab-title {

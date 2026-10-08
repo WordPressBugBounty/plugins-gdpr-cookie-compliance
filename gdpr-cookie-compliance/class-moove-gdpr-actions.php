@@ -674,6 +674,7 @@ class Moove_GDPR_Actions {
 		// Custom Font Weights.
 		if ( isset( $gdpr_options['moove_gdpr_plugin_font_type'] ) && '1' !== $gdpr_options['moove_gdpr_plugin_font_type'] || 'inherit' !== $custom_font_weight ) :
 			?>
+				#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main div.tab-title,
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main h2.tab-title,
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main h3.tab-title, 
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main span.tab-title,
@@ -697,6 +698,7 @@ class Moove_GDPR_Actions {
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main .moove-gdpr-tab-main-content h5, 
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main .moove-gdpr-tab-main-content h6,
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content.moove_gdpr_modal_theme_v2 .moove-gdpr-modal-title .tab-title,
+				#moove_gdpr_cookie_modal .moove-gdpr-modal-content.moove_gdpr_modal_theme_v2 .moove-gdpr-tab-main div.tab-title,
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content.moove_gdpr_modal_theme_v2 .moove-gdpr-tab-main h2.tab-title,
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content.moove_gdpr_modal_theme_v2 .moove-gdpr-tab-main h3.tab-title, 
 				#moove_gdpr_cookie_modal .moove-gdpr-modal-content.moove_gdpr_modal_theme_v2 .moove-gdpr-tab-main span.tab-title,
