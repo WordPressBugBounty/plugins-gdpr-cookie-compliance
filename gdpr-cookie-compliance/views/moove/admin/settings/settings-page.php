@@ -59,7 +59,16 @@ $wpml_lang     = $gdpr_default_content->moove_gdpr_get_wpml_lang( 'label' );
 <div class="wrap moove-clearfix <?php echo $show_tab_nav ? 'gdpr-show-submenu' : 'gdpr-hide-submenu'; ?>" id="moove_form_checker_wrap">
 	<h1></h1>
 	<div id="moove-gdpr-setting-error-settings_updated" class="updated settings-error notice is-dismissible gdpr-cc-notice" style="display:none;">
-		<p><strong><?php esc_html_e( 'Settings saved.', 'gdpr-cookie-compliance' ); ?></strong></p>
+		<?php $gdpr_purged_caches = class_exists( 'Moove_GDPR_Cache_Purge' ) && Moove_GDPR_Cache_Purge::is_enabled() ? array_keys( Moove_GDPR_Cache_Purge::get_caches() ) : array(); ?>
+		<p>
+			<strong><?php esc_html_e( 'Settings saved.', 'gdpr-cookie-compliance' ); ?></strong>
+			<?php if ( $gdpr_purged_caches ) : ?>
+				<?php /* translators: %s: caching plugin names, e.g. "WP Rocket and Autoptimize" */ ?>
+				<?php echo esc_html( sprintf( _n( 'The %s cache was cleared so visitors see the changes.', 'The %s caches were cleared so visitors see the changes.', count( $gdpr_purged_caches ), 'gdpr-cookie-compliance' ), wp_sprintf_l( '%l', $gdpr_purged_caches ) ) ); ?>
+			<?php else : ?>
+				<?php esc_html_e( 'If your site uses page caching, clear the cache so visitors see the changes.', 'gdpr-cookie-compliance' ); ?>
+			<?php endif; ?>
+		</p>
 		<button type="button" class="notice-dismiss">
 			<span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', 'gdpr-cookie-compliance' ); ?></span>
 		</button>

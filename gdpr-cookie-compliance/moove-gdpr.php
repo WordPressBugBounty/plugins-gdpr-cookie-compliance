@@ -4,7 +4,7 @@
  *  Plugin Name: GDPR Cookie Compliance
  *  Plugin URI: https://wordpress.org/plugins/gdpr-cookie-compliance/
  *  Description: Our plugin is useful in preparing your site for the following data protection and privacy regulations: GDPR, CCPA, PIPEDA, AAP, LGPD and others.
- *  Version: 5.2.2
+ *  Version: 5.3.0
  *  Author: Moove Agency
  *  Domain Path: /languages
  *  Author URI: https://www.mooveagency.com
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 
-define( 'MOOVE_GDPR_VERSION', '5.2.2' );
+define( 'MOOVE_GDPR_VERSION', '5.3.0' );
 define( 'MOOVE_GDPR_PLUGIN_FILE', __FILE__ );
 if ( ! defined( 'MOOVE_SHOP_URL' ) ) :
 	define( 'MOOVE_SHOP_URL', 'https://shop.mooveagency.com' );
@@ -150,6 +150,7 @@ function gdpr_cookie_compliance_load_libs() {
 		include_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . 'class-moove-gdpr-controller.php';
 		include_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . 'class-moove-gdpr-license-manager.php';
 		include_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . 'class-moove-gdpr-review.php';
+		include_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . 'class-moove-gdpr-cache-purge.php';
 
 		/**
 		 * Custom Functions

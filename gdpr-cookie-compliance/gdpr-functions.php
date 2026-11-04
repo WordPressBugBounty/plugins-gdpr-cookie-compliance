@@ -608,6 +608,50 @@ function gdpr_get_module( $module = '' ) {
 	return $response;
 }
 
+if ( ! function_exists( 'gdpr_get_tabpanel_attributes' ) ) :
+	/**
+	 * Tab panel attributes for a modal content section
+	 *
+	 * Only the tabbed layout (v1) shows the sections as tab panels; the one-page layout (v2)
+	 * shows every section at once. The script re-applies these when the modal opens, because
+	 * the narrow-viewport accordion needs different roles, but the server markup must pair the
+	 * role="tab" buttons with panels too, or HTML validators report the tab list as broken.
+	 *
+	 * @param string $panel_id Panel ID, matching the tab button's aria-controls.
+	 */
+	function gdpr_get_tabpanel_attributes( $panel_id ) {
+		$gdpr_default_content = new Moove_GDPR_Content();
+		$modal_options        = get_option( $gdpr_default_content->moove_gdpr_get_option_name() );
+		$layout               = isset( $modal_options['moove_gdpr_plugin_layout'] ) ? $modal_options['moove_gdpr_plugin_layout'] : 'v1';
+		if ( 'v1' !== $layout ) :
+			return '';
+		endif;
+		return 'role="tabpanel" tabindex="0" aria-labelledby="gdpr-tab-' . esc_attr( $panel_id ) . '"';
+	}
+endif;
+
+if ( ! function_exists( 'gdpr_sanitize_css_font_family' ) ) :
+	/**
+	 * Sanitises a font-family value for output inside a <style> element
+	 *
+	 * The value can't go through esc_attr(): browsers don't decode HTML entities inside <style>,
+	 * so 'Nunito' reaches the CSS parser as &#039;Nunito&#039; and the declaration is dropped.
+	 * Only what a font list needs is kept (names, quotes, commas, var() and !important), so the
+	 * value can't end the declaration, the rule or the <style> element.
+	 *
+	 * @param string $font_family Font family.
+	 */
+	function gdpr_sanitize_css_font_family( $font_family ) {
+		$font_family = (string) preg_replace( '/[^\p{L}\p{N}\s,\'"()!._-]/u', '', (string) $font_family );
+		// An unclosed string or var( would swallow every rule after it in the inline stylesheet.
+		if ( substr_count( $font_family, "'" ) % 2 || substr_count( $font_family, '"' ) % 2 || substr_count( $font_family, '(' ) !== substr_count( $font_family, ')' ) ) :
+			$font_family = str_replace( array( "'", '"', '(', ')' ), '', $font_family );
+		endif;
+		$font_family = trim( preg_replace( '/\s+/u', ' ', $font_family ) );
+		return $font_family ? $font_family : "'Nunito', sans-serif";
+	}
+endif;
+
 
 if ( ! function_exists( 'gdpr_cookie_is_accepted' ) ) :
 	/**

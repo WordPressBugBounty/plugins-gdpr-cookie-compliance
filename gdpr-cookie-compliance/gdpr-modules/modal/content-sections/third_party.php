@@ -5,7 +5,7 @@
 ?>
 
 <?php if ( $content->show ) : ?>
-  <div id="third_party_cookies" class="moove-gdpr-tab-main" <?php echo $content->visibility; ?>>
+  <div id="third_party_cookies" class="moove-gdpr-tab-main" <?php echo $content->visibility; ?> <?php echo gdpr_get_tabpanel_attributes( 'third_party_cookies' ); // phpcs:ignore ?>>
     <?php // Not an <h2>: role="heading" keeps this a heading for screen readers without adding H2s to every page's SEO outline. ?>
     <div class="tab-title" role="heading" aria-level="2"><span class="gdpr-tab-title-text"><?php echo esc_attr( $content->tab_title ); ?></span></div>
     <div class="moove-gdpr-tab-main-content">

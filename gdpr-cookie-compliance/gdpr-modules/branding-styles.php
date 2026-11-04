@@ -25,6 +25,6 @@ echo $moove_gdpr_cnt->get_minified_styles( // phpcs:ignore
 	esc_attr( $button_bg ),
 	esc_attr( $button_hover_bg ),
 	esc_attr( $button_font ),
-	esc_attr( $font_family )
+	$font_family // Sanitised for CSS in get_minified_styles(); esc_attr() entities are not decoded inside <style>.
 ); // phpcs:ignore
 

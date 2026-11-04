@@ -205,6 +205,9 @@ class Moove_GDPR_Controller {
 	/**
 	 * Inline styles based on the colours selected in the options page
 	 *
+	 * The rules that use these colours are static, in assets/styles/modules/_branding.scss
+	 * (compiled into the main stylesheet). Only the values are printed inline, as custom properties.
+	 *
 	 * @param string $primary_colour Primary Color.
 	 * @param string $secondary_colour Secondary Color.
 	 * @param string $button_bg Button Background Color.
@@ -218,123 +221,14 @@ class Moove_GDPR_Controller {
 		#moove_gdpr_cookie_modal,
 		#moove_gdpr_cookie_info_bar,
 		.gdpr_cookie_settings_shortcode_content {
-			font-family: <?php echo esc_attr( $font_family ); ?>;
+			font-family: <?php echo gdpr_sanitize_css_font_family( $font_family ); // phpcs:ignore ?>;
 		}
-		#moove_gdpr_save_popup_settings_button {
-			background-color: <?php echo esc_attr( $button_bg ); ?>;
-			color: <?php echo esc_attr( $button_font ); ?>;
+		:root {
+			--moove-gdpr-primary-colour: <?php echo esc_attr( $primary_colour ); ?>;
+			--moove-gdpr-button-bg: <?php echo esc_attr( $button_bg ); ?>;
+			--moove-gdpr-button-hover-bg: <?php echo esc_attr( $button_hover_bg ); ?>;
+			--moove-gdpr-button-font: <?php echo esc_attr( $button_font ); ?>;
 		}
-		#moove_gdpr_save_popup_settings_button:hover {
-			background-color: <?php echo esc_attr( $button_hover_bg ); ?>;
-		}
-
-		#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton,
-		#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton {
-			background-color: <?php echo esc_attr( $primary_colour ); ?>;
-		}
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-footer-content .moove-gdpr-button-holder a.mgbutton,
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-footer-content .moove-gdpr-button-holder button.mgbutton,
-		.gdpr_cookie_settings_shortcode_content .gdpr-shr-button.button-green,
-		.gdpr-blocked-recaptcha .gdpr-shr-button.button-green {
-			background-color: <?php echo esc_attr( $primary_colour ); ?>;
-			border-color: <?php echo esc_attr( $primary_colour ); ?>;
-		}
-
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-footer-content .moove-gdpr-button-holder a.mgbutton:hover,
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-footer-content .moove-gdpr-button-holder button.mgbutton:hover,
-		.gdpr_cookie_settings_shortcode_content .gdpr-shr-button.button-green:hover,
-		.gdpr-blocked-recaptcha .gdpr-shr-button.button-green:hover {
-			background-color: #fff;
-			color: <?php echo esc_attr( $primary_colour ); ?>;
-		}
-
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-close i, 
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-close span.gdpr-icon {
-		background-color: <?php echo esc_attr( $primary_colour ); ?>;
-		border: 1px solid <?php echo esc_attr( $primary_colour ); ?>;
-		}
-
-		#moove_gdpr_cookie_info_bar span.moove-gdpr-infobar-allow-all.focus-g,
-		#moove_gdpr_cookie_info_bar span.moove-gdpr-infobar-allow-all:focus,
-		#moove_gdpr_cookie_info_bar button.moove-gdpr-infobar-allow-all.focus-g,
-		#moove_gdpr_cookie_info_bar button.moove-gdpr-infobar-allow-all:focus,
-		#moove_gdpr_cookie_info_bar span.moove-gdpr-infobar-reject-btn.focus-g,
-		#moove_gdpr_cookie_info_bar span.moove-gdpr-infobar-reject-btn:focus,
-		#moove_gdpr_cookie_info_bar button.moove-gdpr-infobar-reject-btn.focus-g,
-		#moove_gdpr_cookie_info_bar button.moove-gdpr-infobar-reject-btn:focus,				
-		#moove_gdpr_cookie_info_bar span.change-settings-button.focus-g,
-		#moove_gdpr_cookie_info_bar span.change-settings-button:focus,
-		#moove_gdpr_cookie_info_bar button.change-settings-button.focus-g,
-		#moove_gdpr_cookie_info_bar button.change-settings-button:focus {
-		-webkit-box-shadow: 0 0 1px 3px <?php echo esc_attr( $primary_colour ); ?>;
-		-moz-box-shadow:    0 0 1px 3px <?php echo esc_attr( $primary_colour ); ?>;
-		box-shadow:         0 0 1px 3px <?php echo esc_attr( $primary_colour ); ?>;
-		}
-
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-close i:hover, 
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-close span.gdpr-icon:hover,
-		#moove_gdpr_cookie_info_bar span[data-href] > u.change-settings-button {
-			color: <?php echo esc_attr( $primary_colour ); ?>;
-		}
-
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-left-content #moove-gdpr-menu li.menu-item-selected a span.gdpr-icon, 
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-left-content #moove-gdpr-menu li.menu-item-selected button span.gdpr-icon {
-			color: inherit;
-		}
-
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-left-content #moove-gdpr-menu li a span.gdpr-icon, 
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-left-content #moove-gdpr-menu li button span.gdpr-icon {
-			color: inherit;
-		}
-
-		#moove_gdpr_cookie_modal .gdpr-acc-link {
-			line-height: 0;
-			font-size: 0;
-			color: transparent;
-			position: absolute;
-		}
-
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-close:hover i,
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-left-content #moove-gdpr-menu li a,
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-left-content #moove-gdpr-menu li button,
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-left-content #moove-gdpr-menu li button i,
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-modal-left-content #moove-gdpr-menu li a i,
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main .moove-gdpr-tab-main-content a:hover,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton:hover,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton:hover,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a:hover,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button:hover,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content span.change-settings-button:hover,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.change-settings-button:hover,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content u.change-settings-button:hover,
-		#moove_gdpr_cookie_info_bar span[data-href] > u.change-settings-button,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.focus-g,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.focus-g,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.focus-g,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.focus-g,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton:focus,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton:focus,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a:focus,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button:focus,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content span.change-settings-button.focus-g,
-		span.change-settings-button:focus,
-		button.change-settings-button.focus-g,
-		button.change-settings-button:focus,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content u.change-settings-button.focus-g,
-		#moove_gdpr_cookie_info_bar.moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content u.change-settings-button:focus {
-			color: <?php echo esc_attr( $primary_colour ); ?>;
-		}
-
-		#moove_gdpr_cookie_modal .moove-gdpr-branding.focus-g span,
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main a.focus-g,
-		#moove_gdpr_cookie_modal .moove-gdpr-modal-content .moove-gdpr-tab-main .gdpr-cd-details-toggle.focus-g {
-			color: <?php echo esc_attr( $primary_colour ); ?>;
-		}
-
-		#moove_gdpr_cookie_modal.gdpr_lightbox-hide {
-			display: none;
-		}
-
 		<?php
 		$input           = apply_filters( 'moove_gdpr_inline_styles', ob_get_clean(), $primary_colour, $secondary_colour, $button_bg, $button_hover_bg, $button_font );
 		$gdpr_controller = new Moove_GDPR_Controller();
@@ -513,6 +407,7 @@ class Moove_GDPR_Controller {
 
 		if ( true === $strict ) :
 			$transient_from_cache = apply_filters( 'gdpr_lss_extension', $transient_from_cache, $wp_lang );
+			$transient_from_cache = Moove_GDPR_Content::gdpr_append_gtmc2_consent_reassert( $transient_from_cache );
 			if ( $thirdparty ) :
 				if ( isset( $transient_from_cache['thirdparty'] ) ) :
 					$scripts_array['thirdparty']['header'] = $transient_from_cache['thirdparty']['header'];
@@ -699,6 +594,7 @@ class Moove_GDPR_Controller {
 
 		if ( true === $strict ) :
 			$transient_from_cache = apply_filters( 'gdpr_lss_extension', $transient_from_cache, $wp_lang );
+			$transient_from_cache = Moove_GDPR_Content::gdpr_append_gtmc2_consent_reassert( $transient_from_cache );
 
 			/*
 			 * Mirrors the category list handled by moove_gdpr_get_static_scripts().

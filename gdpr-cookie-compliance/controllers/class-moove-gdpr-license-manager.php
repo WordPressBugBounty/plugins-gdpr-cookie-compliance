@@ -102,37 +102,61 @@ class Moove_GDPR_License_Manager {
 			)
 		);
 
-		$body = wp_remote_retrieve_body( $response );
+		$status = is_wp_error( $response ) ? 0 : (int) wp_remote_retrieve_response_code( $response );
+		$data   = is_wp_error( $response ) ? false : json_decode( wp_remote_retrieve_body( $response ), true );
 
-		if ( is_wp_error( $response ) || ! $body || ! json_decode( $body, true ) ) {
-			$error = $response;
+		// The licence endpoint always answers 200, so a 5xx comes from the shop or its edge (e.g. Cloudflare 522), not from this site.
+		if ( $status >= 500 ) {
+			return $this->get_server_unavailable_response( $license_key, $action, $status );
+		}
+
+		if ( ! $data ) {
+			$error_message = is_wp_error( $response ) ? implode( '<br />', array_map( 'esc_html', $response->get_error_messages() ) ) : 'Unexpected response from the licence server (HTTP ' . $status . ').';
 			return array(
 				'valid'   => false,
 				'key'     => $license_key,
 				'message' => array(
 					'We cannot activate the licence due to errors with the setup of your website and/or your hosting.',
-					'<strong>' . ( is_object( $error ) && method_exists( $error, 'get_error_messages' ) ? implode( '<br />', $error->get_error_messages() ) : '' ) . '</strong>',
+					'<strong>' . $error_message . '</strong>',
 					'Once you resolve the issues, you will be able to activate the licence. You can also <a href="https://support.mooveagency.com/forum/gdpr-cookie-compliance/" target="_blank" class="error_admin_link">contact our support</a> if you need any additional assistance.',
 				),
 			);
-		} else {
-			$body = wp_remote_retrieve_body( $response );
-			if ( $body ) :
-				return json_decode( $body, true );
-			else :
-				$error = $response;
-				return array(
-					'valid'   => false,
-					'key'     => $license_key,
-					'message' => array(
-						'We cannot activate the licence due to errors with the setup of your website and/or your hosting.',
-						'<strong>' . ( method_exists( $error, 'get_error_messages' ) ? implode( '<br />', $error->get_error_messages() ) : '' ) . '</strong>',
-						'Once you resolve the issues, you will be able to activate the licence. You can also <a href="https://support.mooveagency.com/forum/gdpr-cookie-compliance/" target="_blank" class="error_admin_link">contact our support</a> if you need any additional assistance.',
-					),
-				);
-			endif;
-
 		}
+
+		return $data;
+	}
+
+	/**
+	 * Response used when the licence server itself is down
+	 *
+	 * @param string $license_key Licence key.
+	 * @param string $action Action.
+	 * @param int    $status HTTP status code.
+	 */
+	private function get_server_unavailable_response( $license_key, $action, $status ) {
+		$support_link = '<a href="https://support.mooveagency.com/forum/gdpr-cookie-compliance/" target="_blank" class="error_admin_link">contact our support</a>';
+
+		if ( 'activate' === $action ) :
+			$summary = 'We could not activate your licence because our licence server is temporarily unavailable. This is not caused by your website or your hosting.';
+			$advice  = 'Please try again later. If the problem persists, please ' . $support_link . '.';
+		elseif ( 'deactivate' === $action ) :
+			$summary = 'Your licence has been deactivated on this website, but our licence server is temporarily unavailable, so the activation could not be released on our side.';
+			$advice  = 'This key may still count towards your activation limit. If you need to use it on another website, please ' . $support_link . '.';
+		else :
+			$summary = 'We could not verify your licence because our licence server is temporarily unavailable. This is not caused by your website or your hosting.';
+			$advice  = 'Your licence remains active on this website and your premium features are not affected. Please check back later, or ' . $support_link . ' if the problem persists.';
+		endif;
+
+		return array(
+			'valid'   => false,
+			'key'     => $license_key,
+			'type'    => 'server_unavailable',
+			'message' => array(
+				$summary,
+				'<strong>Error code: HTTP ' . (int) $status . '</strong>',
+				$advice,
+			),
+		);
 	}
 
 	/**

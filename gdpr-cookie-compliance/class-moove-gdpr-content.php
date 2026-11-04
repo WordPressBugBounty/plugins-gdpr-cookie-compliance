@@ -290,6 +290,9 @@ class Moove_GDPR_Content {
 	 *   advanced    -> ad_storage, ad_user_data, ad_personalization
 	 *   preference  -> personalization_storage
 	 *
+	 * When the site has switched off thirdparty or advanced, the other one covers
+	 * its signals too - see gdpr_consent_signal_categories().
+	 *
 	 * The state is resolved in the browser rather than rendered by PHP: this
 	 * markup is served from the page cache, so baking one visitor's decision
 	 * into it would hand that decision to every subsequent visitor. See
@@ -322,6 +325,8 @@ class Moove_GDPR_Content {
 		// When enabled it only applies on first visit (no stored consent); for
 		// returning users the values are final.
 		$wait_for_update_ms = absint( apply_filters( 'gdpr_cc_gtm2_wait_for_update', 0 ) );
+		$consent_regions    = self::gdpr_consent_regions();
+		$signal_cats        = self::gdpr_consent_signal_categories();
 
 		?>
 			<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
@@ -332,12 +337,12 @@ class Moove_GDPR_Content {
 				(function(){
 					<?php echo self::gdpr_consent_cookie_js_preamble(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
-					var _gdpr_ads = _gdpr_state('advanced'), _gdpr_strict = _gdpr_state('strict');
+					var _gdpr_ads = _gdpr_state('<?php echo esc_js( $signal_cats['ads'] ); ?>'), _gdpr_strict = _gdpr_state('strict');
 					var _gdpr_consent = {
 						'ad_storage': _gdpr_ads,
 						'ad_user_data': _gdpr_ads,
 						'ad_personalization': _gdpr_ads,
-						'analytics_storage': _gdpr_state('thirdparty'),
+						'analytics_storage': _gdpr_state('<?php echo esc_js( $signal_cats['analytics'] ); ?>'),
 						'personalization_storage': _gdpr_state('preference'),
 						'security_storage': _gdpr_strict,
 						'functionality_storage': _gdpr_strict
@@ -345,6 +350,34 @@ class Moove_GDPR_Content {
 					<?php if ( $wait_for_update_ms > 0 ) : ?>
 					if ( ! _gdpr_has ) {
 						_gdpr_consent['wait_for_update'] = <?php echo $wait_for_update_ms; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>;
+					}
+					<?php endif; ?>
+					<?php if ( $consent_regions ) : ?>
+					// Nothing decided and no location answer yet: Google's tag applies the geo
+					// location rules by region until the plugin's own lookup answers. A GPC
+					// signal keeps everything denied. See gdpr_consent_regions().
+					var _gdpr_geo_known = false;
+					try { _gdpr_geo_known = /(?:^|;\s*)moove_gdpr_geo_cache=/.test( document.cookie ); } catch ( e ) {}
+					if ( ! _gdpr_has && ! _gdpr_geo_known && ! navigator.globalPrivacyControl ) {
+						var _gdpr_all = function( v ) {
+							var c = {};
+							for ( var k in _gdpr_consent ) { if ( 'wait_for_update' !== k ) { c[ k ] = v; } }
+							return c;
+						};
+						var _gdpr_outside = _gdpr_all( '<?php echo esc_js( $consent_regions['default'] ); ?>' );
+						var _gdpr_inside  = _gdpr_all( '<?php echo esc_js( $consent_regions['inside'] ); ?>' );
+						_gdpr_inside['region'] = <?php echo wp_json_encode( $consent_regions['regions'] ); ?>;
+						if ( _gdpr_consent['wait_for_update'] ) {
+							_gdpr_outside['wait_for_update'] = _gdpr_inside['wait_for_update'] = _gdpr_consent['wait_for_update'];
+						}
+						gtag('consent', 'default', _gdpr_outside);
+						gtag('consent', 'default', _gdpr_inside);
+						// Google and the plugin can place a visitor differently. main.js calls this
+						// when its own lookup shows the banner, withdrawing a granted default.
+						window.gdpr_cc_gtm2_geo_banner = function() {
+							gtag('consent', 'update', _gdpr_all( 'denied' ));
+						};
+						return;
 					}
 					<?php endif; ?>
 					gtag('consent', 'default', _gdpr_consent);
@@ -430,21 +463,149 @@ class Moove_GDPR_Content {
 	 * wp_head, before any tag has loaded, so nothing is lost by deferring it.
 	 *
 	 * Defines in the enclosing scope:
-	 *   _gdpr_has          - bool, whether a stored decision exists at all.
+	 *   _gdpr_has          - bool, whether a decision exists at all.
 	 *   _gdpr_state( key ) - 'granted' | 'denied' for a cookie category key.
 	 *
-	 * Categories are only ever 'granted' when a decision has actually been stored;
-	 * the admin's "enable on first visit" defaults deliberately do not apply here.
+	 * Categories are only ever 'granted' when a decision exists; the admin's
+	 * "enable on first visit" defaults deliberately do not apply here.
+	 *
+	 * A decision is the visitor's stored choice or, with the premium add-on's geo
+	 * location on, the geo answer that hides the banner from them. Those visitors
+	 * are never asked, and main.js loads whatever categories that answer enables,
+	 * so the signals have to follow it or Consent Mode stays denied next to tags
+	 * that are already running. main.js keeps the answer in the
+	 * moove_gdpr_geo_cache session cookie once the location is known, so the
+	 * first page of a session starts denied and is updated when the gated
+	 * categories load. A choice the visitor makes through a settings link still
+	 * wins over the geo answer.
 	 *
 	 * @return string JavaScript, for embedding inside a <script> block.
 	 */
 	private static function gdpr_consent_cookie_js_preamble() {
 		// document.cookie throws in a sandboxed iframe without allow-same-origin;
 		// both reads fail closed to 'denied' rather than leaving consent unset.
-		return "var _gdpr_c = {}, _gdpr_m = null, _gdpr_has = false;\n"
+		$preamble = "var _gdpr_c = {}, _gdpr_m = null, _gdpr_has = false;\n"
 			. "\t\t\t\ttry { _gdpr_m = document.cookie.match(/(?:^|;\\s*)moove_gdpr_popup=([^;]*)/); _gdpr_has = !! _gdpr_m; } catch ( e ) {}\n"
-			. "\t\t\t\tif ( _gdpr_m ) { try { _gdpr_c = JSON.parse( decodeURIComponent( _gdpr_m[1] ) ) || {}; } catch ( e ) { _gdpr_c = {}; } }\n"
-			. "\t\t\t\tvar _gdpr_state = function( k ) { return _gdpr_has && parseInt( _gdpr_c[ k ], 10 ) === 1 ? 'granted' : 'denied'; };";
+			. "\t\t\t\tif ( _gdpr_m ) { try { _gdpr_c = JSON.parse( decodeURIComponent( _gdpr_m[1] ) ) || {}; } catch ( e ) { _gdpr_c = {}; } }\n";
+
+		// Only while geo location is on: the session cookie outlives the setting, and
+		// once it is off main.js ignores the cookie and shows the banner again.
+		// Version and shape must match gdpr_geo_cache_write() in main.js - a cookie
+		// of any other version is ignored there too. 'strict' is always on for these
+		// visitors, as in moove_gdpr_check_cookie().
+		if ( self::gdpr_geo_location_enabled() ) :
+			$preamble .= "\t\t\t\tif ( ! _gdpr_has ) { try {\n"
+				. "\t\t\t\t\tvar _gdpr_g = document.cookie.match(/(?:^|;\\s*)moove_gdpr_geo_cache=([^;]*)/);\n"
+				. "\t\t\t\t\t_gdpr_g = _gdpr_g ? JSON.parse( decodeURIComponent( _gdpr_g[1] ) ) : null;\n"
+				. "\t\t\t\t\tif ( _gdpr_g && _gdpr_g.v === 2 && _gdpr_g.display_cookie_banner === 'false' && _gdpr_g.enabled_default ) {\n"
+				. "\t\t\t\t\t\t_gdpr_g = _gdpr_g.enabled_default;\n"
+				. "\t\t\t\t\t\t_gdpr_c = { strict: 1, thirdparty: _gdpr_g.third_party, advanced: _gdpr_g.advanced, performance: _gdpr_g.performance, preference: _gdpr_g.preference };\n"
+				. "\t\t\t\t\t\t_gdpr_has = true;\n"
+				. "\t\t\t\t\t}\n"
+				. "\t\t\t\t} catch ( e ) {} }\n";
+		endif;
+
+		return $preamble . "\t\t\t\tvar _gdpr_state = function( k ) { return _gdpr_has && parseInt( _gdpr_c[ k ], 10 ) === 1 ? 'granted' : 'denied'; };";
+	}
+
+	/**
+	 * Whether the premium add-on's geo location rules decide who sees the banner.
+	 *
+	 * A site setting, not per-visitor state, so it is safe to bake into cached markup.
+	 *
+	 * @return bool
+	 */
+	private static function gdpr_geo_location_enabled() {
+		$gdpr_default_content = new Moove_GDPR_Content();
+		$gdpr_options         = get_option( $gdpr_default_content->moove_gdpr_get_option_name() );
+
+		return 'true' === apply_filters( 'gdpr_cc_geolocation_status', 'false', $gdpr_options );
+	}
+
+	/**
+	 * The cookie categories the analytics and ad consent signals follow on this site.
+	 *
+	 * Analytics signals follow 'thirdparty' and ad signals 'advanced' - unless the
+	 * site has switched that category off. Enabling the Consent Mode v2 integration
+	 * only switches on the category picked for it ('Analytics' by default), so many
+	 * sites have just one of the two. The missing category's value in the consent
+	 * cookie then depends on the button pressed: "Accept all" stores 1 for every
+	 * category, saving the settings stores 0 for one that has no switch. Visitors
+	 * who opted in to the same thing got different ad signals, and a GTM tag that
+	 * required ad_storage never fired for anyone who saved their settings. With one
+	 * of the two categories off, the other one stands for both, as it does in the
+	 * banner.
+	 *
+	 * A site setting, not per-visitor state, so it is safe to bake into cached
+	 * markup. Saving either category, or the integrations, purges the script cache.
+	 *
+	 * Also handed to main.js, which denies the signals of a withdrawn category in
+	 * the current page - see gdpr_stop_withdrawn_google_tags() there.
+	 *
+	 * @return array 'analytics' and 'ads', each a cookie category key.
+	 */
+	public static function gdpr_consent_signal_categories() {
+		$gdpr_default_content = new Moove_GDPR_Content();
+		$gdpr_options         = get_option( $gdpr_default_content->moove_gdpr_get_option_name() );
+
+		$third_party = isset( $gdpr_options['moove_gdpr_third_party_cookies_enable'] ) && 1 === intval( $gdpr_options['moove_gdpr_third_party_cookies_enable'] );
+		$advanced    = isset( $gdpr_options['moove_gdpr_advanced_cookies_enable'] ) && 1 === intval( $gdpr_options['moove_gdpr_advanced_cookies_enable'] );
+
+		return array(
+			'analytics' => $third_party || ! $advanced ? 'thirdparty' : 'advanced',
+			'ads'       => $advanced || ! $third_party ? 'advanced' : 'thirdparty',
+		);
+	}
+
+	/**
+	 * Region-specific Consent Mode defaults for the premium add-on's geo location rules.
+	 *
+	 * With geo location on, whether a visitor is shown the banner is only known once
+	 * the location request answers, seconds after Google's tag has started. Until then
+	 * every first-time visitor was 'denied', so visitors outside the targeted regions
+	 * were measured without cookies on their first page view. Google's tag can apply
+	 * the rules itself from the start, given the regions. The add-on provides them
+	 * through the gdpr_cc_gtm2_consent_regions filter:
+	 *
+	 *   array( 'default' => 'granted' | 'denied', 'regions' => array( 'US-CA', 'DE', ... ) )
+	 *
+	 * 'default' applies outside the listed regions; inside them it is the opposite.
+	 *
+	 * A site setting, not per-visitor state, so it is safe to bake into cached markup.
+	 *
+	 * @return array 'default', 'inside' and 'regions', or an empty array when not in use.
+	 */
+	private static function gdpr_consent_regions() {
+		if ( ! self::gdpr_geo_location_enabled() ) :
+			return array();
+		endif;
+
+		$gdpr_default_content = new Moove_GDPR_Content();
+		$gdpr_options         = get_option( $gdpr_default_content->moove_gdpr_get_option_name() );
+		$config               = apply_filters( 'gdpr_cc_gtm2_consent_regions', array(), $gdpr_options );
+
+		if ( ! is_array( $config ) || ! isset( $config['default'], $config['regions'] ) || ! is_array( $config['regions'] ) || empty( $config['regions'] ) ) :
+			return array();
+		endif;
+
+		if ( ! in_array( $config['default'], array( 'granted', 'denied' ), true ) ) :
+			return array();
+		endif;
+
+		// ISO 3166 country or subdivision codes only - they are printed into a script.
+		// One bad code disables the lot: dropping it from a 'denied' list would grant
+		// that region instead.
+		foreach ( $config['regions'] as $region ) :
+			if ( ! is_string( $region ) || ! preg_match( '/^[A-Z]{2}(-[A-Z0-9]{1,3})?$/', $region ) ) :
+				return array();
+			endif;
+		endforeach;
+
+		return array(
+			'default' => $config['default'],
+			'inside'  => 'granted' === $config['default'] ? 'denied' : 'granted',
+			'regions' => array_values( array_unique( $config['regions'] ) ),
+		);
 	}
 
 	/**
@@ -465,7 +626,8 @@ class Moove_GDPR_Content {
 	 *   analytics_Storage -> the category the module is assigned to on the
 	 *                        Integrations screen (Clarity is analytics tooling).
 	 *   ad_Storage        -> 'advanced', the plugin's advertising/targeting
-	 *                        category, matching the Consent Mode v2 mapping above.
+	 *                        category ('thirdparty' when the site has switched
+	 *                        it off), matching the Consent Mode v2 mapping above.
 	 *
 	 * @see https://learn.microsoft.com/en-us/clarity/setup-and-installation/clarity-consent-api-v2
 	 */
@@ -487,6 +649,8 @@ class Moove_GDPR_Content {
 			return;
 		endif;
 
+		$signal_cats = self::gdpr_consent_signal_categories();
+
 		?>
 		<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 		<!-- Microsoft Clarity -->
@@ -503,7 +667,7 @@ class Moove_GDPR_Content {
 				<?php echo self::gdpr_consent_cookie_js_preamble(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
 				window.clarity('consentv2', {
-					ad_Storage: _gdpr_state('advanced'),
+					ad_Storage: _gdpr_state('<?php echo esc_js( $signal_cats['ads'] ); ?>'),
 					analytics_Storage: _gdpr_state('<?php echo esc_js( $cookie_cat ); ?>')
 				});
 			})();
@@ -514,7 +678,8 @@ class Moove_GDPR_Content {
 	}
 
 	/**
-	 * Google Consent Mode v2 - consent update on acceptance.
+	 * Google Consent Mode v2 - consent update on acceptance, or once the geo
+	 * location answer hides the banner (see gdpr_consent_cookie_js_preamble()).
 	 *
 	 * Counterpart to gdpr_google_consent_mode2_snippet(), which emits the
 	 * 'consent default' call in wp_head. Both halves MUST use the same category ->
@@ -525,6 +690,9 @@ class Moove_GDPR_Content {
 	 *   thirdparty  -> analytics_storage  (GA4 / GTM analytics tags)
 	 *   advanced    -> ad_storage, ad_user_data, ad_personalization
 	 *   preference  -> personalization_storage
+	 *
+	 * When the site has switched off thirdparty or advanced, the other one covers
+	 * its signals too - see gdpr_consent_signal_categories().
 	 *
 	 * The mapping is fixed by Consent Mode semantics, so - as in the wp_head half -
 	 * the module's own 'cookie_cat' assignment is deliberately not consulted here.
@@ -537,10 +705,13 @@ class Moove_GDPR_Content {
 	 * gdpr_consent_cookie_js_preamble().
 	 *
 	 * Injected into every gated bucket, because the visitor may have accepted any
-	 * subset of them and only the accepted buckets are delivered. Running more than
-	 * once would be harmless (each copy reports the same resolved state) but would
-	 * duplicate the 'cookie_consent_update' event and double-fire any GTM tag bound
-	 * to it, so the first copy to execute claims a window flag and the rest return.
+	 * subset of them and only the accepted buckets are delivered. The copies report
+	 * the same resolved state, and repeating it would duplicate the
+	 * 'cookie_consent_update' event and double-fire any GTM tag bound to it, so a
+	 * copy only sends a state that differs from the last one sent. That is the first
+	 * copy on page load, and the newly accepted category's copy when the visitor
+	 * turns on more categories without a reload: the update and the event then go
+	 * out again, so the tags waiting for that consent fire in this page.
 	 *
 	 * 'strict' is excluded on purpose: the AJAX delivery path never returns that
 	 * bucket, and the static path can inject it before the visitor has decided
@@ -548,8 +719,10 @@ class Moove_GDPR_Content {
 	 * nothing but strict therefore gets no update at all - correct, since the
 	 * wp_head defaults already describe that state.
 	 *
-	 * Withdrawal needs no counterpart - the plugin reloads the page on revoke and
-	 * the wp_head snippet then emits the denied state.
+	 * Withdrawal is handled in main.js: before the page reloads, it denies the
+	 * withdrawn signals and switches Google Analytics off in the current page (see
+	 * gdpr_stop_withdrawn_google_tags()). The wp_head snippet of the reloaded page
+	 * then emits the denied state.
 	 *
 	 * @param array $cache_array Cache array.
 	 * @param array $_gdin_module Integration Module.
@@ -563,40 +736,40 @@ class Moove_GDPR_Content {
 			return $cache_array;
 		endif;
 
+		$signal_cats = self::gdpr_consent_signal_categories();
+
 		ob_start();
 		?>
 		<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
 		<script data-type="gdpr-integration">
 			(function(){
 				// gtag() is defined by the wp_head half; if that did not run there is
-				// no consent state to update. Bail before claiming the flag so a later
-				// copy can still succeed.
-				if ( window._gdpr_gtmc2_updated || typeof gtag !== 'function' ) { return; }
+				// no consent state to update.
+				if ( typeof gtag !== 'function' ) { return; }
 
 				<?php echo self::gdpr_consent_cookie_js_preamble(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
-				// No stored decision means the banner has not been answered yet. Leave
-				// the wp_head defaults alone.
+				// No decision - neither a stored choice nor a geo answer that hides the
+				// banner - means the banner has not been answered yet. Leave the
+				// wp_head defaults alone.
 				if ( ! _gdpr_has ) { return; }
 
-				window._gdpr_gtmc2_updated = true;
+				<?php echo self::gdpr_gtmc2_consent_state_js( $signal_cats ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
-				var _gdpr_ads = _gdpr_state('advanced'), _gdpr_strict = _gdpr_state('strict');
+				// Another copy already sent this state - see the docblock.
+				var _gdpr_sent = JSON.stringify( _gdpr_update );
+				if ( window._gdpr_gtmc2_updated === _gdpr_sent ) { return; }
+				window._gdpr_gtmc2_updated = _gdpr_sent;
 
-				gtag('consent', 'update', {
-					'ad_storage': _gdpr_ads,
-					'ad_user_data': _gdpr_ads,
-					'ad_personalization': _gdpr_ads,
-					'analytics_storage': _gdpr_state('thirdparty'),
-					'personalization_storage': _gdpr_state('preference'),
-					'security_storage': _gdpr_strict,
-					'functionality_storage': _gdpr_strict
-				});
+				gtag('consent', 'update', _gdpr_update);
 
 				window.dataLayer = window.dataLayer || [];
 				window.dataLayer.push({
 					'event': 'cookie_consent_update'
 				});
+
+				// Where the category scripts start - see gdpr_append_gtmc2_consent_reassert().
+				window._gdpr_gtmc2_dl = window.dataLayer.length;
 			})();
 		</script>
 		<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
@@ -648,8 +821,11 @@ class Moove_GDPR_Content {
 				$cache_array[ $_bucket_key ]['header'] = '';
 			endif;
 
-			$cache_array[ $_bucket_key ]['header'] .= $gtmc2_snippet;
-			$injected                               = true;
+			// Ahead of the category's own scripts, so tags injected with it (the GA4
+			// integration, pasted Google tags) see the updated state before their
+			// first hit rather than after it.
+			$cache_array[ $_bucket_key ]['header'] = $gtmc2_snippet . $cache_array[ $_bucket_key ]['header'];
+			$injected                              = true;
 		endforeach;
 
 		if ( $injected ) :
@@ -657,6 +833,104 @@ class Moove_GDPR_Content {
 		endif;
 
 		return $cache_array;
+	}
+
+	/**
+	 * The Consent Mode v2 update payload as _gdpr_update, shared by the update and
+	 * its re-assert so the category -> signal mapping exists once on this side.
+	 *
+	 * Expects _gdpr_state() in scope - see gdpr_consent_cookie_js_preamble().
+	 *
+	 * @param array $signal_cats See gdpr_consent_signal_categories().
+	 * @return string JavaScript, for embedding inside a <script> block.
+	 */
+	private static function gdpr_gtmc2_consent_state_js( $signal_cats ) {
+		ob_start();
+		?>
+var _gdpr_ads = _gdpr_state('<?php echo esc_js( $signal_cats['ads'] ); ?>'), _gdpr_strict = _gdpr_state('strict');
+				var _gdpr_update = {
+					'ad_storage': _gdpr_ads,
+					'ad_user_data': _gdpr_ads,
+					'ad_personalization': _gdpr_ads,
+					'analytics_storage': _gdpr_state('<?php echo esc_js( $signal_cats['analytics'] ); ?>'),
+					'personalization_storage': _gdpr_state('preference'),
+					'security_storage': _gdpr_strict,
+					'functionality_storage': _gdpr_strict
+				};
+		<?php
+		return trim( ob_get_clean() );
+	}
+
+	/**
+	 * Re-sends the Consent Mode v2 update at the end of every category that carries
+	 * it, when a script in that category sent a consent command of its own.
+	 *
+	 * The update is prepended to the categories (see
+	 * gdpr_insert_integration_gtmc2_snippet()), so the tags loaded with them see it
+	 * before their first hit. Scripts pasted into the category fields therefore run
+	 * after it, and sites paste their own gtag('consent', ...) calls there - often a
+	 * guide's "denied in the EU, granted everywhere else" block. 'region' only
+	 * applies to 'default', so that block's second, global 'update' granted every
+	 * signal for the rest of the page: accepting Analytics alone granted the ad
+	 * signals in the EU. Up to 5.2.2 the update was appended and had the last word;
+	 * this gives it back without losing the early update.
+	 *
+	 * Applied at delivery, after the add-on's language-specific scripts, so nothing
+	 * in the category runs after it. It does nothing unless a consent command was
+	 * pushed after the update. The state is read from the cookie again, so a choice
+	 * changed on the page is what gets sent, and there is no second
+	 * 'cookie_consent_update': tags bound to it have already fired.
+	 *
+	 * @param array $scripts Category scripts, keyed by category, each with header, body and footer.
+	 * @return array
+	 */
+	public static function gdpr_append_gtmc2_consent_reassert( $scripts ) {
+		if ( ! is_array( $scripts ) ) :
+			return $scripts;
+		endif;
+
+		$reassert = '';
+
+		foreach ( $scripts as $_cat => $_bucket ) :
+			// Only the categories the update was injected into - its flag is unique to it.
+			if ( ! is_array( $_bucket ) || ! isset( $_bucket['header'] ) || false === strpos( $_bucket['header'], '_gdpr_gtmc2_updated' ) ) :
+				continue;
+			endif;
+
+			if ( ! $reassert ) :
+				ob_start();
+				?>
+				<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
+				<script data-type="gdpr-integration">
+					(function(){
+						// Set by the update once it has run - see gdpr_insert_integration_gtmc2_snippet().
+						var _gdpr_dl = window.dataLayer, _gdpr_i = window._gdpr_gtmc2_dl, _gdpr_other = false;
+						if ( typeof _gdpr_i !== 'number' || ! _gdpr_dl || typeof gtag !== 'function' ) { return; }
+
+						for ( ; _gdpr_i < _gdpr_dl.length; _gdpr_i++ ) {
+							if ( _gdpr_dl[ _gdpr_i ] && 'consent' === _gdpr_dl[ _gdpr_i ][0] ) { _gdpr_other = true; break; }
+						}
+						if ( ! _gdpr_other ) { return; }
+
+						<?php echo self::gdpr_consent_cookie_js_preamble(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+
+						if ( ! _gdpr_has ) { return; }
+
+						<?php echo self::gdpr_gtmc2_consent_state_js( self::gdpr_consent_signal_categories() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+
+						gtag('consent', 'update', _gdpr_update);
+						window._gdpr_gtmc2_dl = _gdpr_dl.length;
+					})();
+				</script>
+				<?php /* phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
+				<?php
+				$reassert = ob_get_clean();
+			endif;
+
+			$scripts[ $_cat ]['footer'] = ( isset( $_bucket['footer'] ) ? $_bucket['footer'] : '' ) . $reassert;
+		endforeach;
+
+		return $scripts;
 	}
 
 	/**
@@ -687,6 +961,8 @@ class Moove_GDPR_Content {
 			return $cache_array;
 		endif;
 
+		$signal_cats = self::gdpr_consent_signal_categories();
+
 		ob_start();
 		?>
 		<?php /* phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript */ ?>
@@ -696,7 +972,7 @@ class Moove_GDPR_Content {
 				<?php echo self::gdpr_consent_cookie_js_preamble(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
 				window.clarity('consentv2', {
-					ad_Storage: _gdpr_state('advanced'),
+					ad_Storage: _gdpr_state('<?php echo esc_js( $signal_cats['ads'] ); ?>'),
 					analytics_Storage: _gdpr_state('<?php echo esc_js( $cookie_cat_n ); ?>')
 				});
 			})();
@@ -899,6 +1175,20 @@ class Moove_GDPR_Content {
 	 * @param array $_gdin_module Integration Module.
 	 */
 	public static function gdpr_insert_integration_gtm4wp_snippet( $cache_array, $_gdin_module ) {
+		// The Consent Mode v2 integration already loads this container on every page,
+		// in wp_head. Adding it to a cookie category as well loaded it twice once that
+		// category was accepted, and every tag in it fired twice.
+		if ( ! empty( $_gdin_module['tacking_id'] ) ) :
+			$gdpr_default_content = new Moove_GDPR_Content();
+			$gdpr_options         = get_option( $gdpr_default_content->moove_gdpr_get_option_name() );
+			$gdin_values          = isset( $gdpr_options['gdin_values'] ) ? json_decode( $gdpr_options['gdin_values'], true ) : array();
+			$gdin_modules         = gdpr_get_integration_modules( $gdpr_options, $gdin_values );
+
+			if ( ! empty( $gdin_modules['gtmc2']['status'] ) && ! empty( $gdin_modules['gtmc2']['tacking_id'] ) && 0 === strcasecmp( trim( $gdin_modules['gtmc2']['tacking_id'] ), trim( $_gdin_module['tacking_id'] ) ) ) :
+				return $cache_array;
+			endif;
+		endif;
+
 		if ( defined( 'GTM4WP_OPTIONS' ) && defined( 'GTM4WP_OPTION_GTM_PLACEMENT' ) && defined( 'GTM4WP_PLACEMENT_OFF' ) ) :
 			$storedoptions                 = (array) get_option( GTM4WP_OPTIONS );
 			$gtm4wp_container_code_written = false;
@@ -1227,6 +1517,10 @@ class Moove_GDPR_Content {
 	 */
 	public static function gdpr_licence_action_button( $response, $gdpr_key ) {
 		$type = isset( $response['type'] ) ? $response['type'] : false;
+		if ( 'server_unavailable' === $type && isset( $gdpr_key['activation'] ) ) :
+			// Licence is still active here, only the shop could not confirm it.
+			return;
+		endif;
 		if ( 'expired' === $type || 'activated' === $type || 'max_activation_reached' === $type ) :
 			if ( 'activated' !== $type ) :
 				?>
@@ -1277,6 +1571,10 @@ class Moove_GDPR_Content {
 	 */
 	public static function gdpr_licence_input_field( $response, $gdpr_key ) {
 		$type = isset( $response['type'] ) ? $response['type'] : false;
+		if ( 'server_unavailable' === $type && isset( $gdpr_key['activation'] ) ) :
+			// Licence is still active here, only the shop could not confirm it.
+			return;
+		endif;
 		if ( 'expired' === $type ) :
 			// LICENSE EXPIRED.
 			?>
@@ -1413,7 +1711,7 @@ class Moove_GDPR_Content {
 			<div class="gdpr-admin-alert gdpr-admin-alert-error">
 				<div class="gdpr-alert-content">        
 					<div class="gdpr-licence-key-wrap">
-						<p><?php esc_html_e( 'License key:', 'gdpr-cookie-compliance' ); ?>: 
+						<p><?php esc_html_e( 'License key:', 'gdpr-cookie-compliance' ); ?> 
 						<strong><?php echo esc_attr( apply_filters( 'gdpr_licence_key_visibility', isset( $response['key'] ) ? $response['key'] : ( isset( $gdpr_key['key'] ) ? $gdpr_key['key'] : $gdpr_key ) ) ); ?></strong>								
 						</p>
 					</div>
@@ -1430,7 +1728,7 @@ class Moove_GDPR_Content {
 			<div class="gdpr-admin-alert gdpr-admin-alert-success">    
 				<div class="gdpr-alert-content">
 					<div class="gdpr-licence-key-wrap">
-						<p><?php esc_html_e( 'License key:', 'gdpr-cookie-compliance' ); ?>: 
+						<p><?php esc_html_e( 'License key:', 'gdpr-cookie-compliance' ); ?> 
 						<strong><?php echo esc_attr( apply_filters( 'gdpr_licence_key_visibility', isset( $response['key'] ) ? $response['key'] : ( isset( $gdpr_key['key'] ) ? $gdpr_key['key'] : $gdpr_key ) ) ); ?></strong>								
 						</p>
 					</div>

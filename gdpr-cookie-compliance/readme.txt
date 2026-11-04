@@ -2,7 +2,7 @@
 Contributors: MooveAgency
 Donate link: https://www.mooveagency.com/wordpress-plugins/gdpr-cookie-compliance/
 Tags: GDPR, CCPA, DSGVO, cookie banner, cookie consent, cookie notice
-Stable tag: 5.2.2
+Stable tag: 5.3.0
 Requires at least: 4.5
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -256,6 +256,24 @@ The Brazilian General Data Protection Law (“Lei Geral de Proteção de Dados�
 31. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
 
 == Changelog ==
+= 5.3.0: 4 November 2026 =
+* Saving the settings now clears the cache of supported caching and optimisation plugins, so visitors see the changes straight away: WP Rocket, LiteSpeed Cache, NitroPack, Autoptimize, W3 Total Cache, WP Super Cache, WP Fastest Cache, WP-Optimize, Cache Enabler, SiteGround Speed Optimizer, Hummingbird, Breeze and Nginx Helper
+* Where no supported caching plugin is found, the "Settings saved" message reminds you to clear the page cache
+* Light colour scheme: banner text outside a paragraph, such as lists, is no longer white on a white background
+* Cookie Settings Screen on mobile: the popup now fits the visible screen when the browser toolbars are showing, so the buttons at the bottom can always be reached
+* Cookie Settings Screen on mobile: when the buttons wrap onto two rows, the footer grows to fit them instead of pushing them past the bottom edge
+* Cookie Settings Screen on mobile: removed the extra gap under the logo in the tabbed layout
+* Geo location with Google Consent Mode v2 or Microsoft Clarity: visitors who are not shown the banner because of their location now have consent granted on their first page view, not only from the next page
+* A script that fails to load, for example one blocked by an ad blocker, no longer stops the scripts and the Google Consent Mode update that come after it
+* Google Consent Mode v2: the consent update is now sent before the scripts of the accepted cookie category run, so Google tags added there count the page view with the updated consent
+* Google Consent Mode v2 with geo location (Premium): the consent default now follows the geo location rules by region, so visitors outside the targeted regions are measured with consent from the start of their first page view instead of after the location check
+* Withdrawing consent now stops Google tags in the current page straight away, before the page reloads: Google Analytics is switched off, and Google Consent Mode is updated to denied for the withdrawn categories. Previously the tags already loaded kept sending data with the earlier consent until the reload
+* GTM4WP integration: when the Google Consent Mode v2 integration already loads the same GTM container, it is no longer loaded a second time once the visitor accepts cookies
+* Google Consent Mode v2, Microsoft Clarity and WP Consent API: when only one of the Analytics and Marketing categories is switched on, it now covers both the analytics and the advertising consent. Previously, visitors who switched it on and saved their settings had advertising consent denied, while "Accept all" granted it
+* Google Consent Mode v2: consent code added to a cookie category's scripts, such as a gtag('consent', 'update') block, no longer overrides the visitor's choices. The plugin sends the visitor's consent again after that category's scripts have run
+* Google Consent Mode v2: when a visitor turns on more cookie categories without the page reloading, the consent update and the cookie_consent_update event are now sent straight away, so tags waiting for that consent fire on the same page. Previously the new consent only applied from the next page
+* Dismissing the Premium Add-On's update notice no longer fails with a PHP error on PHP 8
+
 = 5.2.2: 8 October 2026 =
 * Minor fix in plugin licence manager
 

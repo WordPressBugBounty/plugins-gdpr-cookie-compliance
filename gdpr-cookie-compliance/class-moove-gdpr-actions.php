@@ -502,6 +502,9 @@ class Moove_GDPR_Actions {
 			#moove_gdpr_cookie_info_bar .moove-gdpr-infobar-close-btn { ' . $css . ' }';
 		endif;
 
+		// The blocks below are templated, so buffer them into $styles rather than echoing them.
+		ob_start();
+
 		// Reject Button - Settings Screen.
 		$gdpr_reject_button_bhv_ss = isset( $gdpr_options['gdpr_reject_button_bhv_ss'] ) && intval( $gdpr_options['gdpr_reject_button_bhv_ss'] ) ? intval( $gdpr_options['gdpr_reject_button_bhv_ss'] ) : 1;
 		if ( 2 === $gdpr_reject_button_bhv_ss ) :
@@ -600,75 +603,7 @@ class Moove_GDPR_Actions {
 			<?php
 		endif;
 
-		// Settings Button - Cookie Banner.
-		$gdpr_settings_button_bhv = isset( $gdpr_options['gdpr_settings_button_bhv'] ) && intval( $gdpr_options['gdpr_settings_button_bhv'] ) ? intval( $gdpr_options['gdpr_settings_button_bhv'] ) : 2;
-		if ( 1 === $gdpr_settings_button_bhv ) :
-			?>
-				#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.moove-gdpr-infobar-settings-btn,
-				#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.moove-gdpr-infobar-settings-btn {
-					background-color: <?php echo esc_attr( $primary ); ?>;
-					box-shadow: none;
-					opacity: 1;
-					color: #fff;
-				}
-
-				#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.moove-gdpr-infobar-settings-btn:hover,
-				#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.moove-gdpr-infobar-settings-btn:hover {
-					background-color: #202020;
-					color: #fff;
-					box-shadow: none;
-					opacity: 1;
-				}
-
-				#moove_gdpr_cookie_info_bar:not(.gdpr-full-screen-infobar).moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.moove-gdpr-infobar-settings-btn,
-				#moove_gdpr_cookie_info_bar:not(.gdpr-full-screen-infobar).moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.moove-gdpr-infobar-settings-btn {
-					background-color: <?php echo esc_attr( $primary ); ?>;
-					box-shadow: none;
-					opacity: 1;
-					color: #fff;
-				}
-
-				#moove_gdpr_cookie_info_bar:not(.gdpr-full-screen-infobar).moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.moove-gdpr-infobar-settings-btn:hover,
-				#moove_gdpr_cookie_info_bar:not(.gdpr-full-screen-infobar).moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.moove-gdpr-infobar-settings-btn:hover {
-					background-color: #fff;
-					color: <?php echo esc_attr( $primary ); ?>;
-					box-shadow: none;
-					opacity: 1;
-				}
-			<?php
-		elseif ( 2 === $gdpr_settings_button_bhv ) :
-			?>
-				#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.moove-gdpr-infobar-settings-btn,
-				#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.moove-gdpr-infobar-settings-btn {
-					background-color: transparent;
-					box-shadow: inset 0 0 0 1px currentColor;
-					opacity: .7;
-					color: #202020;
-				}
-
-				#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.moove-gdpr-infobar-settings-btn:hover,
-				#moove_gdpr_cookie_info_bar .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.moove-gdpr-infobar-settings-btn:hover {
-					background-color: #202020;
-					box-shadow: none;
-					color: #fff;
-					opacity: 1;
-				}
-
-				#moove_gdpr_cookie_info_bar:not(.gdpr-full-screen-infobar).moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.moove-gdpr-infobar-settings-btn, #moove_gdpr_cookie_info_bar:not(.gdpr-full-screen-infobar).moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.moove-gdpr-infobar-settings-btn {
-					background-color: transparent;
-					box-shadow: inset 0 0 0 1px currentColor;
-					opacity: .7;
-					color: #fff;
-				}
-
-				#moove_gdpr_cookie_info_bar:not(.gdpr-full-screen-infobar).moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content a.mgbutton.moove-gdpr-infobar-settings-btn:hover, #moove_gdpr_cookie_info_bar:not(.gdpr-full-screen-infobar).moove-gdpr-dark-scheme .moove-gdpr-info-bar-container .moove-gdpr-info-bar-content button.mgbutton.moove-gdpr-infobar-settings-btn:hover {
-					box-shadow: none;
-					opacity: 1;
-					color: #202020;
-					background-color: #fff;
-				}
-			<?php
-		endif;
+		// Settings Button - Cookie Banner: static, see assets/styles/modules/_branding.scss.
 
 		$custom_font_weight = apply_filters( 'gdpr_font_wieght_title', 'inherit' );
 		// Custom Font Weights.
@@ -707,6 +642,8 @@ class Moove_GDPR_Actions {
 				}
 			<?php
 		endif;
+
+		$styles .= ob_get_clean();
 
 		return $styles;
 	}
@@ -989,6 +926,10 @@ class Moove_GDPR_Actions {
 
 		$loc_data['parent_domain_cookies'] = Moove_GDPR_Controller::moove_gdpr_get_parent_domain_cookies();
 
+		// Which categories the Google consent signals follow, so a withdrawal can deny
+		// them in the current page before it reloads.
+		$loc_data['consent_signals'] = Moove_GDPR_Content::gdpr_consent_signal_categories();
+
 		$loc_data['wp_consent_api'] = 'false';
 		if ( class_exists( 'WP_CONSENT_API' ) ) :
 			$loc_data['wp_consent_api'] = 'true';
@@ -1135,7 +1076,25 @@ class Moove_GDPR_Actions {
 
 		add_action( 'wp_ajax_moove_hide_language_notice', array( 'Moove_GDPR_Controller', 'moove_hide_language_notice' ) );
 
-		add_action( 'wp_ajax_moove_hide_update_notice', array( 'Moove_GDPR_Updater', 'moove_hide_update_notice' ) );
+		add_action( 'wp_ajax_moove_hide_update_notice', array( 'Moove_GDPR_Actions', 'moove_hide_update_notice' ) );
+	}
+
+	/**
+	 * Hides the premium add-on's update notice, through the add-on's own handler.
+	 *
+	 * The handler used to be registered as array( 'Moove_GDPR_Updater', ... ), but up to
+	 * add-on 4.11.2 it is an instance method: PHP 8 refuses that call, so dismissing the
+	 * notice failed with a fatal error, and PHP 7.4 raised a deprecation notice. Such a
+	 * handler is called on an instance made without the constructor, which would register
+	 * the add-on's update hooks a second time; the handler does not use $this.
+	 */
+	public static function moove_hide_update_notice() {
+		if ( ! method_exists( 'Moove_GDPR_Updater', 'moove_hide_update_notice' ) ) :
+			return;
+		endif;
+
+		$handler = new ReflectionMethod( 'Moove_GDPR_Updater', 'moove_hide_update_notice' );
+		$handler->invoke( $handler->isStatic() ? null : ( new ReflectionClass( 'Moove_GDPR_Updater' ) )->newInstanceWithoutConstructor() );
 	}
 
 	/**

@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 
 <?php if ( $content->show ) : ?>
-	<div id="cookie_policy_modal" class="moove-gdpr-tab-main" <?php echo $content->visibility; // phpcs:ignore ?>>
+	<div id="cookie_policy_modal" class="moove-gdpr-tab-main" <?php echo $content->visibility; // phpcs:ignore ?> <?php echo gdpr_get_tabpanel_attributes( 'cookie_policy_modal' ); // phpcs:ignore ?>>
 	<?php // Not an <h2>: role="heading" keeps this a heading for screen readers without adding H2s to every page's SEO outline. ?>
 	<div class="tab-title" role="heading" aria-level="2"><span class="gdpr-tab-title-text"><?php echo esc_attr( $content->tab_title ); ?></span></div>
 	<div class="moove-gdpr-tab-main-content">

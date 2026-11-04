@@ -87,7 +87,23 @@
             console.warn(e);
           }
         }
-        
+
+        /**
+         * postscribe() with an error handler that does not throw.
+         *
+         * postscribe's default handler throws, before it moves on to the next script. One
+         * script that fails to load (an ad blocker, a network error) or throws therefore
+         * stopped every script queued after it, in every category - the Consent Mode
+         * update included. The failure is reported instead and the rest still run.
+         */
+        function gdpr_postscribe( el, html ) {
+          postscribe( el, html, {
+            error: function( e ) {
+              console.warn( 'GDPR Cookie Compliance - script failed: ' + ( e && e.msg ? e.msg : e ) );
+            }
+          } );
+        }
+
         $.fn.moove_gdpr_read_cookies = function(options){
           var cookies = moove_gdpr_read_cookie('moove_gdpr_popup');
           var cookie_values = {};
@@ -210,6 +226,16 @@
           wp_set_consent( category, value );
         }
 
+        /**
+         * The cookie categories the analytics and advertising consent follow on this site:
+         * 'thirdparty' and 'advanced', unless the site has switched one of the two off and
+         * the other covers both. See gdpr_consent_signal_categories() in
+         * class-moove-gdpr-content.php.
+         */
+        function gdpr_consent_signal_cats() {
+          return typeof moove_frontend_gdpr_scripts.consent_signals !== 'undefined' ? moove_frontend_gdpr_scripts.consent_signals : { analytics: 'thirdparty', ads: 'advanced' };
+        }
+
         function gdpr_save_consent_log( value ) {
           if ( typeof jQuery.fn.gdpr_cookie_compliance_consent_log === 'function' ) {
             jQuery().gdpr_cookie_compliance_consent_log( value );
@@ -290,8 +316,104 @@
           
         }   
 
+        /**
+         * GA4 measurement IDs (G-XXXXXXX) running in this page, whichever way they were
+         * added: a GTM container, a Google tag (GT-) or a gtag.js snippet.
+         */
+        function gdpr_ga4_measurement_ids() {
+          var ids = {};
+          var add = function( id ) {
+            if ( typeof id === 'string' && /^G-[A-Z0-9]+$/i.test( id ) ) {
+              ids[ id.toUpperCase() ] = true;
+            }
+          };
+
+          // Every Google tag registers its destinations here once it has loaded.
+          if ( window.google_tag_manager && typeof window.google_tag_manager === 'object' ) {
+            Object.keys( window.google_tag_manager ).forEach( add );
+          }
+
+          // gtag('config', 'G-...') calls, including any whose tag is still loading.
+          if ( window.dataLayer && window.dataLayer.length ) {
+            for ( var i = 0; i < window.dataLayer.length; i++ ) {
+              if ( window.dataLayer[ i ] && window.dataLayer[ i ][0] === 'config' ) {
+                add( window.dataLayer[ i ][1] );
+              }
+            }
+          }
+
+          // gtag.js loaded for a measurement ID, as GTM does for its GA4 tags.
+          $(document).find('script[src*="googletagmanager.com/gtag/js"]').each(function(){
+            if ( this.src && gdpr_validate_url( this.src ) ) {
+              add( new URL( this.src ).searchParams.get('id') );
+            }
+          });
+
+          return Object.keys( ids );
+        }
+
+        /**
+         * Stops the Google tags already running in this page when consent is withdrawn.
+         *
+         * Withdrawal reloads the page, and the reloaded page no longer loads what was
+         * withdrawn. Until then the tags in this page keep the consent they started with,
+         * and can still send hits - including the one Google Analytics sends as the page
+         * is left. A denied consent update alone does not stop them, as Google's tags
+         * carry on with cookieless pings. So Google Analytics is switched off with
+         * Google's opt-out flag, which stops its requests altogether, and the withdrawn
+         * signals are updated to denied for the other Google tags (Ads).
+         *
+         * Only denied values are sent: the signals of the categories the visitor kept
+         * are left as they are. The category -> signal mapping matches the Consent Mode
+         * v2 snippets in class-moove-gdpr-content.php.
+         *
+         * @param {Array} withdrawn Cookie category keys the visitor has just withdrawn.
+         */
+        function gdpr_stop_withdrawn_google_tags( withdrawn ) {
+          var signal_cats = gdpr_consent_signal_cats();
+          var update      = {};
+
+          try {
+            if ( withdrawn.indexOf( signal_cats.analytics ) !== -1 ) {
+              gdpr_ga4_measurement_ids().forEach(function( id ) {
+                window['ga-disable-' + id] = true;
+                gdpr_cc_log( 'ga-disable: ' + id );
+              });
+              update.analytics_storage = 'denied';
+            }
+
+            if ( withdrawn.indexOf( signal_cats.ads ) !== -1 ) {
+              update.ad_storage         = 'denied';
+              update.ad_user_data       = 'denied';
+              update.ad_personalization = 'denied';
+            }
+
+            if ( withdrawn.indexOf( 'preference' ) !== -1 ) {
+              update.personalization_storage = 'denied';
+            }
+
+            if ( withdrawn.indexOf( 'strict' ) !== -1 ) {
+              update.functionality_storage = 'denied';
+              update.security_storage      = 'denied';
+            }
+
+            // Consent commands must reach the dataLayer as an arguments object, the way
+            // gtag() pushes them: GTM ignores the same values pushed as an array.
+            if ( window.dataLayer && ! $.isEmptyObject( update ) ) {
+              (function() {
+                window.dataLayer.push( arguments );
+              })( 'consent', 'update', update );
+              gdpr_cc_log( 'consent update: ' + JSON.stringify( update ) );
+            }
+          } catch ( e ) {
+            // The reload that follows must still happen.
+            gdpr_cc_log( 'error in gdpr_stop_withdrawn_google_tags: ' + e );
+          }
+        }
+
         function moove_gdpr_check_reload( $log ) {
           var reload_page = false;
+          var withdrawn   = [];
           // console.log($log);
           try {
             if ( typeof moove_frontend_gdpr_scripts.force_reload !== 'undefined' ) {
@@ -344,27 +466,36 @@
             if ( initial_cookies ) {
               if ( parseInt(current_cookies.strict) - parseInt(initial_cookies.strict) < 0 ) {
                 reload_page = true;
+                withdrawn.push( 'strict' );
               }
               if ( parseInt(current_cookies.thirdparty) - parseInt(initial_cookies.thirdparty) < 0 ) {
                 reload_page = true;
+                withdrawn.push( 'thirdparty' );
               }
 
               if ( parseInt(current_cookies.advanced) - parseInt(initial_cookies.advanced) < 0 ) {
                 reload_page = true;
+                withdrawn.push( 'advanced' );
               }
 
               if ( parseInt(current_cookies.performance) - parseInt(initial_cookies.performance) < 0 ) {
                 reload_page = true;
+                withdrawn.push( 'performance' );
               }
 
               if ( parseInt(current_cookies.preference) - parseInt(initial_cookies.preference) < 0 ) {
                 reload_page = true;
+                withdrawn.push( 'preference' );
               }
             }
 
           }
-          
+
           if ( reload_page ) {
+            if ( withdrawn.length > 0 ) {
+              gdpr_stop_withdrawn_google_tags( withdrawn );
+            }
+
             cookies = {
               "strict" : 0,
               "thirdparty" : 0,
@@ -390,9 +521,6 @@
                     if ( _ga_ID ) {
                       document.cookie = 'woocommerce_' + _ga_ID + '=true; expires=Thu, 31 Dec 1970 23:59:59 UTC; path=/';
                       window['ga-disable-' + _ga_ID] = true;
-                    }
-                    if ( window.gtag ) {
-                      window.gtag('remove');
                     }
                     $(this).remove();
                   }
@@ -492,33 +620,28 @@
               if ( ! $('#moove_gdpr_performance_cookies').is(':checked') ) {
                 $('#moove_gdpr_performance_cookies').prop('checked', true).trigger('change'); // + 131022
               }
-
-              // WP Consent API
-              gdpr_wp_set_consent( 'statistics', 'allow' );
             } else {
               if ( $('#moove_gdpr_performance_cookies').is(':checked') ) {
                 $('#moove_gdpr_performance_cookies').prop('checked', false).trigger('change'); // + 131022
               }
-
-                // WP Consent API
-                gdpr_wp_set_consent( 'statistics', 'deny' );
             }
 
             if ( parseInt( cookies.advanced ) === 1 ) {
               if ( ! $('#moove_gdpr_advanced_cookies').is(':checked') ) {
                 $('#moove_gdpr_advanced_cookies').prop('checked', true).trigger('change'); // + 131022
               }
-
-              // WP Consent API
-              gdpr_wp_set_consent( 'marketing', 'allow' );
             } else {
               if ( $('#moove_gdpr_advanced_cookies').is(':checked') ) {
                 $('#moove_gdpr_advanced_cookies').prop('checked', false).trigger('change'); // + 131022
               }
-
-              // WP Consent API
-              gdpr_wp_set_consent( 'marketing', 'deny' );
             }
+
+            // WP Consent API - statistics and marketing follow the same categories as the
+            // Google consent signals, so the two agree on a site that has switched one of
+            // Analytics and Marketing off.
+            var signal_cats = gdpr_consent_signal_cats();
+            gdpr_wp_set_consent( 'statistics', parseInt( cookies[ signal_cats.analytics ] ) === 1 ? 'allow' : 'deny' );
+            gdpr_wp_set_consent( 'marketing', parseInt( cookies[ signal_cats.ads ] ) === 1 ? 'allow' : 'deny' );
 
             if ( parseInt( cookies.performance ) === 1 ) {
               if ( ! $('#moove_gdpr_performance_cc_cookies').is(':checked') ) {
@@ -968,41 +1091,41 @@
                 if ( ( typeof cookies.strict !== 'undefined' && parseInt( cookies.strict ) === 1 ) || parseInt( moove_frontend_gdpr_scripts.enabled_default.strict ) > 1 ) {
                   if ( ( ( cookies.strict !== 'undefined' && parseInt( cookies.strict ) === 1 ) || parseInt( moove_frontend_gdpr_scripts.enabled_default.strict ) > 1 ) && typeof gdpr_cookies_loaded.strict === 'undefined' ) {
                     if ( typeof scripts_defined.strict !== 'undefined' && scripts_defined.strict.header ) {
-                      postscribe(document.head, scripts_defined.strict.header);
+                      gdpr_postscribe(document.head, scripts_defined.strict.header);
                     }
                     if ( typeof scripts_defined.strict !== 'undefined' && scripts_defined.strict.body ) {
                       $(scripts_defined.strict.body).prependTo(document.body);
                     }
 
                     if ( typeof scripts_defined.strict !== 'undefined' && scripts_defined.strict.footer ) {
-                      postscribe(document.body, scripts_defined.strict.footer);
+                      gdpr_postscribe(document.body, scripts_defined.strict.footer);
                     }
                     gdpr_cookies_loaded.strict = true;
                   } 
 
                   if ( parseInt( cookies.thirdparty ) === 1 && typeof gdpr_cookies_loaded.thirdparty === 'undefined' ) {
                     if ( scripts_defined.thirdparty.header ) {
-                      postscribe(document.head, scripts_defined.thirdparty.header);
+                      gdpr_postscribe(document.head, scripts_defined.thirdparty.header);
                     }
                     if ( scripts_defined.thirdparty.body ) {
                       $(scripts_defined.thirdparty.body).prependTo(document.body);
                     }
 
                     if ( scripts_defined.thirdparty.footer ) {
-                      postscribe(document.body, scripts_defined.thirdparty.footer);
+                      gdpr_postscribe(document.body, scripts_defined.thirdparty.footer);
                     }
                     gdpr_cookies_loaded.thirdparty = true;
                   } 
 
                   if ( parseInt( cookies.advanced ) === 1  && typeof gdpr_cookies_loaded.advanced === 'undefined' ) {
                     if ( scripts_defined.advanced.header ) {
-                      postscribe(document.head, scripts_defined.advanced.header);
+                      gdpr_postscribe(document.head, scripts_defined.advanced.header);
                     }
                     if ( scripts_defined.advanced.body ) {
                       $(scripts_defined.advanced.body).prependTo(document.body);
                     }
                     if ( scripts_defined.advanced.footer ) {
-                      postscribe(document.body, scripts_defined.advanced.footer);
+                      gdpr_postscribe(document.body, scripts_defined.advanced.footer);
                     }
                     gdpr_cookies_loaded.advanced = true;
                   }
@@ -1010,26 +1133,26 @@
                  
                   if ( typeof cookies.performance !== 'undefined' && parseInt( cookies.performance ) === 1  && typeof gdpr_cookies_loaded.performance === 'undefined' ) {
                     if ( typeof scripts_defined.performance !== 'undefined' && scripts_defined.performance.header ) {
-                      postscribe(document.head, scripts_defined.performance.header);
+                      gdpr_postscribe(document.head, scripts_defined.performance.header);
                     }
                     if ( typeof scripts_defined.performance !== 'undefined' && scripts_defined.performance.body ) {
                       $(scripts_defined.performance.body).prependTo(document.body);
                     }
                     if ( typeof scripts_defined.performance !== 'undefined' && scripts_defined.performance.footer ) {
-                      postscribe(document.body, scripts_defined.performance.footer);
+                      gdpr_postscribe(document.body, scripts_defined.performance.footer);
                     }
                     gdpr_cookies_loaded.performance = true;
                   }
 
                   if ( typeof cookies.preference !== 'undefined' && parseInt( cookies.preference ) === 1  && typeof gdpr_cookies_loaded.preference === 'undefined' ) {
                     if ( typeof scripts_defined.preference !== 'undefined' && scripts_defined.preference.header ) {
-                      postscribe(document.head, scripts_defined.preference.header);
+                      gdpr_postscribe(document.head, scripts_defined.preference.header);
                     }
                     if ( typeof scripts_defined.preference !== 'undefined' && scripts_defined.preference.body ) {
                       $(scripts_defined.preference.body).prependTo(document.body);
                     }
                     if ( typeof scripts_defined.preference !== 'undefined' && scripts_defined.preference.footer ) {
-                      postscribe(document.body, scripts_defined.preference.footer);
+                      gdpr_postscribe(document.body, scripts_defined.preference.footer);
                     }
                     gdpr_cookies_loaded.preference = true;
                   }
@@ -1090,14 +1213,14 @@
 
                     var obj = typeof msg === 'string' ? JSON.parse( msg ) : msg;
                     if ( obj.header ) {
-                      postscribe(document.head, obj.header);
+                      gdpr_postscribe(document.head, obj.header);
                     }
                     if ( obj.body ) {
                       $(obj.body).prependTo(document.body);
                     }
 
                     if ( obj.footer ) {
-                      postscribe(document.body, obj.footer);
+                      gdpr_postscribe(document.body, obj.footer);
                     }
                   }
                 );
@@ -1202,66 +1325,66 @@
                   if ( ( typeof cookies.strict !== 'undefined' && parseInt( cookies.strict ) === 1 ) || parseInt( moove_frontend_gdpr_scripts.enabled_default.strict ) > 1 ) {
                     if ( ( ( cookies.strict !== 'undefined' && parseInt( cookies.strict ) === 1 ) || parseInt( moove_frontend_gdpr_scripts.enabled_default.strict ) > 1 ) && typeof gdpr_cookies_loaded.strict === 'undefined' ) {
                       if ( typeof scripts_defined.strict !== 'undefined' && scripts_defined.strict.header ) {
-                        postscribe(document.head, scripts_defined.strict.header);
+                        gdpr_postscribe(document.head, scripts_defined.strict.header);
                       }
                       if ( typeof scripts_defined.strict !== 'undefined' && scripts_defined.strict.body ) {
                         $(scripts_defined.strict.body).prependTo(document.body);
                       }
 
                       if ( typeof scripts_defined.strict !== 'undefined' && scripts_defined.strict.footer ) {
-                        postscribe(document.body, scripts_defined.strict.footer);
+                        gdpr_postscribe(document.body, scripts_defined.strict.footer);
                       }
                       gdpr_cookies_loaded.strict = true;
                     } 
 
                     if ( parseInt( cookies.thirdparty ) === 1 && typeof gdpr_cookies_loaded.thirdparty === 'undefined' ) {
                       if ( scripts_defined.thirdparty.header ) {
-                        postscribe(document.head, scripts_defined.thirdparty.header);
+                        gdpr_postscribe(document.head, scripts_defined.thirdparty.header);
                       }
                       if ( scripts_defined.thirdparty.body ) {
                         $(scripts_defined.thirdparty.body).prependTo(document.body);
                       }
 
                       if ( scripts_defined.thirdparty.footer ) {
-                        postscribe(document.body, scripts_defined.thirdparty.footer);
+                        gdpr_postscribe(document.body, scripts_defined.thirdparty.footer);
                       }
                       gdpr_cookies_loaded.thirdparty = true;
                     } 
                     if ( parseInt( cookies.advanced ) === 1  && typeof gdpr_cookies_loaded.advanced === 'undefined' ) {
                       if ( scripts_defined.advanced.header ) {
-                        postscribe(document.head, scripts_defined.advanced.header);
+                        gdpr_postscribe(document.head, scripts_defined.advanced.header);
                       }
                       if ( scripts_defined.advanced.body ) {
                         $(scripts_defined.advanced.body).prependTo(document.body);
                       }
                       if ( scripts_defined.advanced.footer ) {
-                        postscribe(document.body, scripts_defined.advanced.footer);
+                        gdpr_postscribe(document.body, scripts_defined.advanced.footer);
                       }
                       gdpr_cookies_loaded.advanced = true;
                     }
 
                     if ( typeof cookies.performance !== 'undefined' && parseInt( cookies.performance ) === 1  && typeof gdpr_cookies_loaded.performance === 'undefined' ) {
                       if ( typeof scripts_defined.performance !== 'undefined' && scripts_defined.performance.header ) {
-                        postscribe(document.head, scripts_defined.performance.header);
+                        gdpr_postscribe(document.head, scripts_defined.performance.header);
                       }
                       if ( typeof scripts_defined.performance !== 'undefined' && scripts_defined.performance.body ) {
                         $(scripts_defined.performance.body).prependTo(document.body);
                       }
                       if ( typeof scripts_defined.performance !== 'undefined' && scripts_defined.performance.footer ) {
-                        postscribe(document.body, scripts_defined.performance.footer);
+                        gdpr_postscribe(document.body, scripts_defined.performance.footer);
                       }
                       gdpr_cookies_loaded.performance = true;
                     }
 
                     if ( typeof cookies.preference !== 'undefined' && parseInt( cookies.preference ) === 1  && typeof gdpr_cookies_loaded.preference === 'undefined' ) {
                       if ( typeof scripts_defined.preference !== 'undefined' && scripts_defined.preference.header ) {
-                        postscribe(document.head, scripts_defined.preference.header);
+                        gdpr_postscribe(document.head, scripts_defined.preference.header);
                       }
                       if ( typeof scripts_defined.preference !== 'undefined' && scripts_defined.preference.body ) {
                         $(scripts_defined.preference.body).prependTo(document.body);
                       }
                       if ( typeof scripts_defined.preference !== 'undefined' && scripts_defined.preference.footer ) {
-                        postscribe(document.body, scripts_defined.preference.footer);
+                        gdpr_postscribe(document.body, scripts_defined.preference.footer);
                       }
                       gdpr_cookies_loaded.preference = true;
                     }
@@ -1317,14 +1440,14 @@
                       gdpr_save_analytics( 'script_inject', cookies );
                       var obj = typeof msg === 'string' ? JSON.parse( msg ) : msg;
                       if ( obj.header ) {
-                        postscribe(document.head, obj.header);
+                        gdpr_postscribe(document.head, obj.header);
                       }
                       if ( obj.body ) {
                         $(obj.body).prependTo(document.body);
                       }
 
                       if ( obj.footer ) {
-                        postscribe(document.body, obj.footer);
+                        gdpr_postscribe(document.body, obj.footer);
                       }
                     }
                   );
@@ -2223,7 +2346,9 @@
         if ( typeof moove_frontend_gdpr_scripts.geo_location !== 'undefined' && moove_frontend_gdpr_scripts.geo_location === 'true' ) {
           var gdpr_geo_cache_name = 'moove_gdpr_geo_cache';
           // Bump when the stored decision changes meaning, so that decisions
-          // cached by an earlier version are fetched again.
+          // cached by an earlier version are fetched again. The Consent Mode and
+          // Clarity snippets read this cookie too and check the same version: see
+          // gdpr_consent_cookie_js_preamble() in class-moove-gdpr-content.php.
           var gdpr_geo_cache_version = 2;
 
           var gdpr_geo_cache_read = function() {
@@ -2264,6 +2389,12 @@
           var gdpr_geo_init = function() {
             if ( ! gdpr_js_init ) {
               gdpr_js_init = true;
+              // Consent Mode's region-specific defaults can grant before the location is
+              // known (see gdpr_consent_regions() in class-moove-gdpr-content.php). They
+              // are withdrawn when the banner is shown after all.
+              if ( moove_frontend_gdpr_scripts.display_cookie_banner !== 'false' && typeof window.gdpr_cc_gtm2_geo_banner === 'function' ) {
+                window.gdpr_cc_gtm2_geo_banner();
+              }
               GDPR_UTIL_FE.fire('common');
             }
           };
