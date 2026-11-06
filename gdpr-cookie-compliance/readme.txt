@@ -2,7 +2,7 @@
 Contributors: MooveAgency
 Donate link: https://www.mooveagency.com/wordpress-plugins/gdpr-cookie-compliance/
 Tags: GDPR, CCPA, DSGVO, cookie banner, cookie consent, cookie notice
-Stable tag: 5.3.0
+Stable tag: 5.3.1
 Requires at least: 4.5
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -256,6 +256,10 @@ The Brazilian General Data Protection Law (“Lei Geral de Proteção de Dados�
 31. GDPR Cookie Compliance - Cookie Banner, Cookie Consent, Cookie Notice for CCPA, EU Cookie Law
 
 == Changelog ==
+= 5.3.1: 6 November 2026 =
+* Fixed: in browsers that block cookie notices, such as Brave or Malwarebytes Browser Guard, the Cookie Settings Screen showed as an unstyled box on the page. It now stays hidden, as it did before 5.3.0
+* Geo location with Google Consent Mode v2 (Premium): when a visitor's location cannot be determined, the cookies Google tags set before the location check answered are now removed, and the next pages start with consent denied
+
 = 5.3.0: 4 November 2026 =
 * Saving the settings now clears the cache of supported caching and optimisation plugins, so visitors see the changes straight away: WP Rocket, LiteSpeed Cache, NitroPack, Autoptimize, W3 Total Cache, WP Super Cache, WP Fastest Cache, WP-Optimize, Cache Enabler, SiteGround Speed Optimizer, Hummingbird, Breeze and Nginx Helper
 * Where no supported caching plugin is found, the "Settings saved" message reminds you to clear the page cache

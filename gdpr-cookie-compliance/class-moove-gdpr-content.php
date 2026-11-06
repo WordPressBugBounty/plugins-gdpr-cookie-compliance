@@ -355,7 +355,9 @@ class Moove_GDPR_Content {
 					<?php if ( $consent_regions ) : ?>
 					// Nothing decided and no location answer yet: Google's tag applies the geo
 					// location rules by region until the plugin's own lookup answers. A GPC
-					// signal keeps everything denied. See gdpr_consent_regions().
+					// signal keeps everything denied. See gdpr_consent_regions(). An unknown
+					// location counts as an answer: main.js stores it, and the banner it shows
+					// keeps the rest of the session denied.
 					var _gdpr_geo_known = false;
 					try { _gdpr_geo_known = /(?:^|;\s*)moove_gdpr_geo_cache=/.test( document.cookie ); } catch ( e ) {}
 					if ( ! _gdpr_has && ! _gdpr_geo_known && ! navigator.globalPrivacyControl ) {
@@ -373,7 +375,8 @@ class Moove_GDPR_Content {
 						gtag('consent', 'default', _gdpr_outside);
 						gtag('consent', 'default', _gdpr_inside);
 						// Google and the plugin can place a visitor differently. main.js calls this
-						// when its own lookup shows the banner, withdrawing a granted default.
+						// when its own lookup shows the banner, withdrawing a granted default, and
+						// then removes the cookies Google's tags wrote under it.
 						window.gdpr_cc_gtm2_geo_banner = function() {
 							gtag('consent', 'update', _gdpr_all( 'denied' ));
 						};
@@ -476,8 +479,9 @@ class Moove_GDPR_Content {
 	 * that are already running. main.js keeps the answer in the
 	 * moove_gdpr_geo_cache session cookie once the location is known, so the
 	 * first page of a session starts denied and is updated when the gated
-	 * categories load. A choice the visitor makes through a settings link still
-	 * wins over the geo answer.
+	 * categories load. An unknown location is kept there too, flagged as
+	 * unresolved, with the banner shown, so it reads as denied. A choice the
+	 * visitor makes through a settings link still wins over the geo answer.
 	 *
 	 * @return string JavaScript, for embedding inside a <script> block.
 	 */
@@ -497,7 +501,7 @@ class Moove_GDPR_Content {
 			$preamble .= "\t\t\t\tif ( ! _gdpr_has ) { try {\n"
 				. "\t\t\t\t\tvar _gdpr_g = document.cookie.match(/(?:^|;\\s*)moove_gdpr_geo_cache=([^;]*)/);\n"
 				. "\t\t\t\t\t_gdpr_g = _gdpr_g ? JSON.parse( decodeURIComponent( _gdpr_g[1] ) ) : null;\n"
-				. "\t\t\t\t\tif ( _gdpr_g && _gdpr_g.v === 2 && _gdpr_g.display_cookie_banner === 'false' && _gdpr_g.enabled_default ) {\n"
+				. "\t\t\t\t\tif ( _gdpr_g && _gdpr_g.v === 3 && _gdpr_g.display_cookie_banner === 'false' && _gdpr_g.enabled_default ) {\n"
 				. "\t\t\t\t\t\t_gdpr_g = _gdpr_g.enabled_default;\n"
 				. "\t\t\t\t\t\t_gdpr_c = { strict: 1, thirdparty: _gdpr_g.third_party, advanced: _gdpr_g.advanced, performance: _gdpr_g.performance, preference: _gdpr_g.preference };\n"
 				. "\t\t\t\t\t\t_gdpr_has = true;\n"

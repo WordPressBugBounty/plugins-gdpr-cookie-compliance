@@ -206,7 +206,8 @@ class Moove_GDPR_Controller {
 	 * Inline styles based on the colours selected in the options page
 	 *
 	 * The rules that use these colours are static, in assets/styles/modules/_branding.scss
-	 * (compiled into the main stylesheet). Only the values are printed inline, as custom properties.
+	 * (compiled into the main stylesheet). Only the values are printed inline, as custom properties,
+	 * plus the rule that keeps the settings modal hidden when the main stylesheet is blocked.
 	 *
 	 * @param string $primary_colour Primary Color.
 	 * @param string $secondary_colour Secondary Color.
@@ -230,7 +231,15 @@ class Moove_GDPR_Controller {
 			--moove-gdpr-button-font: <?php echo esc_attr( $button_font ); ?>;
 		}
 		<?php
-		$input           = apply_filters( 'moove_gdpr_inline_styles', ob_get_clean(), $primary_colour, $secondary_colour, $button_bg, $button_hover_bg, $button_font );
+		$input = apply_filters( 'moove_gdpr_inline_styles', ob_get_clean(), $primary_colour, $secondary_colour, $button_bg, $button_hover_bg, $button_font );
+
+		// The modal is server-rendered as <dialog open>, so it is visible unless this rule applies.
+		// It must stay inline, not only in the main stylesheet: cookie-notice filter lists
+		// (EasyList Cookie in Brave, uBlock Origin, Malwarebytes) block everything under
+		// /plugins/gdpr-cookie-compliance/, and the modal then renders as an unstyled box in the page.
+		// Added after the filter so that replacing the filtered styles cannot drop it.
+		$input .= '#moove_gdpr_cookie_modal.gdpr_lightbox-hide{display:none}';
+
 		$gdpr_controller = new Moove_GDPR_Controller();
 		return ! is_admin() || wp_doing_ajax() ? $gdpr_controller->moove_gdpr_minify_css( $input ) : '';
 	}

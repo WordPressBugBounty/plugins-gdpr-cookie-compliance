@@ -11,6 +11,59 @@
  * ======================================================================== */
 (function($) {
 
+  // Domains a cookie has to be expired on, besides host-only. Mirrors
+  // Moove_GDPR_Controller::moove_gdpr_get_cookie_domains() so both removal methods agree.
+  function gdpr_get_cookie_domains( name, host ) {
+    var domains   = [ host, host.replace( /^www\./, '' ) ];
+    var d_domains = typeof moove_frontend_gdpr_scripts.parent_domain_cookies !== 'undefined' ? moove_frontend_gdpr_scripts.parent_domain_cookies : [];
+    for ( var i = 0; i < d_domains.length; i++ ) {
+      if ( d_domains[i] && name.indexOf( d_domains[i] ) !== -1 ) {
+        // gtag and friends write on the registrable domain (blog.example.com -> example.com),
+        // so walk up every level. Browsers ignore the public-suffix ones.
+        var labels = host.split('.');
+        while ( labels.length > 1 ) {
+          domains.push( labels.join('.') );
+          labels.shift();
+        }
+        break;
+      }
+    }
+    return domains;
+  }
+
+  /**
+   * Expires the cookies Google's tags write once consent is granted.
+   *
+   * With geo location, the Consent Mode default can grant consent before the
+   * visitor's location is known (see gdpr_consent_regions() in
+   * class-moove-gdpr-content.php). When the banner turns out to be needed after
+   * all, the denied update stops Google's tags writing cookies but leaves the ones
+   * they wrote in the meantime. The visitor has not consented to anything, so those
+   * go. The other categories are still held back at that point and cannot have set
+   * anything, so only Google's cookies are removed.
+   */
+  function gdpr_expire_google_cookies() {
+    try {
+      var host    = window.location.hostname.toLowerCase();
+      var cookies = document.cookie.split(';');
+      for ( var i = 0; i < cookies.length; i++ ) {
+        var name = cookies[i].split('=')[0].trim();
+        // _ga, _ga_<id>, _gac_<id>, _gid, _gat, _gat_<id>, _gcl_au/_aw/_dc/..., legacy __utm*.
+        if ( ! /^(_ga(_.*)?|_gac_.*|_gid|_gat(_.*)?|_gcl_.*|__utm[abcztv])$/.test( name ) ) {
+          continue;
+        }
+        var expired = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+        var domains = gdpr_get_cookie_domains( name, host );
+        document.cookie = expired;
+        for ( var j = 0; j < domains.length; j++ ) {
+          document.cookie = expired + ';domain=.' + domains[j];
+        }
+      }
+    } catch ( e ) {
+      // document.cookie throws in a sandboxed iframe: there is nothing to remove.
+    }
+  }
+
   // Use this variable to set up the common and page specific functions. If you
   // rename this variable, you will also need to rename the namespace below.
   var GDPR_FE = {
@@ -2109,26 +2162,6 @@
           }
         };
 
-        // Domains a cookie has to be expired on, besides host-only. Mirrors
-        // Moove_GDPR_Controller::moove_gdpr_get_cookie_domains() so both removal methods agree.
-        function gdpr_get_cookie_domains( name, host ) {
-          var domains   = [ host, host.replace( /^www\./, '' ) ];
-          var d_domains = typeof moove_frontend_gdpr_scripts.parent_domain_cookies !== 'undefined' ? moove_frontend_gdpr_scripts.parent_domain_cookies : [];
-          for ( var i = 0; i < d_domains.length; i++ ) {
-            if ( d_domains[i] && name.indexOf( d_domains[i] ) !== -1 ) {
-              // gtag and friends write on the registrable domain (blog.example.com -> example.com),
-              // so walk up every level. Browsers ignore the public-suffix ones.
-              var labels = host.split('.');
-              while ( labels.length > 1 ) {
-                domains.push( labels.join('.') );
-                labels.shift();
-              }
-              break;
-            }
-          }
-          return domains;
-        }
-
         function gdpr_delete_all_cookies( type ) {
           try {
             $(document).find('script[data-gdpr]').each(function() {
@@ -2349,7 +2382,8 @@
           // cached by an earlier version are fetched again. The Consent Mode and
           // Clarity snippets read this cookie too and check the same version: see
           // gdpr_consent_cookie_js_preamble() in class-moove-gdpr-content.php.
-          var gdpr_geo_cache_version = 2;
+          // 3: an unknown location is stored too, flagged as unresolved.
+          var gdpr_geo_cache_version = 3;
 
           var gdpr_geo_cache_read = function() {
             var nameEQ = encodeURIComponent( gdpr_geo_cache_name ) + '=';
@@ -2366,7 +2400,7 @@
             return null;
           };
 
-          var gdpr_geo_cache_write = function( data ) {
+          var gdpr_geo_cache_write = function( data, unresolved ) {
             // Session cookie (no expires) — geo result is per-session, avoids stale risk.
             // Only the decision is stored; the full response can outgrow the cookie size limit.
             var stored = {
@@ -2374,6 +2408,13 @@
               display_cookie_banner: data.display_cookie_banner,
               enabled_default: data.enabled_default
             };
+            // An unknown location is kept as well, so that the Consent Mode snippet starts
+            // the next pages denied, as the banner is shown, instead of applying the
+            // region-based default again. It is not reused as an answer: the next page
+            // asks for the location again.
+            if ( unresolved ) {
+              stored.unresolved = 1;
+            }
             document.cookie = encodeURIComponent( gdpr_geo_cache_name ) + '=' + encodeURIComponent( JSON.stringify( stored ) ) + '; path=/; SameSite=Lax';
           };
 
@@ -2394,6 +2435,7 @@
               // are withdrawn when the banner is shown after all.
               if ( moove_frontend_gdpr_scripts.display_cookie_banner !== 'false' && typeof window.gdpr_cc_gtm2_geo_banner === 'function' ) {
                 window.gdpr_cc_gtm2_geo_banner();
+                gdpr_expire_google_cookies();
               }
               GDPR_UTIL_FE.fire('common');
             }
@@ -2403,11 +2445,12 @@
           // is shown. Hiding it would load every script category.
           var gdpr_geo_fail_closed = function() {
             moove_frontend_gdpr_scripts.display_cookie_banner = 'true';
+            gdpr_geo_cache_write( { display_cookie_banner: 'true' }, true );
             gdpr_geo_init();
           };
 
           var geoCached = gdpr_geo_cache_read();
-          if ( geoCached !== null && geoCached.v === gdpr_geo_cache_version ) {
+          if ( geoCached !== null && geoCached.v === gdpr_geo_cache_version && ! geoCached.unresolved ) {
             gdpr_geo_apply( geoCached );
             gdpr_geo_init();
           } else {
@@ -2431,9 +2474,7 @@
                 }
                 gdpr_geo_apply( object );
                 // An unresolved location is asked for again on the next page view.
-                if ( object.geo_resolved !== 'false' ) {
-                  gdpr_geo_cache_write( object );
-                }
+                gdpr_geo_cache_write( object, object.geo_resolved === 'false' );
                 gdpr_geo_init();
               },
               error: function() {
